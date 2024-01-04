@@ -44,7 +44,14 @@ namespace ToxicOmega_Tools.Patches
         public static void TOT_TERMINAL_CREDITS_HANDLER(ulong sender, TOT_INT_Broadcast message)
         {
             Terminal terminal = UnityEngine.Object.FindObjectOfType<Terminal>();
-            terminal.groupCredits += message.dataInt;
+            if (terminal != null)
+            {
+                terminal.groupCredits += message.dataInt;
+            }
+            else
+            {
+                Plugin.LogMessage("Terminal not found!", true);
+            }
         }
 
         [NetworkMessage("TOT_TP_PLAYER", true)]

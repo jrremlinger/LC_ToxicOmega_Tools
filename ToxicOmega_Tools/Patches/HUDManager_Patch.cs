@@ -28,7 +28,7 @@ namespace ToxicOmega_Tools.Patches
 
         [HarmonyPatch("SubmitChat_performed")]
         [HarmonyPrefix]
-        private static void RegisterChatCommand(HUDManager __instance /*, string chatMessage, string nameOfUserWhoTyped*/)
+        private static void RegisterChatCommand(HUDManager __instance)
         {
             // Grab instances and refs as soon as chat is submitted
             PlayerControllerB localPlayerController = GameNetworkManager.Instance.localPlayerController;
