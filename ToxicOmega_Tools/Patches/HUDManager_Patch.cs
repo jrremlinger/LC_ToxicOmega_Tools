@@ -275,17 +275,16 @@ namespace ToxicOmega_Tools.Patches
                             else
                             {
                                 Plugin.LogMessage("Terminal not found!", true);
-                                break;
                             }
                             break;
                         case 2: // Providing one argument can teleport the localPlayer to different player, or to a random location in the factory
                             if (vs[1] == "$")   // "$" character as the destination chooses a random location inside the factory
                             {
-                                if (RoundManager.Instance.insideAINodes.Length != 0)
+                                if (currentRound.insideAINodes.Length != 0 && currentRound.insideAINodes[0] != null)
                                 {
-                                    Vector3 position2 = RoundManager.Instance.insideAINodes[UnityEngine.Random.Range(0, RoundManager.Instance.insideAINodes.Length)].transform.position;
+                                    Vector3 position2 = currentRound.insideAINodes[UnityEngine.Random.Range(0, currentRound.insideAINodes.Length)].transform.position;
                                     Debug.DrawRay(position2, Vector3.up * 1f, Color.red);
-                                    Vector3 inRadiusSpherical = RoundManager.Instance.GetRandomNavMeshPositionInRadiusSpherical(position2);
+                                    Vector3 inRadiusSpherical = currentRound.GetRandomNavMeshPositionInRadiusSpherical(position2);
                                     Debug.DrawRay(inRadiusSpherical + Vector3.right * 0.01f, Vector3.up * 3f, Color.green);
 
                                     if (UnityEngine.Object.FindObjectOfType<AudioReverbPresets>())
@@ -295,42 +294,42 @@ namespace ToxicOmega_Tools.Patches
                                     Network.Broadcast("TOT_TP_PLAYER", new TOT_TP_PLAYER_Broadcast { isInside = true, playerClientId = localPlayerController.playerClientId });
                                     Player.Get(localPlayerController).Position = inRadiusSpherical;
                                     Plugin.LogMessage($"Teleported {localPlayerController.playerUsername} to random location within factory.");
-                                    break;
                                 }
                                 else
                                 {
                                     Plugin.LogMessage($"No insideAINodes in this area!", true);
-                                    break;
                                 }
                             }
-
-                            playerA = Plugin.FindPlayerFromString(vs[1]);
-
-                            if (playerA != null)
+                            else
                             {
-                                if (playerA.playerClientId != localPlayerController.playerClientId)
+                                playerA = Plugin.FindPlayerFromString(vs[1]);
+
+                                if (playerA != null)
                                 {
-                                    Network.Broadcast("TOT_TP_PLAYER", new TOT_TP_PLAYER_Broadcast { isInside = playerA.isInsideFactory, playerClientId = localPlayerController.playerClientId });
-                                    Player.Get(localPlayerController).Position = playerA.transform.position;
-                                    Plugin.LogMessage($"Teleported {localPlayerController.playerUsername} to {playerA.playerUsername}.");
-                                }
-                                else
-                                {
-                                    Plugin.LogMessage("Player destination cannot be yourself!", true);
-                                    break;
+                                    if (playerA.playerClientId != localPlayerController.playerClientId)
+                                    {
+                                        Network.Broadcast("TOT_TP_PLAYER", new TOT_TP_PLAYER_Broadcast { isInside = playerA.isInsideFactory, playerClientId = localPlayerController.playerClientId });
+                                        Player.Get(localPlayerController).Position = playerA.transform.position;
+                                        Plugin.LogMessage($"Teleported {localPlayerController.playerUsername} to {playerA.playerUsername}.");
+                                    }
+                                    else
+                                    {
+                                        Plugin.LogMessage("Player destination cannot be yourself!", true);
+                                    }
                                 }
                             }
+
                             break;
                         case 3: // Providing two arguments will use the first as a target and the second as a destination
                             playerA = Plugin.FindPlayerFromString(vs[1]);
 
                             if (vs[2] == "$")   // "$" character as the destination chooses a random location inside the factory
                             {
-                                if (RoundManager.Instance.insideAINodes.Length != 0)
+                                if (currentRound.insideAINodes.Length != 0 && currentRound.insideAINodes[0] != null)
                                 {
-                                    Vector3 position2 = RoundManager.Instance.insideAINodes[UnityEngine.Random.Range(0, RoundManager.Instance.insideAINodes.Length)].transform.position;
+                                    Vector3 position2 = currentRound.insideAINodes[UnityEngine.Random.Range(0, currentRound.insideAINodes.Length)].transform.position;
                                     Debug.DrawRay(position2, Vector3.up * 1f, Color.red);
-                                    Vector3 inRadiusSpherical = RoundManager.Instance.GetRandomNavMeshPositionInRadiusSpherical(position2);
+                                    Vector3 inRadiusSpherical = currentRound.GetRandomNavMeshPositionInRadiusSpherical(position2);
                                     Debug.DrawRay(inRadiusSpherical + Vector3.right * 0.01f, Vector3.up * 3f, Color.green);
 
                                     if (UnityEngine.Object.FindObjectOfType<AudioReverbPresets>())
