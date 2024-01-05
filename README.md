@@ -6,7 +6,7 @@
 
 ## Commands
 ---
-#### **Item/Items (Page Number)**
+### **Item/Items (Page Number)**
 
 Displays a page of the items list. Includes item names and ID numbers.
 
@@ -16,7 +16,7 @@ Arguments:
 Example: "item 2" displays page two of the items list
 
 ---
-#### **Give (Item ID) Optional: (Amount) (Value) (Player Name/ID)**
+### **Give (Item ID) Optional: (Amount) (Value) (Player Name/ID)**
 
 Spawns an item based on given ID number. Able to specify how many items, their value, and what player it spawns on.
 
@@ -29,7 +29,7 @@ Arguments:
 Example: "give 17 1 420 #3" will spawn one Airhorn worth $420 on the player who's ID is 3.
 
 ---
-#### **Eout/Enemyout/Enemiesout (Page Number)**
+### **Eout/Enemyout/Enemiesout (Page Number)**
 
 Displays a page of the outside enemies list. Includes enemy names and ID numbers. Currently in the game there is only one page of outside enemies.
 
@@ -39,7 +39,7 @@ Arguments:
 Example: "eout" displays page one of the outside enemies list
 
 ---
-#### **Ein/Enemyin/Enemiesin (Page Number)**
+### **Ein/Enemyin/Enemiesin (Page Number)**
 
 Displays a page of the inside enemies list. Includes enemy names and ID numbers. Currently in the game there is only one page of inside enemies.
 
@@ -49,7 +49,7 @@ Arguments:
 Example: "ein" displays page one of the inside enemies list
 
 ---
-#### **Sout/Spawnout (Enemy ID) Optional: (Amount) (Player Name/ID)**
+### **Sout/Spawnout (Enemy ID) Optional: (Amount) (Player Name/ID)**
 
 Spawns an outside enemy based on given ID number. Able to specify how many enemies, and where they spawn. Make sure you use the ID from the **outside** enemies list!
 
@@ -61,7 +61,7 @@ Arguments:
 Example: "sout 0 1" will spawn one enemy of ID zero naturally outside. Different moons assign different enemy ID's so make sure you check "eout" to find the ID of the enemy you want to spawn.
 
 ---
-#### **Sin/Spawnin (Enemy ID) Optional: (Amount) (Player Name/ID)**
+### **Sin/Spawnin (Enemy ID) Optional: (Amount) (Player Name/ID)**
 
 Spawns an inside enemy based on given ID number. Able to specify how many enemies, and where they spawn. Make sure you use the ID from the **inside** enemies list!
 
@@ -73,7 +73,7 @@ Arguments:
 Example: "sin 0 1 Bob" will spawn one enemy of ID zero on a player who's name starts with (or is) Bob. Different moons assign different enemy ID's so make sure you check "ein" to find the ID of the enemy you want to spawn.
 
 ---
-#### **TP/Tele/Teleport Optional: (Target A) (Target B)**
+### **TP/Tele/Teleport Optional: (Target A) (Target B)**
 
 Teleports a given player to a given destination. Player being teleported can not be dead. Will automatically sync lighting if your destination is inside or outside. If no arguments are provided, the host will be teleported to the ship's console.
 
@@ -84,7 +84,7 @@ Arguments:
 Example: "tp #0 $" will teleport the player with ID 
 
 ---
-#### **Ch/Charge Optional: (Player Name/ID)**
+### **Ch/Charge Optional: (Player Name/ID)**
 
 Charges a players held item.
 
@@ -94,7 +94,7 @@ Arguments:
 Example: "ch" will simply charge the host's held item.
 
 ---
-#### **Heal/Save Optional: (Player Name/ID)**
+### **Heal/Save Optional: (Player Name/ID)**
 
 Fully refills a players health and stamina. Will save a player if they are currently grabbed by a forest giant or have a snare flea on their head.
 
@@ -104,14 +104,14 @@ Arguments:
 Example: "heal John" will heal a player who's name starts with (or is) John.
 
 ---
-#### **List/Player/Players**
+### **List/Player/Players**
 
 Lists all players currently in the server with their ID numbers.
 
 Example: "list".
 
 ---
-#### **Credit/Credits/Money Optional (Amount)**
+### **Credit/Credits/Money Optional (Amount)**
 Lists or adjusts the current amount of group credits in the terminal. If amount argument is not given it will just display the current amount of credits.
 
 Arguments:
