@@ -253,7 +253,9 @@ namespace ToxicOmega_Tools
                     // RPC to set Shotgun shells loaded to be two for all players
                     if (itemID == 59)
                     {
+                        mls.LogInfo("RPC SENDING: \"TOT_SYNC_AMMO\".");
                         Network.Broadcast("TOT_SYNC_AMMO", new TOT_ITEM_Broadcast { networkObjectID = item.NetworkObjectId });
+                        mls.LogInfo("RPC END: \"TOT_SYNC_AMMO\".");
                     }
 
                     // Overrides default scrap value if a new value is passed as an argument

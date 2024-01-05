@@ -15,6 +15,8 @@ namespace ToxicOmega_Tools.Patches
         [NetworkMessage("TOT_CHARGE_PLAYER", true)]
         public static void TOT_CHARGE_PLAYER_HANDLER(ulong sender, TOT_PLAYER_Broadcast message)
         {
+            Plugin.mls.LogInfo("RPC RECEIVED: \"TOT_CHARGE_PLAYER\".");
+
             PlayerControllerB playerTarget = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(message.playerClientId));
             GrabbableObject foundItem = playerTarget.ItemSlots[playerTarget.currentItemSlot];
             foundItem.insertedBattery.charge = 1f;
@@ -23,6 +25,8 @@ namespace ToxicOmega_Tools.Patches
         [NetworkMessage("TOT_HEAL_PLAYER", true)]
         public static void TOT_HEAL_PLAYER_HANDLER(ulong sender, TOT_PLAYER_Broadcast message)
         {
+            Plugin.mls.LogInfo("RPC RECEIVED: \"TOT_HEAL_PLAYER\".");
+
             PlayerControllerB playerTarget = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(message.playerClientId));
 
             if (playerTarget != null)
@@ -43,6 +47,8 @@ namespace ToxicOmega_Tools.Patches
         [NetworkMessage("TOT_TERMINAL_CREDITS", true)]
         public static void TOT_TERMINAL_CREDITS_HANDLER(ulong sender, TOT_INT_Broadcast message)
         {
+            Plugin.mls.LogInfo("RPC RECEIVED: \"TOT_TERMINAL_CREDITS\".");
+
             Terminal terminal = UnityEngine.Object.FindObjectOfType<Terminal>();
             if (terminal != null)
             {
@@ -57,12 +63,14 @@ namespace ToxicOmega_Tools.Patches
         [NetworkMessage("TOT_TP_PLAYER", true)]
         public static void TOT_TP_PLAYER_HANDLER(ulong sender, TOT_TP_PLAYER_Broadcast message)
         {
+            Plugin.mls.LogInfo("RPC RECEIVED: \"TOT_TP_PLAYER\".");
             Plugin.PlayerTeleportEffects(StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(message.playerClientId)), message.isInside);
         }
 
         [NetworkMessage("TOT_SYNC_AMMO", true)]
         public static void TOT_SYNC_AMMO_HANDLER(ulong sender, TOT_ITEM_Broadcast message)
         {
+            Plugin.mls.LogInfo("RPC RECEIVED: \"TOT_SYNC_AMMO\".");
             LC_API.GameInterfaceAPI.Features.Item.List.FirstOrDefault(item => item.NetworkObjectId.Equals(message.networkObjectID)).GetComponentInChildren<ShotgunItem>().shellsLoaded = 2;
         }
     }
