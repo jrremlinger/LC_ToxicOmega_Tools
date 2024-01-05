@@ -39,6 +39,12 @@ namespace ToxicOmega_Tools.Patches
             bool flag = true;   // Chat will not be sent if flag = true; If no command prefix is recognized it will be set to false
             string chatMessage = __instance.chatTextField.text;
 
+            // SubmitChat_performed runs anytime "Enter" is pressed, even if chat is closed. This check prevents "Index out of range" when pressing enter in other situations like the terminal
+            if (chatMessage == null || chatMessage == "")
+            {
+                return;
+            }
+
             // Split chat message up by spaces, trim trailing spaces
             string[] vs = chatMessage.Split(new char[1] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
                 .Select(s => s.TrimEnd())
