@@ -19,8 +19,9 @@ namespace ToxicOmega_Tools.Patches
         public static void TOT_CHARGE_PLAYER_HANDLER(ulong sender, TOT_PLAYER_Broadcast message)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"TOT_CHARGE_PLAYER\".");
+            PlayerControllerB playerSender = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(sender));
 
-            if (StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(sender)).IsHost)
+            if (Plugin.CheckPlayerIsHost(playerSender))
             {
                 Plugin.mls.LogInfo(hostVerifiedMessage);
                 PlayerControllerB playerTarget = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(message.playerClientId));
@@ -41,8 +42,9 @@ namespace ToxicOmega_Tools.Patches
         public static void TOT_HEAL_PLAYER_HANDLER(ulong sender, TOT_PLAYER_Broadcast message)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"TOT_HEAL_PLAYER\".");
+            PlayerControllerB playerSender = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(sender));
 
-            if (StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(sender)).IsHost)
+            if (Plugin.CheckPlayerIsHost(playerSender))
             {
                 Plugin.mls.LogInfo(hostVerifiedMessage);
                 PlayerControllerB playerTarget = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(message.playerClientId));
@@ -71,8 +73,9 @@ namespace ToxicOmega_Tools.Patches
         public static void TOT_TERMINAL_CREDITS_HANDLER(ulong sender, TOT_INT_Broadcast message)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"TOT_TERMINAL_CREDITS\".");
+            PlayerControllerB playerSender = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(sender));
 
-            if (StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(sender)).IsHost)
+            if (Plugin.CheckPlayerIsHost(playerSender))
             {
                 Plugin.mls.LogInfo(hostVerifiedMessage);
                 Terminal terminal = UnityEngine.Object.FindObjectOfType<Terminal>();
@@ -80,10 +83,6 @@ namespace ToxicOmega_Tools.Patches
                 if (terminal != null)
                 {
                     terminal.groupCredits += message.dataInt;
-                }
-                else
-                {
-                    Plugin.LogMessage("Terminal not found!", true);
                 }
             }
             else
@@ -96,11 +95,17 @@ namespace ToxicOmega_Tools.Patches
         public static void TOT_TP_PLAYER_HANDLER(ulong sender, TOT_TP_PLAYER_Broadcast message)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"TOT_TP_PLAYER\".");
+            PlayerControllerB playerSender = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(sender));
 
-            if (StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(sender)).IsHost)
+            if (Plugin.CheckPlayerIsHost(playerSender))
             {
                 Plugin.mls.LogInfo(hostVerifiedMessage);
-                Plugin.PlayerTeleportEffects(StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(message.playerClientId)), message.isInside);
+
+                //Player.TryGet(message.playerClientId, out Player player);   // null reference on client when tp self
+                Plugin.mls.LogInfo($"Found: {StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(sender)).playerUsername}, Sending Inside: {message.isInside}");
+
+                Plugin.PlayerTeleportEffects(message.playerClientId, message.isInside);
+                //Plugin.PlayerTeleportEffects(StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(message.playerClientId)), message.isInside);
             }
             else
             {
@@ -112,8 +117,9 @@ namespace ToxicOmega_Tools.Patches
         public static void TOT_SYNC_AMMO_HANDLER(ulong sender, TOT_ITEM_Broadcast message)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"TOT_SYNC_AMMO\".");
+            PlayerControllerB playerSender = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(sender));
 
-            if (StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(sender)).IsHost)
+            if (Plugin.CheckPlayerIsHost(playerSender))
             {
                 Plugin.mls.LogInfo(hostVerifiedMessage);
                 LC_API.GameInterfaceAPI.Features.Item.List.FirstOrDefault(item => item.NetworkObjectId.Equals(message.networkObjectID)).GetComponentInChildren<ShotgunItem>().shellsLoaded = 2;

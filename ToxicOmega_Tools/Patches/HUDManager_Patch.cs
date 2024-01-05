@@ -51,7 +51,7 @@ namespace ToxicOmega_Tools.Patches
                 .ToArray();
 
             // Only run commands if user is host
-            if (!Player.Get(localPlayerController).IsHost)
+            if (!Plugin.CheckPlayerIsHost(localPlayerController))
             {
                 return;
             }
@@ -270,10 +270,6 @@ namespace ToxicOmega_Tools.Patches
                         case 1: // Providing no arguments teleports the localPlayer to the ship's terminal
                             if (terminal != null)
                             {
-                                if (localPlayerController.redirectToEnemy != null)
-                                {
-                                    localPlayerController.redirectToEnemy.ShipTeleportEnemy();
-                                }
                                 Plugin.mls.LogInfo("RPC SENDING: \"TOT_TP_PLAYER\".");
                                 Network.Broadcast("TOT_TP_PLAYER", new TOT_TP_PLAYER_Broadcast { isInside = false, playerClientId = localPlayerController.playerClientId });
                                 Plugin.mls.LogInfo("RPC END: \"TOT_TP_PLAYER\".");
@@ -295,10 +291,6 @@ namespace ToxicOmega_Tools.Patches
                                     Vector3 inRadiusSpherical = currentRound.GetRandomNavMeshPositionInRadiusSpherical(position2);
                                     Debug.DrawRay(inRadiusSpherical + Vector3.right * 0.01f, Vector3.up * 3f, Color.green);
 
-                                    if (UnityEngine.Object.FindObjectOfType<AudioReverbPresets>())
-                                    {
-                                        UnityEngine.Object.FindObjectOfType<AudioReverbPresets>().audioPresets[2].ChangeAudioReverbForPlayer(localPlayerController);
-                                    }
                                     Plugin.mls.LogInfo("RPC SENDING: \"TOT_TP_PLAYER\".");
                                     Network.Broadcast("TOT_TP_PLAYER", new TOT_TP_PLAYER_Broadcast { isInside = true, playerClientId = localPlayerController.playerClientId });
                                     Plugin.mls.LogInfo("RPC END: \"TOT_TP_PLAYER\".");
@@ -314,12 +306,12 @@ namespace ToxicOmega_Tools.Patches
                             {
                                 playerA = Plugin.FindPlayerFromString(vs[1]);
 
-                                if (playerA != null)
+                                if (playerA != null && !playerA.isPlayerDead)
                                 {
                                     if (playerA.playerClientId != localPlayerController.playerClientId)
                                     {
                                         Plugin.mls.LogInfo("RPC SENDING: \"TOT_TP_PLAYER\".");
-                                        Network.Broadcast("TOT_TP_PLAYER", new TOT_TP_PLAYER_Broadcast { isInside = playerA.isInsideFactory, playerClientId = localPlayerController.playerClientId });
+                                        Network.Broadcast("TOT_TP_PLAYER", new TOT_TP_PLAYER_Broadcast { isInside = Player.Get(playerA).IsInFactory, playerClientId = localPlayerController.playerClientId });
                                         Plugin.mls.LogInfo("RPC END: \"TOT_TP_PLAYER\".");
                                         Player.Get(localPlayerController).Position = playerA.transform.position;
                                         Plugin.LogMessage($"Teleported {localPlayerController.playerUsername} to {playerA.playerUsername}.");
@@ -343,11 +335,7 @@ namespace ToxicOmega_Tools.Patches
                                     Vector3 inRadiusSpherical = currentRound.GetRandomNavMeshPositionInRadiusSpherical(position2);
                                     Debug.DrawRay(inRadiusSpherical + Vector3.right * 0.01f, Vector3.up * 3f, Color.green);
 
-                                    if (UnityEngine.Object.FindObjectOfType<AudioReverbPresets>())
-                                    {
-                                        UnityEngine.Object.FindObjectOfType<AudioReverbPresets>().audioPresets[2].ChangeAudioReverbForPlayer(localPlayerController);
-                                    }
-                                    if (playerA != null)
+                                    if (playerA != null && !playerA.isPlayerDead)
                                     {
                                         Plugin.mls.LogInfo("RPC SENDING: \"TOT_TP_PLAYER\".");
                                         Network.Broadcast("TOT_TP_PLAYER", new TOT_TP_PLAYER_Broadcast { isInside = true, playerClientId = playerA.playerClientId });
@@ -363,12 +351,8 @@ namespace ToxicOmega_Tools.Patches
                             }
                             else if(vs[2] == "!")   // "!" character as the destination chooses the ship terminal
                             {
-                                if (terminal != null && playerA != null)
+                                if (terminal != null && playerA != null && !playerA.isPlayerDead)
                                 {
-                                    if (playerA.redirectToEnemy != null)
-                                    {
-                                        playerA.redirectToEnemy.ShipTeleportEnemy();
-                                    }
                                     Plugin.mls.LogInfo("RPC SENDING: \"TOT_TP_PLAYER\".");
                                     Network.Broadcast("TOT_TP_PLAYER", new TOT_TP_PLAYER_Broadcast { isInside = false, playerClientId = playerA.playerClientId });
                                     Plugin.mls.LogInfo("RPC END: \"TOT_TP_PLAYER\".");
@@ -384,12 +368,12 @@ namespace ToxicOmega_Tools.Patches
                             {
                                 playerB = Plugin.FindPlayerFromString(vs[2]);
 
-                                if (playerA != null && playerB != null)
+                                if (playerA != null && !playerA.isPlayerDead && playerB != null && !playerB.isPlayerDead)
                                 {
                                     if (playerA.playerClientId != playerB.playerClientId)
                                     {
                                         Plugin.mls.LogInfo("RPC SENDING: \"TOT_TP_PLAYER\".");
-                                        Network.Broadcast("TOT_TP_PLAYER", new TOT_TP_PLAYER_Broadcast { isInside = playerB.isInsideFactory, playerClientId = playerA.playerClientId });
+                                        Network.Broadcast("TOT_TP_PLAYER", new TOT_TP_PLAYER_Broadcast { isInside = Player.Get(playerB).IsInFactory, playerClientId = playerA.playerClientId });
                                         Plugin.mls.LogInfo("RPC END: \"TOT_TP_PLAYER\".");
                                         Player.Get(playerA).Position = playerB.transform.position;
                                         Plugin.LogMessage($"Teleported {playerA.playerUsername} to {playerB.playerUsername}.");

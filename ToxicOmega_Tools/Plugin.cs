@@ -11,6 +11,8 @@ using Unity.Netcode;
 using System;
 using ToxicOmega_Tools.Patches;
 using LC_API.Networking;
+using static UnityEngine.InputSystem.InputRemoting;
+using LC_API.GameInterfaceAPI.Features;
 
 namespace ToxicOmega_Tools
 {
@@ -38,6 +40,11 @@ namespace ToxicOmega_Tools
             harmony.PatchAll();
             Network.RegisterAll();
         }
+        
+        public static bool CheckPlayerIsHost(PlayerControllerB player)
+        {
+            return Player.HostPlayer.ClientId == player.playerClientId;
+        }
 
         public static PlayerControllerB FindPlayerFromString(string searchString)
         {
@@ -45,7 +52,7 @@ namespace ToxicOmega_Tools
             PlayerControllerB[] allPlayerScripts = StartOfRound.Instance.allPlayerScripts;
 
             // Search player by ID# if string starts with "#"
-            if (searchString == ("#") && searchString.Length > 1)
+            if (searchString.StartsWith("#") && searchString.Length > 1)
             {
                 string clientIdString = searchString.Substring(1);
 
@@ -100,17 +107,35 @@ namespace ToxicOmega_Tools
             HUDManager.Instance.DisplayTip(headerText, message, isError);
         }
 
-        public static void PlayerTeleportEffects(PlayerControllerB player, bool isInside)
+        public static void PlayerTeleportEffects(ulong playerClientID, bool isInside)
         {
+            PlayerControllerB playerController = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(playerClientID));
+
+            // Redirects centipedes, unsure if actually working :p
+            if (playerController.redirectToEnemy != null)
+            {
+                playerController.redirectToEnemy.ShipTeleportEnemy();
+            }
+
+            // Saves player from any creatures they are in an animation with
+            SavePlayer(playerController);
+
+            // Sets correct AudioReverbPresets
+            if ((bool)FindObjectOfType<AudioReverbPresets>())
+            {
+                mls.LogInfo("Audio preset " + (isInside ? 2 : 3));
+                FindObjectOfType<AudioReverbPresets>().audioPresets[isInside ? 2 : 3].ChangeAudioReverbForPlayer(playerController);
+            }
+
             // Ensures player fog/lighting is consistent after a teleport
-            SavePlayer(player);
-            player.isInElevator = !isInside;
-            player.isInHangarShipRoom = !isInside;
-            player.isInsideFactory = isInside;
-            player.averageVelocity = 0.0f;
-            player.velocityLastFrame = Vector3.zero;
-            player.beamUpParticle.Play();
-            player.beamOutBuildupParticle.Play();
+            playerController.isInElevator = !isInside;
+            playerController.isInHangarShipRoom = !isInside;
+            playerController.isInsideFactory = isInside;
+
+            playerController.averageVelocity = 0.0f;
+            playerController.velocityLastFrame = Vector3.zero;
+            playerController.beamUpParticle.Play();
+            playerController.beamOutBuildupParticle.Play();
         }
         
         public static void SavePlayer(PlayerControllerB player)
