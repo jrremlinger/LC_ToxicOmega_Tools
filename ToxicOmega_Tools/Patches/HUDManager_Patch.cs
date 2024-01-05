@@ -153,7 +153,6 @@ namespace ToxicOmega_Tools.Patches
                     FindPage(currentRound.currentLevel.Enemies, insideListPage, 20, "Inside Enemy");
                     break;
                 case "sout":
-                case "spawn0":
                 case "spawnout":    // Spawns one or more of an outside creature either at its normal spawnpoint or on a player
                     enemyID = 0;
                     spawnCount = 1;
@@ -208,8 +207,6 @@ namespace ToxicOmega_Tools.Patches
                     }
                     break;
                 case "sin":
-                case "spawn":
-                case "spawn1":
                 case "spawnin": // Spawns one or more of an outside creature either at its normal spawnpoint or on a player
                     enemyID = 0;
                     spawnCount = 1;
