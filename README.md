@@ -2,10 +2,15 @@
 
 *Tools triggered using the in-game chat. The main purpose of this mod is for debugging and testing other mods.*
 
+Some important notes:
+* All commands only register if you are the host.
+* Text chat will now stay enabled if you are the host and you are dead.
+* Where applicable, "$" can substitute a players name as a destination, this indicates random natural spawning. Can be used for item/enemy spawn location as well as teleport destination to teleport yourself or another player randomly within the factory.
+
 ---
 
 ## Commands
----
+
 ### **Item/Items (Page Number)**
 
 Displays a page of the items list. Includes item names and ID numbers.
@@ -18,7 +23,7 @@ Example: "item 2" displays page two of the items list
 ---
 ### **Give (Item ID) Optional: (Amount) (Value) (Player Name/ID)**
 
-Spawns an item based on given ID number. Able to specify how many items, their value, and what player it spawns on.
+Spawns an item based on given ID number. Able to specify how many items, their value, and what player it spawns on. "$" as the player will spawn the item in a random location inside the factory.
 
 Arguments:
 * Item ID: Numerical ID of item you want to spawn. In the future names may be supported.
