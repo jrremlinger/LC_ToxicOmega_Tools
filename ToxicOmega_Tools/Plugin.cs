@@ -48,7 +48,7 @@ namespace ToxicOmega_Tools
             return Player.HostPlayer.ClientId == player.playerClientId;
         }
 
-        public static PlayerControllerB FindPlayerFromString(string searchString)
+        public static PlayerControllerB GetPlayerFromString(string searchString)
         {
             // Use string to find playername
             PlayerControllerB[] allPlayerScripts = StartOfRound.Instance.allPlayerScripts;
@@ -91,6 +91,150 @@ namespace ToxicOmega_Tools
                     return null;
                 }
             }
+        }
+
+        public static Vector3 GetPositionFromCommand(string input, int positionType, PlayerControllerB playerToTP = null)
+        {
+            // Position types if player name is not given:
+            // 0: Random insideAINodes[]
+            // 1: Random outsideAINodes[]
+            // 2: Random allEnemyVents[]
+            // 3: Teleport Destination
+
+            bool isPlayerTarget = false;
+            bool isTP = false;
+            Vector3 position = Vector3.zero;
+            Terminal terminal = FindObjectOfType<Terminal>();
+            RoundManager currentRound = RoundManager.Instance;
+            PlayerControllerB localPlayerController = StartOfRound.Instance.localPlayerController;
+
+            // Targets spectated player if playerTarget is dead
+            //    position = (localPlayerController.spectatedPlayerScript).transform.position;
+
+            switch (positionType)
+            {
+                case 0:
+                    if (input == "$")
+                    {
+                        if (currentRound.insideAINodes.Length != 0 && currentRound.insideAINodes[0] != null)
+                        {
+                            Vector3 position2 = currentRound.insideAINodes[UnityEngine.Random.Range(0, currentRound.insideAINodes.Length)].transform.position;
+                            position = currentRound.GetRandomNavMeshPositionInRadiusSpherical(position2);
+                        }
+                        else
+                        {
+                            LogMessage($"No insideAINodes in this area!", true);
+                            return Vector3.zero;
+                        }
+                    }
+                    else if (input == "")
+                    {
+                        position = localPlayerController.transform.position;
+                    }
+                    else
+                    {
+                        isPlayerTarget = true;
+                    }
+                    break;
+                case 1:
+                    if (input == "" || input == "$")
+                    {
+                        if (currentRound.outsideAINodes.Length != 0 && currentRound.outsideAINodes[0] != null)
+                        {
+                            position = currentRound.outsideAINodes[UnityEngine.Random.Range(0, currentRound.insideAINodes.Length)].transform.position;
+                            //positionOutput = GameObject.FindGameObjectsWithTag("OutsideAINode")[UnityEngine.Random.Range(0, GameObject.FindGameObjectsWithTag("OutsideAINode").Length - 1)].transform.position;
+                        }
+                        else
+                        {
+                            LogMessage($"No outsideAINodes in this area!", true);
+                            return Vector3.zero;
+                        }
+                    }
+                    else
+                    {
+                        isPlayerTarget = true;
+                    }
+                    break;
+                case 2:
+                    if (input == "" || input == "$")
+                    {
+                        if (currentRound.allEnemyVents.Length != 0 && currentRound.allEnemyVents[0] != null)
+                        {
+                            position = currentRound.allEnemyVents[UnityEngine.Random.Range(0, currentRound.allEnemyVents.Length)].floorNode.position;
+                        }
+                        else
+                        {
+                            LogMessage($"No allEnemyVents in this area!", true);
+                            return Vector3.zero;
+                        }
+                    }
+                    else
+                    {
+                        isPlayerTarget = true;
+                    }
+                    break;
+                case 3:
+                    if (input == "$")
+                    {
+                        if (currentRound.insideAINodes.Length != 0 && currentRound.insideAINodes[0] != null)
+                        {
+                            HUDManager_Patch.sendPlayerInside = true;
+                            Vector3 position2 = currentRound.insideAINodes[UnityEngine.Random.Range(0, currentRound.insideAINodes.Length)].transform.position;
+                            position = currentRound.GetRandomNavMeshPositionInRadiusSpherical(position2);
+                            LogMessage($"Teleported {playerToTP.playerUsername} to random location within factory.");
+                        }
+                        else
+                        {
+                            LogMessage($"No insideAINodes in this area!", true);
+                            return Vector3.zero;
+                        }
+                    }
+                    else if (input == "!")
+                    {
+                        if (terminal != null)
+                        {
+                            HUDManager_Patch.sendPlayerInside = false;
+                            position = terminal.transform.position;
+                            LogMessage($"Teleported {playerToTP.playerUsername} to terminal.");
+                        }
+                        else
+                        {
+                            LogMessage("Terminal not found!", true);
+                            return Vector3.zero;
+                        }
+                    }
+                    else
+                    {
+                        isTP = true;
+                        isPlayerTarget = true;
+                    }
+                    break;
+            }
+
+            if (isPlayerTarget)
+            {
+                PlayerControllerB playerTarget = GetPlayerFromString(input);
+
+                if (playerTarget == null || !playerTarget.isPlayerControlled)
+                {
+                    return Vector3.zero;
+                }
+                else if (playerTarget.isPlayerDead)
+                {
+                    LogMessage($"Could not target {playerTarget.playerUsername}!\nPlayer is dead!", true);
+                    return Vector3.zero;
+                }
+
+                position = playerTarget.transform.position;
+
+                if (isTP)
+                {
+                    HUDManager_Patch.sendPlayerInside = Player.Get(playerTarget).IsInFactory;
+                    LogMessage($"Teleported {playerToTP.playerUsername} to {playerTarget.playerUsername}.");
+                }
+            }
+
+            return position;
         }
 
         public static void LogMessage(string message, bool isError = false)
@@ -274,49 +418,28 @@ namespace ToxicOmega_Tools
             }
         }
 
-        public static void SpawnEnemy(int enemyID, int amount, bool onPlayer, PlayerControllerB playerTarget, bool inside)
+        public static void SpawnEnemy(int enemyID, int amount, string targetString, bool inside)
         {
-            localPlayerController = StartOfRound.Instance.localPlayerController;
             RoundManager currentRound = RoundManager.Instance;
+            localPlayerController = StartOfRound.Instance.localPlayerController;
 
-            if (playerTarget == null || !playerTarget.isPlayerControlled || playerTarget.inTerminalMenu || (localPlayerController.IsServer && !localPlayerController.isHostPlayerObject))
+            if ((inside && GetPositionFromCommand(targetString, 2) == Vector3.zero) || (!inside && GetPositionFromCommand(targetString, 1) == Vector3.zero))
             {
                 return;
             }
 
-            Vector3 position = playerTarget.transform.position;
-
-            // Targets spectated player if playerTarget is dead and also is the localPlayerController
-            //if (localPlayerController.isPlayerDead && localPlayerController.playerClientId == playerTarget.playerClientId)
-            //{
-            //    if (localPlayerController.spectatedPlayerScript != null)
-            //    {
-            //        position = localPlayerController.spectatedPlayerScript.transform.position;
-            //    }
-            //    else return;
-            //}
-            if (playerTarget.isPlayerDead)
-            {
-                LogMessage($"Could not spawn enemy at {playerTarget.playerUsername}!\nPlayer is dead!", true);
-                return;
-            }
+            string logName = inside ? currentRound.currentLevel.Enemies[enemyID].enemyType.enemyName : currentRound.currentLevel.OutsideEnemies[enemyID].enemyType.enemyName;
+            LogMessage($"Spawning Enemy - Name: {logName}, ID: {enemyID}, Amount: {amount}, Location: {((targetString == "") || (targetString == "$") ? "Natural" : GetPlayerFromString(targetString).playerUsername)}.");
 
             // Uses different enemy list depending on what creature the player is trying to spawn
             if (inside)
             {
-                LogMessage($"Spawning Inside - Name: {currentRound.currentLevel.Enemies[enemyID].enemyType.enemyName}, ID: {enemyID}, Amount: {amount}, Location: {(onPlayer ? playerTarget.playerUsername : "Natural")}.");
-
                 try
                 {
                     for (int i = 0; i < amount; i++)
                     {
-                        // Spawns the enemy at a random vent if no player destination is set
-                        if (!onPlayer)
-                        {
-                            position = currentRound.allEnemyVents[UnityEngine.Random.Range(0, currentRound.allEnemyVents.Length)].floorNode.position;
-                        }
                         //currentRound.SpawnEnemyOnServer(position, currentRound.allEnemyVents[i].floorNode.eulerAngles.y, enemyID);    // This doesn't work when spawning more than 5 enemies at a time
-                        Instantiate(currentRound.currentLevel.Enemies[enemyID].enemyType.enemyPrefab, position, Quaternion.Euler(Vector3.zero)).gameObject.GetComponentInChildren<NetworkObject>().Spawn(true);
+                        Instantiate(currentRound.currentLevel.Enemies[enemyID].enemyType.enemyPrefab, GetPositionFromCommand(targetString, 2), Quaternion.Euler(Vector3.zero)).gameObject.GetComponentInChildren<NetworkObject>().Spawn(true);
                     }
                 }
                 catch (Exception ex)
@@ -327,18 +450,11 @@ namespace ToxicOmega_Tools
             }
             else
             {
-                LogMessage($"Spawning Outside - Name: {currentRound.currentLevel.OutsideEnemies[enemyID].enemyType.enemyName}, ID: {enemyID}, Amount: {amount}, Location: {(onPlayer ? playerTarget.playerUsername : "Natural")}.");
-
                 try
                 {
                     for (int i = 0; i < amount; i++)
                     {
-                        // Spawns the enemy at a random OutsideAINode if no player destination is set
-                        if (!onPlayer)
-                        {
-                            position = GameObject.FindGameObjectsWithTag("OutsideAINode")[UnityEngine.Random.Range(0, GameObject.FindGameObjectsWithTag("OutsideAINode").Length - 1)].transform.position;
-                        }
-                        Instantiate(currentRound.currentLevel.OutsideEnemies[enemyID].enemyType.enemyPrefab, position, Quaternion.Euler(Vector3.zero)).gameObject.GetComponentInChildren<NetworkObject>().Spawn(true);
+                        Instantiate(currentRound.currentLevel.OutsideEnemies[enemyID].enemyType.enemyPrefab, GetPositionFromCommand(targetString, 1), Quaternion.Euler(Vector3.zero)).gameObject.GetComponentInChildren<NetworkObject>().Spawn(true);
                     }
                 }
                 catch (Exception ex)
@@ -349,57 +465,22 @@ namespace ToxicOmega_Tools
             }
         }
         
-        public static void SpawnItem(int itemID, int amount, int value, string playerString = "")
+        public static void SpawnItem(int itemID, int amount, int value, string targetString)
         {
-            bool spawnOnPlayer = true;
-            PlayerControllerB playerTarget = null;
-            Vector3 position = Vector3.zero;
             List<Item> allItemsList = StartOfRound.Instance.allItemsList.itemsList;
-            RoundManager currentRound = RoundManager.Instance;
             localPlayerController = StartOfRound.Instance.localPlayerController;
 
-            if (playerString == "$")
+            if (GetPositionFromCommand(targetString, 0) == Vector3.zero)
             {
-                spawnOnPlayer = false;
-            }
-            else
-            {
-                playerTarget = FindPlayerFromString(playerString);
-
-                if (playerTarget == null || !playerTarget.isPlayerControlled)
-                {
-                    return;
-                }
-                else if (playerTarget.isPlayerDead)
-                {
-                    LogMessage($"Could not spawn item at {playerTarget.playerUsername}!\nPlayer is dead!", true);
-                    return;
-                }
-
-                position = playerTarget.transform.position;
+                return;
             }
 
             string logValue = value >= 0 ? $"{value}" : "Random";
-            string logLocation = spawnOnPlayer ? $"{playerTarget.playerUsername}" : "Random";
+            string logLocation = targetString != "$" ? $"{GetPlayerFromString(targetString).playerUsername}" : "Random";
             LogMessage($"Spawning - Name: {allItemsList[itemID].name}, ID: {itemID}, Amount: {amount}, Value: {logValue}, Location: {logLocation}.");
 
-            // Targets spectated player if playerTarget is dead
-            //    position = (localPlayerController.spectatedPlayerScript).transform.position;
-            
             for (int i = 0; i < amount; i++)
             {
-                // Randomly selects a new location inside for each item individually
-                if (spawnOnPlayer == false && currentRound.insideAINodes.Length != 0 && currentRound.insideAINodes[0] != null)
-                {
-                    Vector3 position2 = currentRound.insideAINodes[UnityEngine.Random.Range(0, currentRound.insideAINodes.Length)].transform.position;
-                    position = currentRound.GetRandomNavMeshPositionInRadiusSpherical(position2);
-                }
-                else if (spawnOnPlayer == false)
-                {
-                    LogMessage($"No insideAINodes in this area!", true);
-                    return;
-                }
-
                 try
                 {
                     // The Shotgun (and maybe other items I haven't noticed) have their max and min values backwards causing an error unless I flip them... c'mon Zeekers...
@@ -411,7 +492,7 @@ namespace ToxicOmega_Tools
                     }
 
                     // Spawns item using LC API
-                    LC_API.GameInterfaceAPI.Features.Item item = LC_API.GameInterfaceAPI.Features.Item.CreateAndSpawnItem(allItemsList[itemID].itemName, true, position);
+                    LC_API.GameInterfaceAPI.Features.Item item = LC_API.GameInterfaceAPI.Features.Item.CreateAndSpawnItem(allItemsList[itemID].itemName, true, GetPositionFromCommand(targetString, 0));
 
                     // RPC to set Shotgun shells loaded to be two for all players
                     if (itemID == 59)
