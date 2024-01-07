@@ -27,13 +27,11 @@ namespace ToxicOmega_Tools.Patches
         private static int spawnCount;
         private static bool spawnOnPlayer;
         private static PlayerControllerB playerTarget;
-
+        
         [HarmonyPatch("EnableChat_performed")]
         [HarmonyPrefix]
-        private static bool EnableChatAction(HUDManager __instance)
+        private static bool EnableChatAction(HUDManager __instance) // Allows host to open chat while dead
         {
-            // Allows host to open chat while dead
-
             PlayerControllerB localPlayer = GameNetworkManager.Instance.localPlayerController;
             if (localPlayer.isPlayerDead && Player.HostPlayer.ClientId == localPlayer.playerClientId)
             {
@@ -91,10 +89,10 @@ namespace ToxicOmega_Tools.Patches
                     FindPage(allItemsList, itemListPage, 20, "Item");
                     break;
                 case "give":    // Spawns one or more items at a player, custom item value can be set
+                    string playerString = "";
                     itemID = 0;
                     itemCount = 1;
                     itemValue = -1;
-                    playerTarget = localPlayerController;
 
                     if (vs.Length < 2)
                     {
@@ -143,14 +141,10 @@ namespace ToxicOmega_Tools.Patches
 
                     if (vs.Length > 4)
                     {
-                        string targetUsername = string.Join(" ", vs.Skip(4)).ToLower();
-                        playerTarget = Plugin.FindPlayerFromString(targetUsername);
+                        playerString = string.Join(" ", vs.Skip(4)).ToLower();
                     }
 
-                    if (playerTarget != null)
-                    {
-                        Plugin.SpawnItem(itemID, itemCount, itemValue, playerTarget);
-                    }
+                    Plugin.SpawnItem(itemID, itemCount, itemValue, playerString);
                     break;
                 case "eout":
                 case "enemyout":
@@ -544,31 +538,6 @@ namespace ToxicOmega_Tools.Patches
                         Plugin.LogMessage("Terminal not found!", true);
                     }
                     break;
-                //case "pow":
-                //case "power":
-
-                //    break;
-                //case "smite":
-                //case "strike":
-                //    if (vs.Length < 2)
-                //    {
-                //        playerTarget = localPlayerController;
-                //    }
-                //    else
-                //    {
-                //        string targetUsername = string.Join(" ", vs.Skip(1)).ToLower();
-                //        playerTarget = Plugin.FindPlayerFromString(targetUsername);
-                //    }
-
-                //    if (playerTarget != null)
-                //    {
-                //        //Network.Broadcast("TOT_SMITE_PLAYER", new TOT_PLAYER_Broadcast { playerClientId = playerTarget.playerClientId });
-                //        StormyWeather storm = new StormyWeather();
-                //        RoundManager.Instance.LightningStrikeServerRpc(playerTarget.transform.position);
-                //        UnityEngine.Object.FindObjectOfType<StormyWeather>(includeInactive: true).LightningStrike(strikePosition, useTargetedObject: true);
-                //        Plugin.LogMessage($"{playerTarget.playerUsername} has been smitten!");
-                //    }
-                //    break;
                 default:
                     // No command recognized, send chat normally
                     flag = false;
@@ -601,6 +570,7 @@ namespace ToxicOmega_Tools.Patches
                 __instance.typingIndicator.enabled = false;
                 return false;
             }
+
             return true;
         }
 

@@ -14,9 +14,8 @@ namespace ToxicOmega_Tools.Patches
     {
         [HarmonyPatch("KillPlayer")]
         [HarmonyPostfix]
-        private static void DeadPlayerEnableHUD(PlayerControllerB __instance)
+        private static void DeadPlayerEnableHUD(PlayerControllerB __instance)   // Allows host to see UI while dead so they can still use commands
         {
-            // Allows host to see UI while dead so they can still use commands
             if (Player.HostPlayer.ClientId == __instance.playerClientId)
             {
                 HUDManager HUD = HUDManager.Instance;

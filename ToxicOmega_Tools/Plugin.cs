@@ -140,7 +140,7 @@ namespace ToxicOmega_Tools
             playerController.beamOutBuildupParticle.Play();
         }
         
-        public static void RevivePlayer (ulong playerClientID)
+        public static void RevivePlayer (ulong playerClientID)  // This function is REALLY long, could probably be shortened
         {
             localPlayerController = StartOfRound.Instance.localPlayerController;
             PlayerControllerB playerController = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(playerClientID));
@@ -251,7 +251,7 @@ namespace ToxicOmega_Tools
             }
         }
         
-        public static void SavePlayer(PlayerControllerB player)
+        public static void SavePlayer(PlayerControllerB player) // Eventually make this save you from the masked
         {
             // Knocks any Centipedes off players head
             CentipedeAI[] centipedes = FindObjectsByType<CentipedeAI>(FindObjectsSortMode.None);
@@ -272,7 +272,7 @@ namespace ToxicOmega_Tools
                     giants[i].GetComponentInChildren<EnemyAI>().SetEnemyStunned(true, 7.5f, player);
                 }
             }
-        }   // Eventually make this save you from the masked
+        }
 
         public static void SpawnEnemy(int enemyID, int amount, bool onPlayer, PlayerControllerB playerTarget, bool inside)
         {
@@ -349,34 +349,57 @@ namespace ToxicOmega_Tools
             }
         }
         
-        public static void SpawnItem(int itemID, int amount, int value, PlayerControllerB playerTarget)
+        public static void SpawnItem(int itemID, int amount, int value, string playerString = "")
         {
-            localPlayerController = StartOfRound.Instance.localPlayerController;
+            bool spawnOnPlayer = true;
+            PlayerControllerB playerTarget = null;
+            Vector3 position = Vector3.zero;
             List<Item> allItemsList = StartOfRound.Instance.allItemsList.itemsList;
+            RoundManager currentRound = RoundManager.Instance;
+            localPlayerController = StartOfRound.Instance.localPlayerController;
 
-            if (playerTarget == null || !playerTarget.isPlayerControlled || playerTarget.inTerminalMenu || (localPlayerController.IsServer && !localPlayerController.isHostPlayerObject))
+            if (playerString == "$")
             {
-                return;
+                spawnOnPlayer = false;
+            }
+            else
+            {
+                playerTarget = FindPlayerFromString(playerString);
+
+                if (playerTarget == null || !playerTarget.isPlayerControlled)
+                {
+                    return;
+                }
+                else if (playerTarget.isPlayerDead)
+                {
+                    LogMessage($"Could not spawn item at {playerTarget.playerUsername}!\nPlayer is dead!", true);
+                    return;
+                }
+
+                position = playerTarget.transform.position;
             }
 
             string logValue = value >= 0 ? $"{value}" : "Random";
-            LogMessage($"Spawning - Name: {allItemsList[itemID].name}, ID: {itemID}, Amount: {amount}, Location: {playerTarget.playerUsername}, Value: {logValue}.");
+            string logLocation = spawnOnPlayer ? $"{playerTarget.playerUsername}" : "Random";
+            LogMessage($"Spawning - Name: {allItemsList[itemID].name}, ID: {itemID}, Amount: {amount}, Value: {logValue}, Location: {logLocation}.");
 
-            Vector3 position = playerTarget.transform.position;
-
-            // Targets spectated player if playerTarget is dead and also is the localPlayerController
-            //if (localPlayerController.isPlayerDead && localPlayerController.playerClientId == playerTarget.playerClientId)
-            //{
+            // Targets spectated player if playerTarget is dead
             //    position = (localPlayerController.spectatedPlayerScript).transform.position;
-            //}
-            if (playerTarget.isPlayerDead)
-            {
-                LogMessage($"Could not spawn item at {playerTarget.playerUsername}!\nPlayer is dead!", true);
-                return;
-            }
-
+            
             for (int i = 0; i < amount; i++)
             {
+                // Randomly selects a new location inside for each item individually
+                if (spawnOnPlayer == false && currentRound.insideAINodes.Length != 0 && currentRound.insideAINodes[0] != null)
+                {
+                    Vector3 position2 = currentRound.insideAINodes[UnityEngine.Random.Range(0, currentRound.insideAINodes.Length)].transform.position;
+                    position = currentRound.GetRandomNavMeshPositionInRadiusSpherical(position2);
+                }
+                else if (spawnOnPlayer == false)
+                {
+                    LogMessage($"No insideAINodes in this area!", true);
+                    return;
+                }
+
                 try
                 {
                     // The Shotgun (and maybe other items I haven't noticed) have their max and min values backwards causing an error unless I flip them... c'mon Zeekers...
