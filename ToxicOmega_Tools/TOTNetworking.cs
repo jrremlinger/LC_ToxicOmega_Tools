@@ -67,13 +67,6 @@ namespace ToxicOmega_Tools.Patches
             }
         }
 
-        //[NetworkMessage("TOT_SMITE_PLAYER", true)]
-        //public static void TOT_SMITE_PLAYER_HANDLER(ulong sender, TOT_PLAYER_Broadcast message)
-        //{
-        //    PlayerControllerB playerTarget = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(message.playerClientId));
-        //    Landmine.SpawnExplosion(playerTarget.transform.position + Vector3.up * 0.25f, killRange: 2.4f, damageRange: 5f);
-        //}
-
         [NetworkMessage("TOT_TERMINAL_CREDITS", true)]
         public static void TOT_TERMINAL_CREDITS_HANDLER(ulong sender, TOT_INT_Broadcast message)
         {
