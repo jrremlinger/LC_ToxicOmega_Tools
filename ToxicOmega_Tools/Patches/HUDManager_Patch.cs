@@ -48,34 +48,6 @@ namespace ToxicOmega_Tools.Patches
             return true;
         }
 
-        //[HarmonyPatch(typeof(HUDManager), "SubmitChat_performed")]
-        //[HarmonyPrefix]
-        //private static bool EnableSendingChat(HUDManager __instance)
-        //{
-        //    __instance.localPlayer = GameNetworkManager.Instance.localPlayerController;
-        //    if (__instance.localPlayer.isPlayerDead && Player.HostPlayer.ClientId == __instance.localPlayer.playerClientId)
-        //    {
-        //        if (!string.IsNullOrEmpty(__instance.chatTextField.text) && __instance.chatTextField.text.Length < 50)
-        //            __instance.AddTextToChatOnServer(__instance.chatTextField.text, (int)__instance.localPlayer.playerClientId);
-        //        for (int index = 0; index < StartOfRound.Instance.allPlayerScripts.Length; ++index)
-        //        {
-        //            if (StartOfRound.Instance.allPlayerScripts[index].isPlayerControlled && (double)Vector3.Distance(GameNetworkManager.Instance.localPlayerController.transform.position, StartOfRound.Instance.allPlayerScripts[index].transform.position) > 24.399999618530273 && (!GameNetworkManager.Instance.localPlayerController.holdingWalkieTalkie || !StartOfRound.Instance.allPlayerScripts[index].holdingWalkieTalkie))
-        //            {
-        //                __instance.playerCouldRecieveTextChatAnimator.SetTrigger("ping");
-        //                break;
-        //            }
-        //        }
-        //        __instance.localPlayer.isTypingChat = false;
-        //        __instance.chatTextField.text = "";
-        //        EventSystem.current.SetSelectedGameObject((GameObject)null);
-        //        __instance.PingHUDElement(__instance.Chat);
-        //        __instance.typingIndicator.enabled = false;
-        //        return false;
-        //    }
-        //    return true;
-        //}
-
-
         [HarmonyPatch("SubmitChat_performed")]
         [HarmonyPrefix]
         private static bool RegisterChatCommand(HUDManager __instance)
