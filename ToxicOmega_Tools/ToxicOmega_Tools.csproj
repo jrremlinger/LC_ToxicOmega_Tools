@@ -84,7 +84,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Patches\HUDManager_Patch.cs" />
-    <Compile Include="Patches\ChatWhileDead_Patch.cs" />
     <Compile Include="Patches\PlayerControllerB_Patch.cs" />
     <Compile Include="TOTNetworking.cs" />
     <Compile Include="Plugin.cs" />
