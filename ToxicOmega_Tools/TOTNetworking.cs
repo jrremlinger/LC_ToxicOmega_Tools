@@ -49,6 +49,11 @@ namespace ToxicOmega_Tools.Patches
                 Plugin.mls.LogInfo(hostVerifiedMessage);
                 PlayerControllerB playerTarget = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(message.playerClientId));
 
+                if (playerTarget != null && playerTarget.isPlayerDead)
+                {
+                    Plugin.RevivePlayer(playerTarget.playerClientId);
+                }
+
                 if (playerTarget != null)
                 {
                     Plugin.SavePlayer(playerTarget);

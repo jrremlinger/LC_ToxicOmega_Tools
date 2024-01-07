@@ -13,6 +13,8 @@ using ToxicOmega_Tools.Patches;
 using LC_API.Networking;
 using static UnityEngine.InputSystem.InputRemoting;
 using LC_API.GameInterfaceAPI.Features;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace ToxicOmega_Tools
 {
@@ -138,6 +140,117 @@ namespace ToxicOmega_Tools
             playerController.beamOutBuildupParticle.Play();
         }
         
+        public static void RevivePlayer (ulong playerClientID)
+        {
+            localPlayerController = StartOfRound.Instance.localPlayerController;
+            PlayerControllerB playerController = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(playerClientID));
+            StartOfRound round = StartOfRound.Instance;
+            Terminal terminal = UnityEngine.Object.FindObjectOfType<Terminal>();
+
+            Debug.Log((object)"Reviving players A");
+            playerController.ResetPlayerBloodObjects(playerController.isPlayerDead);
+            if (playerController.isPlayerDead || playerController.isPlayerControlled)
+            {
+                playerController.isClimbingLadder = false;
+                playerController.ResetZAndXRotation();
+                //playerController.roundController.enabled = true;
+                playerController.health = 100;
+                playerController.disableLookInput = false;
+                Debug.Log((object)"Reviving players B");
+                if (playerController.isPlayerDead)
+                {
+                    playerController.isPlayerDead = false;
+                    playerController.isPlayerControlled = true;
+                    playerController.isInElevator = true;
+                    playerController.isInHangarShipRoom = true;
+                    playerController.isInsideFactory = false;
+                    playerController.wasInElevatorLastFrame = false;
+                    round.SetPlayerObjectExtrapolate(false);
+
+
+
+
+
+
+                    //playerController.TeleportPlayer(round.GetPlayerSpawnPosition((int)playerClientID));
+                    playerController.TeleportPlayer(terminal.transform.position);
+                    playerController.setPositionOfDeadPlayer = false;
+                    playerController.DisablePlayerModel(round.allPlayerObjects[playerClientID], true, true);
+                    playerController.helmetLight.enabled = false;
+                    Debug.Log((object)"Reviving players C");
+                    playerController.Crouch(false);
+                    playerController.criticallyInjured = false;
+                    if ((UnityEngine.Object)playerController.playerBodyAnimator != (UnityEngine.Object)null)
+                        playerController.playerBodyAnimator.SetBool("Limp", false);
+                    playerController.bleedingHeavily = false;
+                    playerController.activatingItem = false;
+                    playerController.twoHanded = false;
+                    playerController.inSpecialInteractAnimation = false;
+                    playerController.disableSyncInAnimation = false;
+                    playerController.inAnimationWithEnemy = (EnemyAI)null;
+                    playerController.holdingWalkieTalkie = false;
+                    playerController.speakingToWalkieTalkie = false;
+                    Debug.Log((object)"Reviving players D");
+                    playerController.isSinking = false;
+                    playerController.isUnderwater = false;
+                    playerController.sinkingValue = 0.0f;
+                    playerController.statusEffectAudio.Stop();
+                    playerController.DisableJetpackControlsLocally();
+                    playerController.health = 100;
+                    Debug.Log((object)"Reviving players E");
+                    playerController.mapRadarDotAnimator.SetBool("dead", false);
+                    if (playerController.IsOwner)
+                    {
+                        HUDManager.Instance.gasHelmetAnimator.SetBool("gasEmitting", false);
+                        playerController.hasBegunSpectating = false;
+                        HUDManager.Instance.RemoveSpectateUI();
+                        HUDManager.Instance.gameOverAnimator.SetTrigger("revive");
+                        playerController.hinderedMultiplier = 1f;
+                        playerController.isMovementHindered = 0;
+                        playerController.sourcesCausingSinking = 0;
+                        Debug.Log((object)"Reviving players E2");
+                        playerController.reverbPreset = round.shipReverb;
+                    }
+                }
+                Debug.Log((object)"Reviving players F");
+                SoundManager.Instance.earsRingingTimer = 0.0f;
+                playerController.voiceMuffledByEnemy = false;
+                SoundManager.Instance.playerVoicePitchTargets[playerClientID] = 1f;
+                SoundManager.Instance.SetPlayerPitch(1f, (int)playerClientID);
+                if ((UnityEngine.Object)playerController.currentVoiceChatIngameSettings == (UnityEngine.Object)null)
+                    round.RefreshPlayerVoicePlaybackObjects();
+                if ((UnityEngine.Object)playerController.currentVoiceChatIngameSettings != (UnityEngine.Object)null)
+                {
+                    if ((UnityEngine.Object)playerController.currentVoiceChatIngameSettings.voiceAudio == (UnityEngine.Object)null)
+                        playerController.currentVoiceChatIngameSettings.InitializeComponents();
+                    if ((UnityEngine.Object)playerController.currentVoiceChatIngameSettings.voiceAudio == (UnityEngine.Object)null)
+                        return;
+                    playerController.currentVoiceChatIngameSettings.voiceAudio.GetComponent<OccludeAudio>().overridingLowPass = false;
+                }
+                Debug.Log((object)"Reviving players G");
+            }
+
+            //PlayerControllerB playerController = GameNetworkManager.Instance.localPlayerController;
+            playerController.bleedingHeavily = false;
+            playerController.criticallyInjured = false;
+            playerController.playerBodyAnimator.SetBool("Limp", false);
+            playerController.health = 100;
+            HUDManager.Instance.UpdateHealthUI(100, false);
+            playerController.spectatedPlayerScript = (PlayerControllerB) null;
+            HUDManager.Instance.audioListenerLowPass.enabled = false;
+            Debug.Log((object) "Reviving players H");
+            round.SetSpectateCameraToGameOverMode(false, playerController);
+            round.livingPlayers += 1;
+            round.allPlayersDead = false;
+            round.UpdatePlayerVoiceEffects();
+            //round.ResetMiscValues();
+
+            if (localPlayerController.playerClientId == playerController.playerClientId)
+            {
+                HUDManager.Instance.HideHUD(false);
+            }
+        }
+        
         public static void SavePlayer(PlayerControllerB player)
         {
             // Knocks any Centipedes off players head
@@ -174,16 +287,17 @@ namespace ToxicOmega_Tools
             Vector3 position = playerTarget.transform.position;
 
             // Targets spectated player if playerTarget is dead and also is the localPlayerController
-            if (localPlayerController.isPlayerDead && localPlayerController.playerClientId == playerTarget.playerClientId)
+            //if (localPlayerController.isPlayerDead && localPlayerController.playerClientId == playerTarget.playerClientId)
+            //{
+            //    if (localPlayerController.spectatedPlayerScript != null)
+            //    {
+            //        position = localPlayerController.spectatedPlayerScript.transform.position;
+            //    }
+            //    else return;
+            //}
+            if (playerTarget.isPlayerDead)
             {
-                if (localPlayerController.spectatedPlayerScript != null)
-                {
-                    position = localPlayerController.spectatedPlayerScript.transform.position;
-                }
-                else return;
-            }
-            else if (playerTarget.isPlayerDead)
-            {
+                LogMessage($"Could not spawn enemy at {playerTarget.playerUsername}!\nPlayer is dead!", true);
                 return;
             }
 
@@ -251,12 +365,13 @@ namespace ToxicOmega_Tools
             Vector3 position = playerTarget.transform.position;
 
             // Targets spectated player if playerTarget is dead and also is the localPlayerController
-            if (localPlayerController.isPlayerDead && localPlayerController.playerClientId == playerTarget.playerClientId)
+            //if (localPlayerController.isPlayerDead && localPlayerController.playerClientId == playerTarget.playerClientId)
+            //{
+            //    position = (localPlayerController.spectatedPlayerScript).transform.position;
+            //}
+            if (playerTarget.isPlayerDead)
             {
-                position = (localPlayerController.spectatedPlayerScript).transform.position;
-            }
-            else if (playerTarget.isPlayerDead)
-            {
+                LogMessage($"Could not spawn item at {playerTarget.playerUsername}!\nPlayer is dead!", true);
                 return;
             }
 

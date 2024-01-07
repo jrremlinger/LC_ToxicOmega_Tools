@@ -6,9 +6,11 @@ using LC_API.Networking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Contexts;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace ToxicOmega_Tools.Patches
 {
@@ -26,9 +28,57 @@ namespace ToxicOmega_Tools.Patches
         private static bool spawnOnPlayer;
         private static PlayerControllerB playerTarget;
 
+        [HarmonyPatch("EnableChat_performed")]
+        [HarmonyPrefix]
+        private static bool EnableChatAction(HUDManager __instance)
+        {
+            // Allows host to open chat while dead
+
+            PlayerControllerB localPlayer = GameNetworkManager.Instance.localPlayerController;
+            if (localPlayer.isPlayerDead && Player.HostPlayer.ClientId == localPlayer.playerClientId)
+            {
+                ShipBuildModeManager.Instance.CancelBuildMode();
+                __instance.localPlayer.isTypingChat = true;
+                __instance.chatTextField.Select();
+                __instance.PingHUDElement(__instance.Chat, 0.1f, endAlpha: 1f);
+                __instance.typingIndicator.enabled = true;
+                Plugin.mls.LogError("HUD 3");
+                return false;
+            }
+            return true;
+        }
+
+        //[HarmonyPatch(typeof(HUDManager), "SubmitChat_performed")]
+        //[HarmonyPrefix]
+        //private static bool EnableSendingChat(HUDManager __instance)
+        //{
+        //    __instance.localPlayer = GameNetworkManager.Instance.localPlayerController;
+        //    if (__instance.localPlayer.isPlayerDead && Player.HostPlayer.ClientId == __instance.localPlayer.playerClientId)
+        //    {
+        //        if (!string.IsNullOrEmpty(__instance.chatTextField.text) && __instance.chatTextField.text.Length < 50)
+        //            __instance.AddTextToChatOnServer(__instance.chatTextField.text, (int)__instance.localPlayer.playerClientId);
+        //        for (int index = 0; index < StartOfRound.Instance.allPlayerScripts.Length; ++index)
+        //        {
+        //            if (StartOfRound.Instance.allPlayerScripts[index].isPlayerControlled && (double)Vector3.Distance(GameNetworkManager.Instance.localPlayerController.transform.position, StartOfRound.Instance.allPlayerScripts[index].transform.position) > 24.399999618530273 && (!GameNetworkManager.Instance.localPlayerController.holdingWalkieTalkie || !StartOfRound.Instance.allPlayerScripts[index].holdingWalkieTalkie))
+        //            {
+        //                __instance.playerCouldRecieveTextChatAnimator.SetTrigger("ping");
+        //                break;
+        //            }
+        //        }
+        //        __instance.localPlayer.isTypingChat = false;
+        //        __instance.chatTextField.text = "";
+        //        EventSystem.current.SetSelectedGameObject((GameObject)null);
+        //        __instance.PingHUDElement(__instance.Chat);
+        //        __instance.typingIndicator.enabled = false;
+        //        return false;
+        //    }
+        //    return true;
+        //}
+
+
         [HarmonyPatch("SubmitChat_performed")]
         [HarmonyPrefix]
-        private static void RegisterChatCommand(HUDManager __instance)
+        private static bool RegisterChatCommand(HUDManager __instance)
         {
             // Grab instances and refs as soon as chat is submitted
             PlayerControllerB localPlayerController = GameNetworkManager.Instance.localPlayerController;
@@ -42,7 +92,7 @@ namespace ToxicOmega_Tools.Patches
             // SubmitChat_performed runs anytime "Enter" is pressed, even if chat is closed. This check prevents "Index out of range" when pressing enter in other situations like the terminal
             if (chatMessage == null || chatMessage == "")
             {
-                return;
+                return true;
             }
 
             // Split chat message up by spaces, trim trailing spaces
@@ -53,7 +103,7 @@ namespace ToxicOmega_Tools.Patches
             // Only run commands if user is host
             if (!Plugin.CheckPlayerIsHost(localPlayerController))
             {
-                return;
+                return true;
             }
 
             switch (vs[0].Replace("/", "").ToLower())
@@ -265,13 +315,17 @@ namespace ToxicOmega_Tools.Patches
                     switch (vs.Length)
                     {
                         case 1: // Providing no arguments teleports the localPlayer to the ship's terminal
-                            if (terminal != null)
+                            if (terminal != null && !localPlayerController.isPlayerDead)
                             {
                                 Plugin.mls.LogInfo("RPC SENDING: \"TOT_TP_PLAYER\".");
                                 Network.Broadcast("TOT_TP_PLAYER", new TOT_TP_PLAYER_Broadcast { isInside = false, playerClientId = localPlayerController.playerClientId });
                                 Plugin.mls.LogInfo("RPC END: \"TOT_TP_PLAYER\".");
                                 Player.Get(localPlayerController).Position = terminal.transform.position;
                                 Plugin.LogMessage($"Teleported {localPlayerController.playerUsername} to terminal.");
+                            }
+                            else if (localPlayerController.isPlayerDead)
+                            {
+                                Plugin.LogMessage($"Could not teleport {localPlayerController.playerUsername}!\nPlayer is dead!", true);
                             }
                             else
                             {
@@ -281,7 +335,7 @@ namespace ToxicOmega_Tools.Patches
                         case 2: // Providing one argument can teleport the localPlayer to different player, or to a random location in the factory
                             if (vs[1] == "$")   // "$" character as the destination chooses a random location inside the factory
                             {
-                                if (currentRound.insideAINodes.Length != 0 && currentRound.insideAINodes[0] != null)
+                                if (currentRound.insideAINodes.Length != 0 && currentRound.insideAINodes[0] != null && !localPlayerController.isPlayerDead)
                                 {
                                     Vector3 position2 = currentRound.insideAINodes[UnityEngine.Random.Range(0, currentRound.insideAINodes.Length)].transform.position;
                                     Debug.DrawRay(position2, Vector3.up * 1f, Color.red);
@@ -294,6 +348,10 @@ namespace ToxicOmega_Tools.Patches
                                     Player.Get(localPlayerController).Position = inRadiusSpherical;
                                     Plugin.LogMessage($"Teleported {localPlayerController.playerUsername} to random location within factory.");
                                 }
+                                else if (localPlayerController.isPlayerDead)
+                                {
+                                    Plugin.LogMessage($"Could not teleport {localPlayerController.playerUsername}!\nPlayer is dead!", true);
+                                }
                                 else
                                 {
                                     Plugin.LogMessage($"No insideAINodes in this area!", true);
@@ -303,7 +361,7 @@ namespace ToxicOmega_Tools.Patches
                             {
                                 playerA = Plugin.FindPlayerFromString(vs[1]);
 
-                                if (playerA != null && !playerA.isPlayerDead)
+                                if (playerA != null && !playerA.isPlayerDead && !localPlayerController.isPlayerDead)
                                 {
                                     if (playerA.playerClientId != localPlayerController.playerClientId)
                                     {
@@ -317,6 +375,14 @@ namespace ToxicOmega_Tools.Patches
                                     {
                                         Plugin.LogMessage("Player destination cannot be yourself!", true);
                                     }
+                                }
+                                else if (localPlayerController.isPlayerDead)
+                                {
+                                    Plugin.LogMessage($"Could not teleport {localPlayerController.playerUsername}!\nPlayer is dead!", true);
+                                }
+                                else if (playerA.isPlayerDead)
+                                {
+                                    Plugin.LogMessage($"Could not teleport to {playerA.playerUsername}!\nPlayer is dead!", true);
                                 }
                             }
                             break;
@@ -340,6 +406,10 @@ namespace ToxicOmega_Tools.Patches
                                         Player.Get(playerA).Position = inRadiusSpherical;
                                         Plugin.LogMessage($"Teleported {playerA.playerUsername} to random location within factory.");
                                     }
+                                    else if (playerA.isPlayerDead)
+                                    {
+                                        Plugin.LogMessage($"Could not teleport {playerA.playerUsername}!\nPlayer is dead!", true);
+                                    }
                                 }
                                 else
                                 {
@@ -355,6 +425,10 @@ namespace ToxicOmega_Tools.Patches
                                     Plugin.mls.LogInfo("RPC END: \"TOT_TP_PLAYER\".");
                                     Player.Get(playerA).Position = terminal.transform.position;
                                     Plugin.LogMessage($"Teleported {playerA.playerUsername} to terminal.");
+                                }
+                                else if (playerA.isPlayerDead)
+                                {
+                                    Plugin.LogMessage($"Could not teleport {playerA.playerUsername}!\nPlayer is dead!", true);
                                 }
                                 else
                                 {
@@ -380,6 +454,14 @@ namespace ToxicOmega_Tools.Patches
                                         Plugin.LogMessage("Player destination cannot be the same player!", true);
                                     }
                                 }
+                                else if (playerA.isPlayerDead)
+                                {
+                                    Plugin.LogMessage($"Could not teleport {playerA.playerUsername}!\nPlayer is dead!", true);
+                                }
+                                else if (playerB.isPlayerDead)
+                                {
+                                    Plugin.LogMessage($"Could not teleport to {playerB.playerUsername}!\nPlayer is dead!", true);
+                                }
                             }
                             break;
                     }
@@ -396,7 +478,7 @@ namespace ToxicOmega_Tools.Patches
                         playerTarget = Plugin.FindPlayerFromString(targetUsername);
                     }
 
-                    if (playerTarget != null)
+                    if (playerTarget != null && !playerTarget.isPlayerDead)
                     {
                         GrabbableObject foundItem = playerTarget.ItemSlots[playerTarget.currentItemSlot];
                         if (foundItem != null)
@@ -418,6 +500,10 @@ namespace ToxicOmega_Tools.Patches
                             Plugin.LogMessage($"{playerTarget.playerUsername} is not holding an item!", true);
                         }
                     }
+                    else if (playerTarget.isPlayerDead)
+                    {
+                        Plugin.LogMessage($"Could not charge {playerTarget.playerUsername}'s item!\nPlayer is dead!", true);
+                    }
                     break;
                 case "heal":
                 case "save":    // Sets player health and stamina to max, saves player if in death animation with enemy
@@ -433,13 +519,21 @@ namespace ToxicOmega_Tools.Patches
 
                     if (playerTarget != null)
                     {
+                        if (playerTarget.isPlayerDead)
+                        {
+                            Plugin.LogMessage($"Attempting to revive {playerTarget.playerUsername}.");
+                        }
+                        else
+                        {
+                            Plugin.LogMessage($"Healing {playerTarget.playerUsername}.");
+                        }
+
                         Plugin.mls.LogInfo("RPC SENDING: \"TOT_HEAL_PLAYER\".");
                         Network.Broadcast("TOT_HEAL_PLAYER", new TOT_PLAYER_Broadcast { playerClientId = playerTarget.playerClientId });
                         Plugin.mls.LogInfo("RPC END: \"TOT_HEAL_PLAYER\".");
                         Player.Get(playerTarget).SprintMeter = 100f;
                         Player.Get(playerTarget).Health = 100;
                         Player.Get(playerTarget).Hurt(-1);  // Player health/status likes not not update unless a damage function is called
-                        Plugin.LogMessage($"Healing {playerTarget.playerUsername}.");
                     }
                     break;
                 case "list":
@@ -514,6 +608,28 @@ namespace ToxicOmega_Tools.Patches
                 //Empty chatTextField, this prevents anything from being sent to the in-game chat
                 __instance.chatTextField.text = string.Empty;
             }
+
+            // Perform regular chat if player is the host and dead, this overrides the way the game blocks dead players from chatting.
+            if (localPlayerController.isPlayerDead && Player.HostPlayer.ClientId == localPlayerController.playerClientId)
+            {
+                if (!string.IsNullOrEmpty(__instance.chatTextField.text) && __instance.chatTextField.text.Length < 50)
+                    __instance.AddTextToChatOnServer(__instance.chatTextField.text, (int)__instance.localPlayer.playerClientId);
+                for (int index = 0; index < StartOfRound.Instance.allPlayerScripts.Length; ++index)
+                {
+                    if (StartOfRound.Instance.allPlayerScripts[index].isPlayerControlled && (double)Vector3.Distance(GameNetworkManager.Instance.localPlayerController.transform.position, StartOfRound.Instance.allPlayerScripts[index].transform.position) > 24.399999618530273 && (!GameNetworkManager.Instance.localPlayerController.holdingWalkieTalkie || !StartOfRound.Instance.allPlayerScripts[index].holdingWalkieTalkie))
+                    {
+                        __instance.playerCouldRecieveTextChatAnimator.SetTrigger("ping");
+                        break;
+                    }
+                }
+                localPlayerController.isTypingChat = false;
+                __instance.chatTextField.text = "";
+                EventSystem.current.SetSelectedGameObject((GameObject)null);
+                __instance.PingHUDElement(__instance.Chat);
+                __instance.typingIndicator.enabled = false;
+                return false;
+            }
+            return true;
         }
 
         private static void FindPage<T>(List<T> list, int page, int itemsPerPage, string listName)

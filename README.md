@@ -96,7 +96,7 @@ Example: "ch" will simply charge the host's held item.
 ---
 ### **Heal/Save Optional: (Player Name/ID)**
 
-Fully refills a players health and stamina. Will save a player if they are currently grabbed by a forest giant or have a snare flea on their head.
+Fully refills a players health and stamina. Will save a player if they are currently grabbed by a forest giant or have a snare flea on their head. If target player is dead, they will be revived at the ship's terminal.
 
 Arguments: 
 * Player Name/ID (Default: Host Player): Name or ID number of the player you want to heal.
