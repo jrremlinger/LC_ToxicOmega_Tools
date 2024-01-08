@@ -38,48 +38,26 @@ Arguments:
 Example: "give 17 1 420 #3" will spawn one Airhorn worth $420 on the player who's ID is 3.
 
 ---
-### **Eout/Enemyout/Enemiesout (Page Number)**
+### **En/Enemy/Enemies (Page Number)**
 
-Displays a page of the outside enemies list. Includes enemy names and ID numbers. Currently in the game there is only one page of outside enemies.
-
-Arguments:
-* Page Number: Specific page of the outside enemies list to view. Will default to the last page viewed.
-
-Example: "eout" displays page one of the outside enemies list
-
----
-### **Ein/Enemyin/Enemiesin (Page Number)**
-
-Displays a page of the inside enemies list. Includes enemy names and ID numbers. Currently in the game there is only one page of inside enemies.
+Displays a page of the enemies list. Includes enemy names and ID numbers.
 
 Arguments:
-* Page Number: Specific page of the inside enemies list to view. Will default to the last page viewed.
+* Page Number: Specific page of the enemies list to view. Will default to the last page viewed.
 
-Example: "ein" displays page one of the inside enemies list
+Example: "en 2" displays page two of the enemies list
 
 ---
-### **Sout/Spawnout (Enemy ID) Optional: (Amount) (Target)**
+### **Sp/Spawn (Enemy ID) Optional: (Amount) (Target)**
 
-Spawns an outside enemy based on given ID number. Able to specify how many enemies, and where they spawn. Make sure you use the ID from the **outside** enemies list!
+Spawns an enemy based on given ID number. Able to specify how many enemies, and where they spawn.
 
 Arguments:
 * Enemy ID: Numerical ID of enemy you want to spawn. In the future names may be supported.
 * Amount (Default: 1): How many copies of the enemy should be spawned.
 * Target (Default: Natural): Player target, also supports natural spawning with "$" and waypoints with @(int).
 
-Example: "sout 0 1" will spawn one enemy of ID zero naturally outside. Different moons assign different enemy ID's so make sure you check "eout" to find the ID of the enemy you want to spawn.
-
----
-### **Sin/Spawnin (Enemy ID) Optional: (Amount) (Target)**
-
-Spawns an inside enemy based on given ID number. Able to specify how many enemies, and where they spawn. Make sure you use the ID from the **inside** enemies list!
-
-Arguments:
-* Enemy ID: Numerical ID of enemy you want to spawn. In the future names may be supported.
-* Amount (Default: 1): How many copies of the enemy should be spawned.
-* Target (Default: Natural): Player target, also supports natural spawning with "$" and waypoints with @(int).
-
-Example: "sin 0 1 Bob" will spawn one enemy of ID zero on a player who's name starts with (or is) Bob. Different moons assign different enemy ID's so make sure you check "ein" to find the ID of the enemy you want to spawn.
+Example: "sp 0 1" will spawn one enemy of ID zero naturally. Different moons assign different enemy ID's so make sure you check the "enemy" command to find the ID of the enemy you want to spawn.
 
 ---
 ### **TP/Tele/Teleport Optional: (Target A) (Target B)**

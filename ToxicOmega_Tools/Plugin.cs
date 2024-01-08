@@ -28,7 +28,6 @@ namespace ToxicOmega_Tools
         private readonly Harmony harmony = new Harmony(modGUID);
         private static Plugin Instance;
         internal static ManualLogSource mls;
-        public static PlayerControllerB localPlayerController;
         public static List<Waypoint> waypoints = new List<Waypoint>();
         
         void Awake()
@@ -164,7 +163,7 @@ namespace ToxicOmega_Tools
                     {
                         if (currentRound.outsideAINodes.Length != 0 && currentRound.outsideAINodes[0] != null)
                         {
-                            position = currentRound.outsideAINodes[UnityEngine.Random.Range(0, currentRound.insideAINodes.Length)].transform.position;
+                            position = currentRound.outsideAINodes[UnityEngine.Random.Range(0, currentRound.outsideAINodes.Length)].transform.position;
                             //positionOutput = GameObject.FindGameObjectsWithTag("OutsideAINode")[UnityEngine.Random.Range(0, GameObject.FindGameObjectsWithTag("OutsideAINode").Length - 1)].transform.position;
                         }
                         else
@@ -354,7 +353,7 @@ namespace ToxicOmega_Tools
         
         public static void RevivePlayer (ulong playerClientID)  // This function is REALLY long, could probably be shortened
         {
-            localPlayerController = StartOfRound.Instance.localPlayerController;
+            PlayerControllerB localPlayerController = StartOfRound.Instance.localPlayerController;
             PlayerControllerB playerController = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(playerClientID));
             StartOfRound round = StartOfRound.Instance;
             Terminal terminal = UnityEngine.Object.FindObjectOfType<Terminal>();
@@ -486,20 +485,29 @@ namespace ToxicOmega_Tools
             }
         }
 
-        public static void SpawnEnemy(int enemyID, int amount, string targetString, bool inside)
+        public static void SpawnEnemy(int enemyID, int amount, string targetString)
         {
+            bool inside = false;
             RoundManager currentRound = RoundManager.Instance;
-            localPlayerController = StartOfRound.Instance.localPlayerController;
+            List<SpawnableEnemyWithRarity> allEnemiesList = new List<SpawnableEnemyWithRarity>();
+            allEnemiesList.AddRange(currentRound.currentLevel.DaytimeEnemies);
+            allEnemiesList.AddRange(currentRound.currentLevel.OutsideEnemies);
+            allEnemiesList.AddRange(currentRound.currentLevel.Enemies);
 
-            if ((inside && GetPositionFromCommand(targetString, 2) == Vector3.zero) || (!inside && GetPositionFromCommand(targetString, 1) == Vector3.zero))
+            if (enemyID > (currentRound.currentLevel.DaytimeEnemies.Count + currentRound.currentLevel.OutsideEnemies.Count) - 1)
+            {
+                inside = true;
+            }
+
+            if (GetPositionFromCommand(targetString, inside ? 2 : 1) == Vector3.zero)
             {
                 return;
             }
 
             string logLocation;
-            string logName = inside ? currentRound.currentLevel.Enemies[enemyID].enemyType.enemyName : currentRound.currentLevel.OutsideEnemies[enemyID].enemyType.enemyName;
+            string logName = allEnemiesList[enemyID].enemyType.enemyName;
 
-            if (targetString == "$")
+            if (targetString == "" || targetString == "$")
             {
                 logLocation = "Random";
             }
@@ -514,44 +522,23 @@ namespace ToxicOmega_Tools
 
             LogMessage($"Spawning Enemy - Name: {logName}, ID: {enemyID}, Amount: {amount}, Location: {logLocation}.");
 
-            // Uses different enemy list depending on what creature the player is trying to spawn
-            if (inside)
+            try
             {
-                try
+                for (int i = 0; i < amount; i++)
                 {
-                    for (int i = 0; i < amount; i++)
-                    {
-                        //currentRound.SpawnEnemyOnServer(position, currentRound.allEnemyVents[i].floorNode.eulerAngles.y, enemyID);    // This doesn't work when spawning more than 5 enemies at a time
-                        Instantiate(currentRound.currentLevel.Enemies[enemyID].enemyType.enemyPrefab, GetPositionFromCommand(targetString, 2), Quaternion.Euler(Vector3.zero)).gameObject.GetComponentInChildren<NetworkObject>().Spawn(true);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogMessage($"Unable to Spawn Inside Enemy ID: {enemyID}", true);
-                    mls.LogError(ex);
+                    Instantiate(allEnemiesList[enemyID].enemyType.enemyPrefab, GetPositionFromCommand(targetString, inside ? 2 : 1), Quaternion.Euler(Vector3.zero)).gameObject.GetComponentInChildren<NetworkObject>().Spawn(true);
                 }
             }
-            else
+            catch (Exception ex)
             {
-                try
-                {
-                    for (int i = 0; i < amount; i++)
-                    {
-                        Instantiate(currentRound.currentLevel.OutsideEnemies[enemyID].enemyType.enemyPrefab, GetPositionFromCommand(targetString, 1), Quaternion.Euler(Vector3.zero)).gameObject.GetComponentInChildren<NetworkObject>().Spawn(true);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogMessage($"Unable to Spawn Outside Enemy ID: {enemyID}", true);
-                    mls.LogError(ex);
-                }
+                LogMessage($"Unable to Spawn Enemy ID: {enemyID}", true);
+                mls.LogError(ex);
             }
         }
-        
+
         public static void SpawnItem(int itemID, int amount, int value, string targetString)
         {
             List<Item> allItemsList = StartOfRound.Instance.allItemsList.itemsList;
-            localPlayerController = StartOfRound.Instance.localPlayerController;
 
             if (GetPositionFromCommand(targetString, 0) == Vector3.zero)
             {

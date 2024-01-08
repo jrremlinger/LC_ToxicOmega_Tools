@@ -21,7 +21,7 @@ namespace ToxicOmega_Tools.Patches
         
         private static int itemListPage;
         private static int outsideListPage;
-        private static int insideListPage;
+        private static int enemyListPage;
         private static int itemID;
         private static int itemCount;
         private static int itemValue;
@@ -29,6 +29,7 @@ namespace ToxicOmega_Tools.Patches
         private static int spawnCount;
         private static string playerString = "";
         private static PlayerControllerB playerTarget = null;
+        public static List<SpawnableEnemyWithRarity> allEnemiesList;
 
         [HarmonyPatch("EnableChat_performed")]
         [HarmonyPrefix]
@@ -58,6 +59,11 @@ namespace ToxicOmega_Tools.Patches
             List<Item> allItemsList = StartOfRound.Instance.allItemsList.itemsList;
             PlayerControllerB localPlayerController = GameNetworkManager.Instance.localPlayerController;
 
+            allEnemiesList = new List<SpawnableEnemyWithRarity>();
+            allEnemiesList.AddRange(currentRound.currentLevel.DaytimeEnemies);
+            allEnemiesList.AddRange(currentRound.currentLevel.OutsideEnemies);
+            allEnemiesList.AddRange(currentRound.currentLevel.Enemies);
+
             bool flag = true;   // Chat will not be sent if flag = true; If no command prefix is recognized it will be set to false
             string chatMessage = __instance.chatTextField.text;
 
@@ -80,6 +86,33 @@ namespace ToxicOmega_Tools.Patches
 
             switch (command[0].Replace("/", "").ToLower())
             {
+                case "help":
+                    List<String> commandList = new List<string> 
+                    { 
+                        "Item - Displays page from item list",
+                        "Give - Spawns an item",
+                        "Enemy - Displays page from enemy list",
+                        "Spawn - Spawns an enemy",
+                        "TP - Teleport players",
+                        "WP - Creates or lists waypoints",
+                        "Charge - Charges a player's held item",
+                        "Heal - Heals or revives a player",
+                        "List - Displays current list of spawned \"Players\", \"Enemies\", or \"Items\"",
+                        "Credit - Lists or adjusts the amount of spendable credits in the terminal",
+                        "Code - Lists or toggles blast doors and traps",
+                        "Breaker - Toggles the breaker box"
+                    };
+
+                    int helpPage = 1;
+
+                    if (command.Length > 1)
+                    {
+                        int.TryParse(command[1], out helpPage);
+                    }
+                    itemListPage = Math.Max(helpPage, 1);
+
+                    FindPage(commandList, helpPage, 5, "Command");
+                    break;
                 case "item":
                 case "items":   // Lists all items with their ID numbers
                     if (command.Length > 1)
@@ -88,7 +121,7 @@ namespace ToxicOmega_Tools.Patches
                     }
                     itemListPage = Math.Max(itemListPage, 1);
 
-                    FindPage(allItemsList, itemListPage, "Item");
+                    FindPage(allItemsList, itemListPage, 10, "Item");
                     break;
                 case "give":    // Spawns one or more items at a player, custom item value can be set
                     playerString = "";
@@ -104,7 +137,7 @@ namespace ToxicOmega_Tools.Patches
                             text += $"\n{i} | {allItemsList[i].itemName}";
                         }
                         Plugin.mls.LogInfo(text);
-                        FindPage(allItemsList, 1, "Item");
+                        FindPage(allItemsList, 1, 10, "Item");
                         break;
                     }
 
@@ -148,45 +181,28 @@ namespace ToxicOmega_Tools.Patches
 
                     Plugin.SpawnItem(itemID, itemCount, itemValue, playerString);
                     break;
-                case "eout":
-                case "enemyout":
-                case "enemiesout":  // Lists all outside enemies with their ID numbers
+                case "en":
+                case "enemy":
+                case "enemies":   // Lists all enemies with their ID numbers
                     if (command.Length > 1)
                     {
-                        int.TryParse(command[1], out outsideListPage);
+                        int.TryParse(command[1], out enemyListPage);
                     }
-                    outsideListPage = Math.Max(outsideListPage, 1);
+                    enemyListPage = Math.Max(enemyListPage, 1);
 
-                    FindPage(currentRound.currentLevel.OutsideEnemies, outsideListPage, "Outside Enemy");
+                    FindPage(allEnemiesList, enemyListPage, 10, "Enemy");
                     break;
-                case "ein":
-                case "enemyin":
-                case "enemiesin":   // Lists all inside enemies with their ID numbers
-                    if (command.Length > 1)
-                    {
-                        int.TryParse(command[1], out insideListPage);
-                    }
-                    insideListPage = Math.Max(insideListPage, 1);
-
-                    FindPage(currentRound.currentLevel.Enemies, insideListPage, "Inside Enemy");
-                    break;
-                case "sout":
-                case "spawnout":    // Spawns one or more of an outside creature either at its normal spawnpoint or on a player
+                case "sp":
+                case "spawn":
                     enemyID = 0;
                     spawnCount = 1;
                     playerString = "";
 
                     if (command.Length < 2)
                     {
-                        string text = $"\nEnemy List (ID | Name) Total Enemies: {currentRound.currentLevel.OutsideEnemies.Count}";
-                        if (currentRound.currentLevel.OutsideEnemies.Count > 0)
+                        if (allEnemiesList.Count > 0)
                         {
-                            for (int i = 0; i < currentRound.currentLevel.OutsideEnemies.Count; i++)
-                            {
-                                text += $"\n{i} | {currentRound.currentLevel.OutsideEnemies[i].enemyType.enemyName}";
-                            }
-                            Plugin.mls.LogInfo(text);
-                            FindPage(currentRound.currentLevel.OutsideEnemies, 1, "Outside Enemy");
+                            FindPage(allEnemiesList, 1, 10, "Enemy");
                         }
                         else
                         {
@@ -195,7 +211,7 @@ namespace ToxicOmega_Tools.Patches
                         break;
                     }
 
-                    if (!int.TryParse(command[1], out enemyID) || enemyID >= currentRound.currentLevel.OutsideEnemies.Count)
+                    if (!int.TryParse(command[1], out enemyID) || enemyID >= allEnemiesList.Count || enemyID < 0)
                     {
                         Plugin.LogMessage($"Enemy ID \"{command[1]}\" not found!", true);
                         break;
@@ -216,50 +232,7 @@ namespace ToxicOmega_Tools.Patches
                         playerString = string.Join(" ", command.Skip(3)).ToLower();
                     }
 
-                    Plugin.SpawnEnemy(enemyID, spawnCount, playerString, false);
-                    break;
-                case "sin":
-                case "spawnin": // Spawns one or more of an outside creature either at its normal spawnpoint or on a player
-                    enemyID = 0;
-                    spawnCount = 1;
-                    playerString = "";
-
-                    if (command.Length < 2)
-                    {
-                        string text = $"\nEnemy List (ID | Name) Total Enemies: {currentRound.currentLevel.Enemies.Count}";
-                        if (currentRound.currentLevel.Enemies.Count > 0)
-                        {
-                            for (int i = 0; i < currentRound.currentLevel.Enemies.Count; i++)
-                            {
-                                text += $"\n{i} | {currentRound.currentLevel.Enemies[i].enemyType.enemyName}";
-                            }
-                            Plugin.mls.LogInfo(text);
-                            FindPage(currentRound.currentLevel.Enemies, 1, "Inside Enemy");
-                        }
-                        else
-                        {
-                            Plugin.LogMessage("No valid Enemies for this location!", true);
-                        }
-                        break;
-                    }
-
-                    if (!int.TryParse(command[1], out enemyID) || enemyID >= currentRound.currentLevel.Enemies.Count)
-                    {
-                        Plugin.LogMessage($"Enemy ID \"{command[1]}\" not found!", true);
-                        break;
-                    }
-
-                    if (command.Length > 2)
-                    {
-                        int.TryParse(command[2], out spawnCount);
-                    }
-
-                    if (command.Length > 3)
-                    {
-                        playerString = string.Join(" ", command.Skip(3)).ToLower();
-                    }
-
-                    Plugin.SpawnEnemy(enemyID, spawnCount, playerString, true);
+                    Plugin.SpawnEnemy(enemyID, spawnCount, playerString);
                     break;
                 case "tp":
                 case "tele":
@@ -428,7 +401,7 @@ namespace ToxicOmega_Tools.Patches
                             playerList += $"Player #{player.playerClientId}: {player.playerUsername}\n";
                         }
                     }
-                    HUDManager.Instance.DisplayTip("Waypoint List", playerList);
+                    HUDManager.Instance.DisplayTip("Player List", playerList);
                     break;
                 case "credit":
                 case "credits":
@@ -482,7 +455,7 @@ namespace ToxicOmega_Tools.Patches
                                 }
                             }
                             objectList = objectList.TrimEnd(',', ' ') + ".";
-                            HUDManager.Instance.DisplayTip("Waypoint List", objectList);
+                            HUDManager.Instance.DisplayTip("Code List", objectList);
                         }
                         else
                         {
@@ -518,6 +491,10 @@ namespace ToxicOmega_Tools.Patches
                     if (breaker != null)
                     {
                         breaker.SwitchBreaker(!breaker.isPowerOn);
+                    }
+                    else
+                    {
+                        Plugin.LogMessage("BreakerBox not found!", true);
                     }
                     break;
                 default:
@@ -556,12 +533,11 @@ namespace ToxicOmega_Tools.Patches
             return true;
         }
 
-        private static void FindPage<T>(List<T> list, int page, string listName)
+        private static void FindPage<T>(List<T> list, int page, int itemsPerPage, string listName)
         {
             RoundManager currentRound = RoundManager.Instance;
             List<Item> allItemsList = StartOfRound.Instance.allItemsList.itemsList;
 
-            int itemsPerPage = 10;
             int totalItems = list.Count;
             int maxPages = (int)Math.Ceiling((double)totalItems / itemsPerPage);
 
@@ -583,33 +559,25 @@ namespace ToxicOmega_Tools.Patches
             else
             {
                 string pageText = "";
-                bool flag = false;
 
                 for (int i = startIndex; i <= endIndex; i++)
                 {
                     if (listName == "Item")
                     {
-                        pageText += $"{allItemsList[i].itemName}({i}), ";
+                        pageText += $"{ allItemsList[i].itemName }({i}), ";
                     }
-                    else if (listName == "Outside Enemy")
+                    else if (listName == "Enemy")
                     {
-                        pageText += $"{currentRound.currentLevel.OutsideEnemies[i].enemyType.enemyName}({i}), ";
-                        flag = true;
+                        pageText += $"{ allEnemiesList[i].enemyType.enemyName }({ i }), ";
                     }
-                    else if (listName == "Inside Enemy")
+                    else if (listName == "Command")
                     {
-                        pageText += $"{currentRound.currentLevel.Enemies[i].enemyType.enemyName}({i}), ";
-                        flag = true;
+                        pageText += $"{ list[i] }\n";
                     }
-                }
-
-                if (flag)
-                {
-                    listName = "Enemy";
                 }
 
                 pageText = pageText.TrimEnd(',', ' ') + ".";
-                string pageHeader = $"{listName} List (Page {page} of {maxPages})";
+                string pageHeader = $"{ listName } List (Page { page } of { maxPages })";
                 HUDManager.Instance.DisplayTip(pageHeader, pageText);
             }
         }
