@@ -127,8 +127,6 @@ Example: "heal John" will heal a player who's name starts with (or is) John.
 
 Lists all players currently in the server with their ID numbers.
 
-Example: "list".
-
 ---
 ### **Credit/Credits/Money Optional (Amount)**
 
@@ -148,5 +146,10 @@ Arguments:
 * Code: The code that appears on the ship's map corresponding to the object.
 
 Example: "code d2" will toggle all objects on the map with code d2.
+
+---
+### **Br/Breaker**
+
+Toggles the breaker box's state.
 
 ---

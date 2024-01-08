@@ -18,7 +18,7 @@ namespace ToxicOmega_Tools.Patches
     internal class HUDManager_Patch
     {
         public static bool sendPlayerInside = true;
-
+        
         private static int itemListPage;
         private static int outsideListPage;
         private static int insideListPage;
@@ -510,6 +510,14 @@ namespace ToxicOmega_Tools.Patches
                     else
                     {
                         Plugin.LogMessage($"No TerminalAccessibleObject in this area!", true);
+                    }
+                    break;
+                case "br":
+                case "breaker":
+                    BreakerBox breaker = UnityEngine.Object.FindObjectOfType<BreakerBox>();
+                    if (breaker != null)
+                    {
+                        breaker.SwitchBreaker(!breaker.isPowerOn);
                     }
                     break;
                 default:
