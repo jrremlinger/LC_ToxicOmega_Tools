@@ -12,7 +12,7 @@ namespace ToxicOmega_Tools.Patches
     [HarmonyPatch(typeof(StartMatchLever))]
     internal class StartMatchLever_Patch
     {
-        [HarmonyPatch(nameof(StartMatchLever.EndGame))]
+        [HarmonyPatch(nameof(StartMatchLever.StartGame))]
         [HarmonyPostfix]
         private static void resetWaypoints()
         {

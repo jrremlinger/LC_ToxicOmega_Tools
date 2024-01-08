@@ -428,7 +428,7 @@ namespace ToxicOmega_Tools.Patches
                             playerList += $"Player #{player.playerClientId}: {player.playerUsername}\n";
                         }
                     }
-                    Plugin.LogMessage(playerList);
+                    HUDManager.Instance.DisplayTip("Waypoint List", playerList);
                     break;
                 case "credit":
                 case "credits":
@@ -451,6 +451,64 @@ namespace ToxicOmega_Tools.Patches
                     else
                     {
                         Plugin.LogMessage("Terminal not found!", true);
+                    }
+                    break;
+                case "code":
+                    TerminalAccessibleObject[] terminalObjects = UnityEngine.Object.FindObjectsOfType<TerminalAccessibleObject>();
+                    
+                    if (terminalObjects.Length > 0 && terminalObjects[0] != null)
+                    {
+                        if (command.Length < 2)
+                        {
+                            string objectList = "";
+                            foreach (TerminalAccessibleObject obj in terminalObjects)
+                            {
+                                if (obj.objectCode != null)
+                                {
+                                    objectList += $"{obj.objectCode}";
+                                    if (obj.isBigDoor)
+                                    {
+                                        objectList += "(Door), ";
+                                    }
+                                    else if (obj.GetComponentInChildren<Turret>())
+                                    {
+                                        objectList += "(Turret), ";
+                                    }
+                                    else if (obj.GetComponentInChildren<Landmine>())
+                                    {
+                                        objectList += "(Landmine), ";
+                                    }
+                                }
+                            }
+                            objectList = objectList.TrimEnd(',', ' ') + ".";
+                            HUDManager.Instance.DisplayTip("Waypoint List", objectList);
+                        }
+                        else
+                        {
+                            foreach (TerminalAccessibleObject obj in terminalObjects)
+                            {
+                                if (obj != null && obj.objectCode == command[1])
+                                {
+                                    obj.CallFunctionFromTerminal();
+
+                                    if (obj.GetComponentInChildren<Turret>())
+                                    {
+                                        obj.GetComponentInChildren<Turret>().ToggleTurretEnabled(false);
+                                    }
+                                    else if (obj.GetComponentInChildren<Landmine>())
+                                    {
+                                        obj.GetComponentInChildren<Landmine>().ToggleMine(false);
+                                        obj.GetComponentInChildren<Landmine>().ToggleMineEnabledLocalClient(false);
+                                    }
+                                }
+                            }
+                            Plugin.LogMessage($"Attempted to toggle all TerminalAccessibleObject of code {command[1]}.");
+
+                        }
+                    }
+                    else
+                    {
+                        Plugin.LogMessage($"No TerminalAccessibleObject in this area!", true);
                     }
                     break;
                 default:
