@@ -85,6 +85,7 @@
   <ItemGroup>
     <Compile Include="Patches\HUDManager_Patch.cs" />
     <Compile Include="Patches\PlayerControllerB_Patch.cs" />
+    <Compile Include="Patches\StartMatchLever_Patch.cs" />
     <Compile Include="TOTNetworking.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

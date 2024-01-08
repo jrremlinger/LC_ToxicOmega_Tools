@@ -4,8 +4,12 @@
 
 Some important notes:
 * All commands only register if you are the host.
-* Text chat will now stay enabled if you are the host and you are dead.
-* Where applicable, "$" can substitute a players name as a destination, this indicates random natural spawning. Can be used for item/enemy spawn location as well as teleport destination to teleport yourself or another player randomly within the factory.
+* Text chat will stay enabled while dead if you are the host.
+* Where applicable, certain symbols can be used when determining a destination:
+	* $: Using "$" indicates random/natural destination. For players this will act as an inverse-teleporter putting them inside the factory. For items it will choose a normal item spawnpoint. For enemies it will either use vents or outside spawnpoints depending on the type of enemy.
+	* !: Using "!" chooses the ships terminal as a target. This is only applicable for teleportation.
+	* @(int): Using "@" followed by a number will choose the waypoint with that index as the target. This is only applicable for teleportation.
+	* #(int): Using "#" followed by a number will choose the player with that Client ID as the target. This is only applicable for teleportation.
 
 ---
 
@@ -21,7 +25,7 @@ Arguments:
 Example: "item 2" displays page two of the items list
 
 ---
-### **Give (Item ID) Optional: (Amount) (Value) (Player Name/ID)**
+### **Give (Item ID) Optional: (Amount) (Value) (Target)**
 
 Spawns an item based on given ID number. Able to specify how many items, their value, and what player it spawns on. "$" as the player will spawn the item in a random location inside the factory.
 
@@ -29,7 +33,7 @@ Arguments:
 * Item ID: Numerical ID of item you want to spawn. In the future names may be supported.
 * Amount (Default: 1): How many copies of the item should be spawned.
 * Value (Default: Random): Override the default value of the item with a given number.
-* Player Name/ID (Default: Host Player): Name or ID number of the player you want to spawn the item at.
+* Target (Default: Host Player): Where to spawn the item, supports natural spawning with "$".
 
 Example: "give 17 1 420 #3" will spawn one Airhorn worth $420 on the player who's ID is 3.
 
@@ -54,26 +58,26 @@ Arguments:
 Example: "ein" displays page one of the inside enemies list
 
 ---
-### **Sout/Spawnout (Enemy ID) Optional: (Amount) (Player Name/ID)**
+### **Sout/Spawnout (Enemy ID) Optional: (Amount) (Target)**
 
 Spawns an outside enemy based on given ID number. Able to specify how many enemies, and where they spawn. Make sure you use the ID from the **outside** enemies list!
 
 Arguments:
 * Enemy ID: Numerical ID of enemy you want to spawn. In the future names may be supported.
 * Amount (Default: 1): How many copies of the enemy should be spawned.
-* Player Name/ID (Default: None): Name or ID number of the player you want to spawn the item at. If no player argument is given the spawn location will default to a random enemy spawnpoint outside.
+* Target (Default: Natural): Player target, also supports natural spawning with "$".
 
 Example: "sout 0 1" will spawn one enemy of ID zero naturally outside. Different moons assign different enemy ID's so make sure you check "eout" to find the ID of the enemy you want to spawn.
 
 ---
-### **Sin/Spawnin (Enemy ID) Optional: (Amount) (Player Name/ID)**
+### **Sin/Spawnin (Enemy ID) Optional: (Amount) (Target)**
 
 Spawns an inside enemy based on given ID number. Able to specify how many enemies, and where they spawn. Make sure you use the ID from the **inside** enemies list!
 
 Arguments:
 * Enemy ID: Numerical ID of enemy you want to spawn. In the future names may be supported.
 * Amount (Default: 1): How many copies of the enemy should be spawned.
-* Player Name/ID (Default: None): Name or ID number of the player you want to spawn the item at. If no player argument is given the spawn location will default to a random vent inside the factory.
+* Target (Default: Natural): Player target, also supports natural spawning with "$".
 
 Example: "sin 0 1 Bob" will spawn one enemy of ID zero on a player who's name starts with (or is) Bob. Different moons assign different enemy ID's so make sure you check "ein" to find the ID of the enemy you want to spawn.
 
@@ -83,28 +87,38 @@ Example: "sin 0 1 Bob" will spawn one enemy of ID zero on a player who's name st
 Teleports a given player to a given destination. Player being teleported can not be dead. Will automatically sync lighting if your destination is inside or outside. If no arguments are provided, the host will be teleported to the ship's console.
 
 Arguments:
-* Target A: This can be either "$" or a player name/ID. If "$" is used it will teleport the host to a random place within the factory as if an inverse-teleporter was used. If this is the only argument the host will be teleported to the given Target A.
-* Target B: If target B is given as an argument the teleport will affect the player given as Target A and teleport them to Target B. "$" will teleport Target A to a random position in the factory. "!" will teleport them to the ship's console. Entering a player name/ID will teleport the Target A player to the Target B player.
+* Target A: If this is the only argument given it supports "!", "@(int)", and "$". Otherwise it must be a player.
+* Target B: Can be a player, "!", "@(int)", or "$"
 
-Example: "tp #0 $" will teleport the player with ID 
+Example: "tp #0 $" will teleport the player with ID to a random location inside the factory.
 
 ---
-### **Ch/Charge Optional: (Player Name/ID)**
+### **WP/Waypoint/Waypoints Optional: Add/Clear/Door
+
+Lists or creates a waypoint to use as a teleport destination. Waypoints are cleared when leaving a moon.
+
+Arguments (The text added after is the only argument accepted. If not provided it will list all waypoints):
+* Add: Will create a waypoint at your current position.
+* Clear: Will delete all waypoints.
+* Door: Will create a waypoint inside the factory at the main entrance.
+
+---
+### **Ch/Charge Optional: (Player Target)**
 
 Charges a players held item.
 
 Arguments: 
-* Player Name/ID (Default: Host Player): Name or ID number of the player who's held item you want to charge.
+* Player Target (Default: Host Player): Only supports player names/id.
 
 Example: "ch" will simply charge the host's held item.
 
 ---
-### **Heal/Save Optional: (Player Name/ID)**
+### **Heal/Save Optional: (Player Target)**
 
 Fully refills a players health and stamina. Will save a player if they are currently grabbed by a forest giant or have a snare flea on their head. If target player is dead, they will be revived at the ship's terminal.
 
 Arguments: 
-* Player Name/ID (Default: Host Player): Name or ID number of the player you want to heal.
+* Player Target (Default: Host Player): Only supports player names/id.
 
 Example: "heal John" will heal a player who's name starts with (or is) John.
 

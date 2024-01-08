@@ -88,7 +88,7 @@ namespace ToxicOmega_Tools.Patches
                     }
                     itemListPage = Math.Max(itemListPage, 1);
 
-                    FindPage(allItemsList, itemListPage, 20, "Item");
+                    FindPage(allItemsList, itemListPage, "Item");
                     break;
                 case "give":    // Spawns one or more items at a player, custom item value can be set
                     playerString = "";
@@ -104,7 +104,7 @@ namespace ToxicOmega_Tools.Patches
                             text += $"\n{i} | {allItemsList[i].itemName}";
                         }
                         Plugin.mls.LogInfo(text);
-                        FindPage(allItemsList, 1, 20, "Item");
+                        FindPage(allItemsList, 1, "Item");
                         break;
                     }
 
@@ -157,7 +157,7 @@ namespace ToxicOmega_Tools.Patches
                     }
                     outsideListPage = Math.Max(outsideListPage, 1);
 
-                    FindPage(currentRound.currentLevel.OutsideEnemies, outsideListPage, 20, "Outside Enemy");
+                    FindPage(currentRound.currentLevel.OutsideEnemies, outsideListPage, "Outside Enemy");
                     break;
                 case "ein":
                 case "enemyin":
@@ -168,7 +168,7 @@ namespace ToxicOmega_Tools.Patches
                     }
                     insideListPage = Math.Max(insideListPage, 1);
 
-                    FindPage(currentRound.currentLevel.Enemies, insideListPage, 20, "Inside Enemy");
+                    FindPage(currentRound.currentLevel.Enemies, insideListPage, "Inside Enemy");
                     break;
                 case "sout":
                 case "spawnout":    // Spawns one or more of an outside creature either at its normal spawnpoint or on a player
@@ -186,7 +186,7 @@ namespace ToxicOmega_Tools.Patches
                                 text += $"\n{i} | {currentRound.currentLevel.OutsideEnemies[i].enemyType.enemyName}";
                             }
                             Plugin.mls.LogInfo(text);
-                            FindPage(currentRound.currentLevel.OutsideEnemies, 1, 20, "Outside Enemy");
+                            FindPage(currentRound.currentLevel.OutsideEnemies, 1, "Outside Enemy");
                         }
                         else
                         {
@@ -234,7 +234,7 @@ namespace ToxicOmega_Tools.Patches
                                 text += $"\n{i} | {currentRound.currentLevel.Enemies[i].enemyType.enemyName}";
                             }
                             Plugin.mls.LogInfo(text);
-                            FindPage(currentRound.currentLevel.Enemies, 1, 20, "Inside Enemy");
+                            FindPage(currentRound.currentLevel.Enemies, 1, "Inside Enemy");
                         }
                         else
                         {
@@ -302,6 +302,49 @@ namespace ToxicOmega_Tools.Patches
                                 Plugin.LogMessage($"Could not teleport {playerA.playerUsername}!\nPlayer is dead!", true);
                             }
                             break;
+                    }
+                    break;
+                case "wp":
+                case "waypoint":
+                case "waypoints":
+                    if (command.Length == 1)
+                    {
+                        if (Plugin.waypoints.Count > 0)
+                        {
+                            string pageText = "";
+
+                            for (int i = 0; i < Plugin.waypoints.Count; i++)
+                            {
+                                pageText += $"@{i}{Plugin.waypoints[i].position}, ";
+                            }
+
+                            pageText = pageText.TrimEnd(',', ' ') + ".";
+                            HUDManager.Instance.DisplayTip("Waypoint List", pageText);
+                        }
+                        else
+                        {
+                            Plugin.LogMessage("Waypoint List is empty!", true);
+                        }
+                    }
+                    else if ("add".StartsWith(command[1]))
+                    {
+                        if (localPlayerController != null && !localPlayerController.isPlayerDead)
+                        {
+                            bool wpInside = Player.Get(localPlayerController).IsInFactory;
+                            Vector3 wpPosition = localPlayerController.transform.position;
+                            Plugin.waypoints.Add(new Waypoint { isInside = wpInside, position = wpPosition });
+                            Plugin.LogMessage($"Waypoint @{ Plugin.waypoints.Count - 1 } created at {wpPosition}.");
+                        }
+                    }
+                    else if ("clear".StartsWith(command[1]))
+                    {
+                        Plugin.waypoints.Clear();
+                        Plugin.LogMessage($"Waypoints cleared.");
+                    }
+                    else if ("door".StartsWith(command[1]) || "entrance".StartsWith(command[1]))
+                    {
+                        Plugin.waypoints.Add(new Waypoint { isInside = true, position = RoundManager.FindMainEntrancePosition(true) });
+                        Plugin.LogMessage($"Waypoint @{Plugin.waypoints.Count - 1} created at Main Entrance.");
                     }
                     break;
                 case "ch":
@@ -446,17 +489,19 @@ namespace ToxicOmega_Tools.Patches
             return true;
         }
 
-        private static void FindPage<T>(List<T> list, int page, int itemsPerPage, string listName)
+        private static void FindPage<T>(List<T> list, int page, string listName)
         {
             RoundManager currentRound = RoundManager.Instance;
             List<Item> allItemsList = StartOfRound.Instance.allItemsList.itemsList;
 
+            int itemsPerPage = 10;
             int totalItems = list.Count;
             int maxPages = (int)Math.Ceiling((double)totalItems / itemsPerPage);
 
             int startIndex = (page - 1) * itemsPerPage;
             int endIndex = startIndex + itemsPerPage - 1;
 
+            page = Math.Min(page, maxPages);
             endIndex = Math.Min(endIndex, totalItems - 1);
 
             if (startIndex < 0 || startIndex >= totalItems || startIndex > endIndex)
@@ -477,16 +522,16 @@ namespace ToxicOmega_Tools.Patches
                 {
                     if (listName == "Item")
                     {
-                        pageText += $"{allItemsList[i].itemName}-{i} ";
+                        pageText += $"{allItemsList[i].itemName}({i}), ";
                     }
                     else if (listName == "Outside Enemy")
                     {
-                        pageText += $"{currentRound.currentLevel.OutsideEnemies[i].enemyType.enemyName}-{i} ";
+                        pageText += $"{currentRound.currentLevel.OutsideEnemies[i].enemyType.enemyName}({i}), ";
                         flag = true;
                     }
                     else if (listName == "Inside Enemy")
                     {
-                        pageText += $"{currentRound.currentLevel.Enemies[i].enemyType.enemyName}-{i} ";
+                        pageText += $"{currentRound.currentLevel.Enemies[i].enemyType.enemyName}({i}), ";
                         flag = true;
                     }
                 }
@@ -496,8 +541,9 @@ namespace ToxicOmega_Tools.Patches
                     listName = "Enemy";
                 }
 
+                pageText = pageText.TrimEnd(',', ' ') + ".";
                 string pageHeader = $"{listName} List (Page {page} of {maxPages})";
-                HUDManager.Instance.DisplayTip(pageHeader, pageText, false, false, "LC_Tip1");
+                HUDManager.Instance.DisplayTip(pageHeader, pageText);
             }
         }
     }

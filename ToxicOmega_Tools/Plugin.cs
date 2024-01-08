@@ -29,6 +29,7 @@ namespace ToxicOmega_Tools
         private static Plugin Instance;
         internal static ManualLogSource mls;
         public static PlayerControllerB localPlayerController;
+        public static List<Waypoint> waypoints = new List<Waypoint>();
 
         void Awake()
         {
@@ -92,11 +93,11 @@ namespace ToxicOmega_Tools
                 }
             }
         }
-
+        
         public static Vector3 GetPositionFromCommand(string input, int positionType, PlayerControllerB playerToTP = null)
         {
             // Position types if player name is not given:
-            // 0: Random insideAINodes[]
+            // 0: Random RandomScrapSpawn[]
             // 1: Random outsideAINodes[]
             // 2: Random allEnemyVents[]
             // 3: Teleport Destination
@@ -106,6 +107,7 @@ namespace ToxicOmega_Tools
             Vector3 position = Vector3.zero;
             Terminal terminal = FindObjectOfType<Terminal>();
             RoundManager currentRound = RoundManager.Instance;
+            RandomScrapSpawn[] randomScrapLocations = FindObjectsOfType<RandomScrapSpawn>();
             PlayerControllerB localPlayerController = StartOfRound.Instance.localPlayerController;
 
             // Targets spectated player if playerTarget is dead
@@ -116,14 +118,13 @@ namespace ToxicOmega_Tools
                 case 0:
                     if (input == "$")
                     {
-                        if (currentRound.insideAINodes.Length != 0 && currentRound.insideAINodes[0] != null)
+                        if (randomScrapLocations.Length != 0 && randomScrapLocations[0] != null)
                         {
-                            Vector3 position2 = currentRound.insideAINodes[UnityEngine.Random.Range(0, currentRound.insideAINodes.Length)].transform.position;
-                            position = currentRound.GetRandomNavMeshPositionInRadiusSpherical(position2);
+                            position = randomScrapLocations[UnityEngine.Random.Range(0, randomScrapLocations.Length)].transform.position;
                         }
                         else
                         {
-                            LogMessage($"No insideAINodes in this area!", true);
+                            LogMessage($"No RandomScrapSpawn in this area!", true);
                             return Vector3.zero;
                         }
                     }
@@ -200,6 +201,29 @@ namespace ToxicOmega_Tools
                         else
                         {
                             LogMessage("Terminal not found!", true);
+                            return Vector3.zero;
+                        }
+                    }
+                    else if (input.StartsWith("@") && input.Length > 1)
+                    {
+                        if (int.TryParse(input.Substring(1), out int wpIndex))
+                        {
+                            if (wpIndex < waypoints.Count)
+                            {
+                                Waypoint wp = waypoints[wpIndex];
+                                HUDManager_Patch.sendPlayerInside = wp.isInside;
+                                position = wp.position;
+                                LogMessage($"Teleported {playerToTP.playerUsername} to Waypoint @{wpIndex}.");
+                            }
+                            else
+                            {
+                                LogMessage($"Waypoint @{input.Substring(1)} is out of bounds!", true);
+                                return Vector3.zero;
+                            }
+                        }
+                        else
+                        {
+                            LogMessage($"Waypoint @{input.Substring(1)} is invalid!", true);
                             return Vector3.zero;
                         }
                     }
@@ -515,5 +539,11 @@ namespace ToxicOmega_Tools
                 }
             }
         }
+    }
+
+    public class Waypoint
+    {
+        public bool isInside { get; set; }
+        public Vector3 position { get; set; }
     }
 }
