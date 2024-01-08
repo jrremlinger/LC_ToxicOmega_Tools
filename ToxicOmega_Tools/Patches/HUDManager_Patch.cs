@@ -454,6 +454,7 @@ namespace ToxicOmega_Tools.Patches
                     }
                     break;
                 case "code":
+                case "codes":
                     TerminalAccessibleObject[] terminalObjects = UnityEngine.Object.FindObjectsOfType<TerminalAccessibleObject>();
                     
                     if (terminalObjects.Length > 0 && terminalObjects[0] != null)

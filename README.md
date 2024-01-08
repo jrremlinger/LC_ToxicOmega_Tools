@@ -131,11 +131,22 @@ Example: "list".
 
 ---
 ### **Credit/Credits/Money Optional (Amount)**
+
 Lists or adjusts the current amount of group credits in the terminal. If amount argument is not given it will just display the current amount of credits.
 
 Arguments:
-* Amount (Default: None): The amount is the adjustment to be made to the current amount of credits.
+* Amount: The amount is the adjustment to be made to the current amount of credits.
 
 Example: "credit -10" will subtract 10 from the current amount of group credits.
+
+---
+### **Code/Codes (Code)**
+
+Toggles doors/turrets/mines by using their terminal code. If no argument is given it will list all terminal objects on the map.
+
+Arguments:
+* Code: The code that appears on the ship's map corresponding to the object.
+
+Example: "code d2" will toggle all objects on the map with code d2.
 
 ---
