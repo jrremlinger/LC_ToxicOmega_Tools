@@ -30,7 +30,7 @@ namespace ToxicOmega_Tools
         internal static ManualLogSource mls;
         public static PlayerControllerB localPlayerController;
         public static List<Waypoint> waypoints = new List<Waypoint>();
-
+        
         void Awake()
         {
             if (Instance == null)
@@ -128,6 +128,28 @@ namespace ToxicOmega_Tools
                             return Vector3.zero;
                         }
                     }
+                    else if (input.StartsWith("@") && input.Length > 1)
+                    {
+                        if (int.TryParse(input.Substring(1), out int wpIndex))
+                        {
+                            if (wpIndex < waypoints.Count)
+                            {
+                                Waypoint wp = waypoints[wpIndex];
+                                HUDManager_Patch.sendPlayerInside = wp.isInside;
+                                position = wp.position;
+                            }
+                            else
+                            {
+                                LogMessage($"Waypoint @{input.Substring(1)} is out of bounds!", true);
+                                return Vector3.zero;
+                            }
+                        }
+                        else
+                        {
+                            LogMessage($"Waypoint @{input.Substring(1)} is invalid!", true);
+                            return Vector3.zero;
+                        }
+                    }
                     else if (input == "")
                     {
                         position = localPlayerController.transform.position;
@@ -148,6 +170,28 @@ namespace ToxicOmega_Tools
                         else
                         {
                             LogMessage($"No outsideAINodes in this area!", true);
+                            return Vector3.zero;
+                        }
+                    }
+                    else if (input.StartsWith("@") && input.Length > 1)
+                    {
+                        if (int.TryParse(input.Substring(1), out int wpIndex))
+                        {
+                            if (wpIndex < waypoints.Count)
+                            {
+                                Waypoint wp = waypoints[wpIndex];
+                                HUDManager_Patch.sendPlayerInside = wp.isInside;
+                                position = wp.position;
+                            }
+                            else
+                            {
+                                LogMessage($"Waypoint @{input.Substring(1)} is out of bounds!", true);
+                                return Vector3.zero;
+                            }
+                        }
+                        else
+                        {
+                            LogMessage($"Waypoint @{input.Substring(1)} is invalid!", true);
                             return Vector3.zero;
                         }
                     }
@@ -452,8 +496,23 @@ namespace ToxicOmega_Tools
                 return;
             }
 
+            string logLocation;
             string logName = inside ? currentRound.currentLevel.Enemies[enemyID].enemyType.enemyName : currentRound.currentLevel.OutsideEnemies[enemyID].enemyType.enemyName;
-            LogMessage($"Spawning Enemy - Name: {logName}, ID: {enemyID}, Amount: {amount}, Location: {((targetString == "") || (targetString == "$") ? "Natural" : GetPlayerFromString(targetString).playerUsername)}.");
+
+            if (targetString == "$")
+            {
+                logLocation = "Random";
+            }
+            else if (targetString.StartsWith("@"))
+            {
+                logLocation = $"WP @{targetString.Substring(1)}";
+            }
+            else
+            {
+                logLocation = GetPlayerFromString(targetString).playerUsername;
+            }
+
+            LogMessage($"Spawning Enemy - Name: {logName}, ID: {enemyID}, Amount: {amount}, Location: {logLocation}.");
 
             // Uses different enemy list depending on what creature the player is trying to spawn
             if (inside)
@@ -500,7 +559,21 @@ namespace ToxicOmega_Tools
             }
 
             string logValue = value >= 0 ? $"{value}" : "Random";
-            string logLocation = targetString != "$" ? $"{GetPlayerFromString(targetString).playerUsername}" : "Random";
+            string logLocation;
+
+            if (targetString == "$")
+            {
+                logLocation = "Random";
+            }
+            else if (targetString.StartsWith("@"))
+            {
+                logLocation = $"WP @{targetString.Substring(1)}";
+            }
+            else
+            {
+                logLocation = GetPlayerFromString(targetString).playerUsername;
+            }
+
             LogMessage($"Spawning - Name: {allItemsList[itemID].name}, ID: {itemID}, Amount: {amount}, Value: {logValue}, Location: {logLocation}.");
 
             for (int i = 0; i < amount; i++)

@@ -8,8 +8,8 @@ Some important notes:
 * Where applicable, certain symbols can be used when determining a destination:
 	* $: Using "$" indicates random/natural destination. For players this will act as an inverse-teleporter putting them inside the factory. For items it will choose a normal item spawnpoint. For enemies it will either use vents or outside spawnpoints depending on the type of enemy.
 	* !: Using "!" chooses the ships terminal as a target. This is only applicable for teleportation.
-	* @(int): Using "@" followed by a number will choose the waypoint with that index as the target. This is only applicable for teleportation.
-	* #(int): Using "#" followed by a number will choose the player with that Client ID as the target. This is only applicable for teleportation.
+	* @(int): Using "@" followed by a number will choose the waypoint with that index as the target.
+	* #(int): Using "#" followed by a number will choose the player with that Client ID as the target.
 
 ---
 
@@ -33,7 +33,7 @@ Arguments:
 * Item ID: Numerical ID of item you want to spawn. In the future names may be supported.
 * Amount (Default: 1): How many copies of the item should be spawned.
 * Value (Default: Random): Override the default value of the item with a given number.
-* Target (Default: Host Player): Where to spawn the item, supports natural spawning with "$".
+* Target (Default: Host Player): Where to spawn the item, supports natural spawning with "$" and waypoints with @(int).
 
 Example: "give 17 1 420 #3" will spawn one Airhorn worth $420 on the player who's ID is 3.
 
@@ -65,7 +65,7 @@ Spawns an outside enemy based on given ID number. Able to specify how many enemi
 Arguments:
 * Enemy ID: Numerical ID of enemy you want to spawn. In the future names may be supported.
 * Amount (Default: 1): How many copies of the enemy should be spawned.
-* Target (Default: Natural): Player target, also supports natural spawning with "$".
+* Target (Default: Natural): Player target, also supports natural spawning with "$" and waypoints with @(int).
 
 Example: "sout 0 1" will spawn one enemy of ID zero naturally outside. Different moons assign different enemy ID's so make sure you check "eout" to find the ID of the enemy you want to spawn.
 
@@ -77,7 +77,7 @@ Spawns an inside enemy based on given ID number. Able to specify how many enemie
 Arguments:
 * Enemy ID: Numerical ID of enemy you want to spawn. In the future names may be supported.
 * Amount (Default: 1): How many copies of the enemy should be spawned.
-* Target (Default: Natural): Player target, also supports natural spawning with "$".
+* Target (Default: Natural): Player target, also supports natural spawning with "$" and waypoints with @(int).
 
 Example: "sin 0 1 Bob" will spawn one enemy of ID zero on a player who's name starts with (or is) Bob. Different moons assign different enemy ID's so make sure you check "ein" to find the ID of the enemy you want to spawn.
 
@@ -95,7 +95,7 @@ Example: "tp #0 $" will teleport the player with ID to a random location inside 
 ---
 ### **WP/Waypoint/Waypoints Optional: Add/Clear/Door
 
-Lists or creates a waypoint to use as a teleport destination. Waypoints are cleared when leaving a moon.
+Lists or creates a waypoint to use as a destination. Waypoints are cleared when leaving a moon.
 
 Arguments (The text added after is the only argument accepted. If not provided it will list all waypoints):
 * Add: Will create a waypoint at your current position.
