@@ -495,7 +495,6 @@ namespace ToxicOmega_Tools.Patches
                                     else if (obj.GetComponentInChildren<Landmine>())
                                     {
                                         obj.GetComponentInChildren<Landmine>().ToggleMine(false);
-                                        obj.GetComponentInChildren<Landmine>().ToggleMineEnabledLocalClient(false);
                                     }
                                 }
                             }
