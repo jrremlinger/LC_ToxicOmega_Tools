@@ -30,7 +30,7 @@ namespace ToxicOmega_Tools
         internal static ManualLogSource mls;
         public static List<Waypoint> waypoints = new List<Waypoint>();
         public static System.Random shipTeleporterSeed;
-        
+
         void Awake()
         {
             if (Instance == null)
@@ -228,7 +228,7 @@ namespace ToxicOmega_Tools
                             if (shipTeleporterSeed == null)
                             {
                                 mls.LogInfo("Teleport Seed: Random");
-                            Vector3 position2 = currentRound.insideAINodes[UnityEngine.Random.Range(0, currentRound.insideAINodes.Length)].transform.position;
+                                Vector3 position2 = currentRound.insideAINodes[UnityEngine.Random.Range(0, currentRound.insideAINodes.Length)].transform.position;
                                 position = currentRound.GetRandomNavMeshPositionInRadius(position2); 
                             }
                             else
@@ -475,7 +475,7 @@ namespace ToxicOmega_Tools
             }
         }
         
-        public static void SavePlayer(PlayerControllerB player) // Eventually make this save you from the masked
+        public static void SavePlayer(PlayerControllerB player)
         {
             // Knocks any Centipedes off players head
             CentipedeAI[] centipedes = FindObjectsByType<CentipedeAI>(FindObjectsSortMode.None);
@@ -483,10 +483,10 @@ namespace ToxicOmega_Tools
             {
                 if (centipedes[i].clingingToPlayer == player)
                 {
-                    centipedes[i].HitEnemy(1, player, true);
+                    centipedes[i].HitEnemy(0, player, true);
                 }
             }
-
+            
             // Makes forest giant drop player and stuns them
             ForestGiantAI[] giants = FindObjectsByType<ForestGiantAI>(FindObjectsSortMode.None);
             for (int i = 0; i < giants.Length; i++)
@@ -494,6 +494,18 @@ namespace ToxicOmega_Tools
                 if (giants[i].inSpecialAnimationWithPlayer == player)
                 {
                     giants[i].GetComponentInChildren<EnemyAI>().SetEnemyStunned(true, 7.5f, player);
+                }
+            }
+
+            // Save player from the Masked
+            MaskedPlayerEnemy[] masked = FindObjectsByType<MaskedPlayerEnemy>(FindObjectsSortMode.None);
+            for (int i = 0; i < masked.Length; i++)
+            {
+                if (masked[i].inSpecialAnimationWithPlayer == player)
+                {
+                    masked[i].CancelSpecialAnimationWithPlayer();
+                    masked[i].HitEnemy(0, player, true);
+                    masked[i].GetComponentInChildren<EnemyAI>().SetEnemyStunned(true, 7.5f, player);
                 }
             }
         }
