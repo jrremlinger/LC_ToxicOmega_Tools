@@ -87,20 +87,20 @@ namespace ToxicOmega_Tools.Patches
             switch (command[0].Replace("/", "").ToLower())
             {
                 case "help":
-                    List<String> commandList = new List<string> 
+                    List<string> commandList = new List<string> 
                     { 
-                        "Item - Displays page from item list",
-                        "Give - Spawns an item",
-                        "Enemy - Displays page from enemy list",
-                        "Spawn - Spawns an enemy",
-                        "TP - Teleport players",
-                        "WP - Creates or lists waypoints",
-                        "Charge - Charges a player's held item",
-                        "Heal - Heals or revives a player",
-                        "List - Displays current list of spawned \"Players\", \"Items\", or \"Enemies\"",
-                        "Credit - Lists or adjusts the amount of spendable credits in the terminal",
-                        "Code - Lists or toggles blast doors and traps",
-                        "Breaker - Toggles the breaker box"
+                        "Item: Lists spawnable items",
+                        "Give: Spawns items",
+                        "Enemy: Lists spawnable enemies",
+                        "Spawn: Spawns enemies",
+                        "TP: Teleport players",
+                        "WP: Creates/lists waypoints",
+                        "Charge: Charges a player's held item",
+                        "Heal: Heals/revives a player",
+                        "List: List current Players/Items/Enemies",
+                        "Credit: Lists/adjusts spendable credits",
+                        "Code: Lists/toggles blast doors and traps",
+                        "Breaker: Toggles breaker box"
                     };
 
                     int helpPage = 1;
@@ -109,9 +109,9 @@ namespace ToxicOmega_Tools.Patches
                     {
                         int.TryParse(command[1], out helpPage);
                     }
-                    itemListPage = Math.Max(helpPage, 1);
+                    helpPage = Math.Max(helpPage, 1);
 
-                    FindPage(commandList, helpPage, 5, "Command");
+                    FindPage(commandList, helpPage, 4, "Command");
                     break;
                 case "item":
                 case "items":   // Lists all items with their ID numbers
@@ -555,7 +555,7 @@ namespace ToxicOmega_Tools.Patches
 
             return true;
         }
-
+        
         private static void FindPage<T>(List<T> list, int page, int itemsPerPage, string listName)
         {
             List<Item> allItemsList = StartOfRound.Instance.allItemsList.itemsList;
