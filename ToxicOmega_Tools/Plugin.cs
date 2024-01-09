@@ -520,7 +520,7 @@ namespace ToxicOmega_Tools
                 logLocation = GetPlayerFromString(targetString).playerUsername;
             }
 
-            LogMessage($"Spawning Enemy - Name: { logName }, ID: { enemyID }, Amount: { amount }, Location: { logLocation }.");
+            LogMessage($"Spawned Enemy\nName: { logName }, ID: { enemyID }, Amount: { amount }, Location: { logLocation }.");
 
             try
             {
@@ -561,7 +561,7 @@ namespace ToxicOmega_Tools
                 logLocation = GetPlayerFromString(targetString).playerUsername;
             }
 
-            LogMessage($"Spawning - Name: { allItemsList[itemID].name }, ID: { itemID }, Amount: { amount }, Value: { logValue }, Location: { logLocation }.");
+            LogMessage($"Spawned Item\nName: { allItemsList[itemID].name }, ID: { itemID }, Amount: { amount }, Value: { logValue }, Location: { logLocation }.");
 
             for (int i = 0; i < amount; i++)
             {
