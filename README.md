@@ -16,7 +16,7 @@ Some important notes:
 ## Commands
 
 <details>
-  <summary><h4>Help (Page Number)</h4></summary>
+  <summary><h3>Help (Page Number)</h3></summary>
 
 Displays a page of the commands list. Includes brief descriptions of each command and its purpose.
 
@@ -29,7 +29,7 @@ Example: "help" displays page one of the commands list.
 ---
 
 <details>
-  <summary><h4>Item/Items (Page Number)</h4></summary>
+  <summary><h3>Item/Items (Page Number)</h3></summary>
 
 Displays a page of the items list. Includes item names and ID numbers.
 
@@ -42,7 +42,7 @@ Example: "item 2" displays page two of the items list.
 ---
 
 <details>
-  <summary><h4>Give (Item ID) Optional: (Amount) (Value) (Target)</h4></summary>
+  <summary><h3>Give (Item ID) Optional: (Amount) (Value) (Target)</h3></summary>
 
 Spawns an item based on given ID number. Able to specify how many items, their value, and what player it spawns on. "$" as the player will spawn the item in a random location inside the factory.
 
@@ -58,7 +58,7 @@ Example: "give 17 1 420 #3" will spawn one Airhorn worth $420 on the player whos
 ---
 
 <details>
-  <summary><h4>En/Enemy/Enemies (Page Number)</h4></summary>
+  <summary><h3>En/Enemy/Enemies (Page Number)</h3></summary>
 
 Displays a page of the enemies list. Includes enemy names and ID numbers.
 
@@ -71,7 +71,7 @@ Example: "en 2" displays page two of the enemies list.
 ---
 
 <details>
-  <summary><h4>Sp/Spawn (Enemy ID) Optional: (Amount) (Target)</h4></summary>
+  <summary><h3>Sp/Spawn (Enemy ID) Optional: (Amount) (Target)</h3></summary>
 
 Spawns an enemy based on given ID number. Able to specify how many enemies, and where they spawn.
 
@@ -86,7 +86,7 @@ Example: "sp 0 1" will spawn one enemy of ID zero naturally. Different moons ass
 ---
 
 <details>
-  <summary><h4>TP/Tele/Teleport Optional: (Target A) (Target B)</h4></summary>
+  <summary><h3>TP/Tele/Teleport Optional: (Target A) (Target B)</h3></summary>
 
 Teleports a given player to a given destination. Player being teleported cannot be dead. Will automatically sync lighting if your destination is inside or outside. If no arguments are provided, the host will be teleported to the ship's console.
 
@@ -100,7 +100,7 @@ Example: "tp #0 $" will teleport the player with ID to a random location inside 
 ---
 
 <details>
-  <summary><h4>WP/Waypoint/Waypoints Optional: Add/Clear/Door</h4></summary>
+  <summary><h3>WP/Waypoint/Waypoints Optional: Add/Clear/Door</h3></summary>
 
 Lists or creates a waypoint to use as a destination. Waypoints are cleared when leaving a moon.
 
@@ -113,7 +113,7 @@ Arguments (The text added after is the only argument accepted. If not provided i
 ---
 
 <details>
-  <summary><h4>Ch/Charge Optional: (Player Target)</h4></summary>
+  <summary><h3>Ch/Charge Optional: (Player Target)</h3></summary>
 
 Charges a player's held item.
 
@@ -126,7 +126,7 @@ Example: "ch" will simply charge the host's held item.
 ---
 
 <details>
-  <summary><h4>Heal/Save Optional: (Player Target)</h4></summary>
+  <summary><h3>Heal/Save Optional: (Player Target)</h3></summary>
 
 Fully refills a player's health and stamina. Will save a player if they are currently grabbed by a forest giant or have a snare flea on their head. If the target player is dead, they will be revived at the ship's terminal.
 
@@ -139,7 +139,7 @@ Example: "heal John" will heal a player whose name starts with (or is) John.
 ---
 
 <details>
-  <summary><h4>Li/List (List Name) (Page Number)</h4></summary>
+  <summary><h3>Li/List (List Name) (Page Number)</h3></summary>
 
 Displays a page from the list of currently spawned players, items, or enemies. Will smart-search for the list name.
 
@@ -152,7 +152,7 @@ Example: "li e" will list every enemy currently spawned in the current moon.
 ---
 
 <details>
-  <summary><h4>Credit/Credits/Money Optional (Amount)</h4></summary>
+  <summary><h3>Credit/Credits/Money Optional (Amount)</h3></summary>
 
 Lists or adjusts the current amount of group credits in the terminal. If the amount argument is not given it will just display the current amount of credits.
 
@@ -165,7 +165,7 @@ Example: "credit -10" will subtract 10 from the current amount of group credits.
 ---
 
 <details>
-  <summary><h4>Code/Codes (Code)</h4></summary>
+  <summary><h3>Code/Codes (Code)</h3></summary>
 
 Toggles doors/turrets/mines by using their terminal code. If no argument is given it will list all terminal objects on the map.
 
@@ -178,7 +178,7 @@ Example: "code d2" will toggle all objects on the map with code d2.
 ---
 
 <details>
-  <summary><h4>Br/Breaker</h4></summary>
+  <summary><h3>Br/Breaker</h3></summary>
 
 Toggles the breaker box's state.
 </details>
