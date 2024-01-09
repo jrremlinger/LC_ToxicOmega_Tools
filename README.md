@@ -1,10 +1,12 @@
 # ToxicOmega Tools
 
-*Tools triggered using the in-game chat. The main purpose of this mod is for debugging and testing other mods.*
+*Commands triggered using the in-game chat. The main purpose of this mod is for exploring the technical aspects of the game and testing other mods.*
 
 Some important notes:
 * All commands only register if you are the host.
+* All players must have this mod installed, along with LC_API, for it to work properly.
 * Text chat will stay enabled while dead if you are the host.
+* Only the beginning of player names are required when using them in commands (example: searching John will return a player with the name Johnny).
 * Where applicable, certain symbols can be used when determining a destination:
 	* $: Using "$" indicates random/natural destination. For players this will act as an inverse-teleporter putting them inside the factory. For items it will choose a normal item spawnpoint. For enemies it will either use vents or outside spawnpoints depending on the type of enemy.
 	* !: Using "!" chooses the ships terminal as a target. This is only applicable for teleportation.
@@ -108,6 +110,8 @@ Arguments (The text added after is the only argument accepted. If not provided i
 * Add: Will create a waypoint at your current position.
 * Clear: Will delete all waypoints.
 * Door: Will create a waypoint inside the factory at the main entrance.
+
+Example: "wp add" will create a waypoint at your current location.
 </details>
 
 ---
@@ -181,6 +185,9 @@ Example: "code d2" will toggle all objects on the map with code d2.
   <summary><h3>Br/Breaker</h3></summary>
 
 Toggles the breaker box's state.
+
+Example: "br" while the breaker is on will toggle it to be off.
+
 </details>
 
 ---
