@@ -29,6 +29,7 @@ namespace ToxicOmega_Tools
         private static Plugin Instance;
         internal static ManualLogSource mls;
         public static List<Waypoint> waypoints = new List<Waypoint>();
+        public static System.Random shipTeleporterSeed;
         
         void Awake()
         {
@@ -223,8 +224,20 @@ namespace ToxicOmega_Tools
                         if (currentRound.insideAINodes.Length != 0 && currentRound.insideAINodes[0] != null)
                         {
                             HUDManager_Patch.sendPlayerInside = true;
+
+                            if (shipTeleporterSeed == null)
+                            {
+                                mls.LogInfo("Teleport Seed: Random");
                             Vector3 position2 = currentRound.insideAINodes[UnityEngine.Random.Range(0, currentRound.insideAINodes.Length)].transform.position;
-                            position = currentRound.GetRandomNavMeshPositionInRadiusSpherical(position2);
+                                position = currentRound.GetRandomNavMeshPositionInRadius(position2); 
+                            }
+                            else
+                            {
+                                mls.LogInfo("Teleport Seed: Inverse-Teleporter");
+                                Vector3 position2 = currentRound.insideAINodes[shipTeleporterSeed.Next(0, currentRound.insideAINodes.Length)].transform.position;
+                                position = currentRound.GetRandomNavMeshPositionInBoxPredictable(position2, randomSeed: shipTeleporterSeed);
+                            }
+
                             LogMessage($"Teleported { playerToTP.playerUsername } to random location within factory.");
                         }
                         else
