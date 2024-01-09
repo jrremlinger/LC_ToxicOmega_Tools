@@ -67,13 +67,13 @@ namespace ToxicOmega_Tools
                     }
                     else
                     {
-                        LogMessage($"No Player with ID {clientId}!", true);
+                        LogMessage($"No Player with ID { clientId }!", true);
                         return null;
                     }
                 }
                 else
                 {
-                    LogMessage($"Player ID # {clientIdString} is invalid!", true);
+                    LogMessage($"Player ID # { clientIdString } is invalid!", true);
                     return null;
                 }
             }
@@ -87,7 +87,7 @@ namespace ToxicOmega_Tools
                 }
                 else
                 {
-                    LogMessage($"Player {searchString} not found!", true);
+                    LogMessage($"Player { searchString } not found!", true);
                     return null;
                 }
             }
@@ -139,13 +139,13 @@ namespace ToxicOmega_Tools
                             }
                             else
                             {
-                                LogMessage($"Waypoint @{input.Substring(1)} is out of bounds!", true);
+                                LogMessage($"Waypoint @{ input.Substring(1) } is out of bounds!", true);
                                 return Vector3.zero;
                             }
                         }
                         else
                         {
-                            LogMessage($"Waypoint @{input.Substring(1)} is invalid!", true);
+                            LogMessage($"Waypoint @{ input.Substring(1) } is invalid!", true);
                             return Vector3.zero;
                         }
                     }
@@ -184,13 +184,13 @@ namespace ToxicOmega_Tools
                             }
                             else
                             {
-                                LogMessage($"Waypoint @{input.Substring(1)} is out of bounds!", true);
+                                LogMessage($"Waypoint @{ input.Substring(1) } is out of bounds!", true);
                                 return Vector3.zero;
                             }
                         }
                         else
                         {
-                            LogMessage($"Waypoint @{input.Substring(1)} is invalid!", true);
+                            LogMessage($"Waypoint @{ input.Substring(1) } is invalid!", true);
                             return Vector3.zero;
                         }
                     }
@@ -225,7 +225,7 @@ namespace ToxicOmega_Tools
                             HUDManager_Patch.sendPlayerInside = true;
                             Vector3 position2 = currentRound.insideAINodes[UnityEngine.Random.Range(0, currentRound.insideAINodes.Length)].transform.position;
                             position = currentRound.GetRandomNavMeshPositionInRadiusSpherical(position2);
-                            LogMessage($"Teleported {playerToTP.playerUsername} to random location within factory.");
+                            LogMessage($"Teleported { playerToTP.playerUsername } to random location within factory.");
                         }
                         else
                         {
@@ -239,7 +239,7 @@ namespace ToxicOmega_Tools
                         {
                             HUDManager_Patch.sendPlayerInside = false;
                             position = terminal.transform.position;
-                            LogMessage($"Teleported {playerToTP.playerUsername} to terminal.");
+                            LogMessage($"Teleported { playerToTP.playerUsername } to terminal.");
                         }
                         else
                         {
@@ -256,17 +256,17 @@ namespace ToxicOmega_Tools
                                 Waypoint wp = waypoints[wpIndex];
                                 HUDManager_Patch.sendPlayerInside = wp.isInside;
                                 position = wp.position;
-                                LogMessage($"Teleported {playerToTP.playerUsername} to Waypoint @{wpIndex}.");
+                                LogMessage($"Teleported { playerToTP.playerUsername } to Waypoint @{wpIndex}.");
                             }
                             else
                             {
-                                LogMessage($"Waypoint @{input.Substring(1)} is out of bounds!", true);
+                                LogMessage($"Waypoint @{ input.Substring(1) } is out of bounds!", true);
                                 return Vector3.zero;
                             }
                         }
                         else
                         {
-                            LogMessage($"Waypoint @{input.Substring(1)} is invalid!", true);
+                            LogMessage($"Waypoint @{ input.Substring(1) } is invalid!", true);
                             return Vector3.zero;
                         }
                     }
@@ -288,7 +288,7 @@ namespace ToxicOmega_Tools
                 }
                 else if (playerTarget.isPlayerDead)
                 {
-                    LogMessage($"Could not target {playerTarget.playerUsername}!\nPlayer is dead!", true);
+                    LogMessage($"Could not target { playerTarget.playerUsername }!\nPlayer is dead!", true);
                     return Vector3.zero;
                 }
 
@@ -297,7 +297,7 @@ namespace ToxicOmega_Tools
                 if (isTP)
                 {
                     HUDManager_Patch.sendPlayerInside = Player.Get(playerTarget).IsInFactory;
-                    LogMessage($"Teleported {playerToTP.playerUsername} to {playerTarget.playerUsername}.");
+                    LogMessage($"Teleported { playerToTP.playerUsername } to { playerTarget.playerUsername }.");
                 }
             }
 
@@ -513,14 +513,14 @@ namespace ToxicOmega_Tools
             }
             else if (targetString.StartsWith("@"))
             {
-                logLocation = $"WP @{targetString.Substring(1)}";
+                logLocation = $"WP @{ targetString.Substring(1) }";
             }
             else
             {
                 logLocation = GetPlayerFromString(targetString).playerUsername;
             }
 
-            LogMessage($"Spawning Enemy - Name: {logName}, ID: {enemyID}, Amount: {amount}, Location: {logLocation}.");
+            LogMessage($"Spawning Enemy - Name: { logName }, ID: { enemyID }, Amount: { amount }, Location: { logLocation }.");
 
             try
             {
@@ -531,7 +531,7 @@ namespace ToxicOmega_Tools
             }
             catch (Exception ex)
             {
-                LogMessage($"Unable to Spawn Enemy ID: {enemyID}", true);
+                LogMessage($"Unable to Spawn Enemy ID: { enemyID }", true);
                 mls.LogError(ex);
             }
         }
@@ -545,7 +545,7 @@ namespace ToxicOmega_Tools
                 return;
             }
 
-            string logValue = value >= 0 ? $"{value}" : "Random";
+            string logValue = value >= 0 ? $"{ value }" : "Random";
             string logLocation;
 
             if (targetString == "$")
@@ -554,14 +554,14 @@ namespace ToxicOmega_Tools
             }
             else if (targetString.StartsWith("@"))
             {
-                logLocation = $"WP @{targetString.Substring(1)}";
+                logLocation = $"WP @{ targetString.Substring(1) }";
             }
             else
             {
                 logLocation = GetPlayerFromString(targetString).playerUsername;
             }
 
-            LogMessage($"Spawning - Name: {allItemsList[itemID].name}, ID: {itemID}, Amount: {amount}, Value: {logValue}, Location: {logLocation}.");
+            LogMessage($"Spawning - Name: { allItemsList[itemID].name }, ID: { itemID }, Amount: { amount }, Value: { logValue }, Location: { logLocation }.");
 
             for (int i = 0; i < amount; i++)
             {
@@ -594,7 +594,7 @@ namespace ToxicOmega_Tools
                 }
                 catch (Exception ex)
                 {
-                    LogMessage($"Unable to Spawn Item ID: {itemID}", true);
+                    LogMessage($"Unable to Spawn Item ID: { itemID }", true);
                     mls.LogError(ex);
                 }
             }

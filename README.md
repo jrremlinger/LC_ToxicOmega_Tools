@@ -101,9 +101,14 @@ Arguments:
 Example: "heal John" will heal a player who's name starts with (or is) John.
 
 ---
-### **List/Player/Players**
+### **Li/List (List Name) (Page Number)**
 
-Lists all players currently in the server with their ID numbers.
+Displays a page from the list of currently spawned players, items, or enemies. Will smart-search for list name.
+
+Arguments:
+* List Name (Default: Players): Which list to view, supports "players", "items", and "enemy/enemies".
+
+Example: "li e" will list every enemy currently spawned in the current moon.
 
 ---
 ### **Credit/Credits/Money Optional (Amount)**
