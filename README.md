@@ -15,17 +15,21 @@ Some important notes:
 
 ## Commands
 
-### **Help (Page Number)**
+<details>
+  <summary><h4>Help (Page Number)</h4></summary>
 
-Displays a page of the commands list. Includes brief descriptions  on each command and its purpose.
+Displays a page of the commands list. Includes brief descriptions of each command and its purpose.
 
 Arguments:
 * Page Number: Specific page of the commands list to view.
 
 Example: "help" displays page one of the commands list.
+</details>
 
 ---
-### **Item/Items (Page Number)**
+
+<details>
+  <summary><h4>Item/Items (Page Number)</h4></summary>
 
 Displays a page of the items list. Includes item names and ID numbers.
 
@@ -33,9 +37,12 @@ Arguments:
 * Page Number: Specific page of the item list to view. Will default to the last page viewed.
 
 Example: "item 2" displays page two of the items list.
+</details>
 
 ---
-### **Give (Item ID) Optional: (Amount) (Value) (Target)**
+
+<details>
+  <summary><h4>Give (Item ID) Optional: (Amount) (Value) (Target)</h4></summary>
 
 Spawns an item based on given ID number. Able to specify how many items, their value, and what player it spawns on. "$" as the player will spawn the item in a random location inside the factory.
 
@@ -45,10 +52,13 @@ Arguments:
 * Value (Default: Random): Override the default value of the item with a given number.
 * Target (Default: Host Player): Where to spawn the item, supports natural spawning with "$" and waypoints with @(int).
 
-Example: "give 17 1 420 #3" will spawn one Airhorn worth $420 on the player who's ID is 3.
+Example: "give 17 1 420 #3" will spawn one Airhorn worth $420 on the player whose ID is 3.
+</details>
 
 ---
-### **En/Enemy/Enemies (Page Number)**
+
+<details>
+  <summary><h4>En/Enemy/Enemies (Page Number)</h4></summary>
 
 Displays a page of the enemies list. Includes enemy names and ID numbers.
 
@@ -56,9 +66,12 @@ Arguments:
 * Page Number: Specific page of the enemies list to view. Will default to the last page viewed.
 
 Example: "en 2" displays page two of the enemies list.
+</details>
 
 ---
-### **Sp/Spawn (Enemy ID) Optional: (Amount) (Target)**
+
+<details>
+  <summary><h4>Sp/Spawn (Enemy ID) Optional: (Amount) (Target)</h4></summary>
 
 Spawns an enemy based on given ID number. Able to specify how many enemies, and where they spawn.
 
@@ -67,21 +80,27 @@ Arguments:
 * Amount (Default: 1): How many copies of the enemy should be spawned.
 * Target (Default: Natural): Player target, also supports natural spawning with "$" and waypoints with @(int).
 
-Example: "sp 0 1" will spawn one enemy of ID zero naturally. Different moons assign different enemy ID's so make sure you check the "enemy" command to find the ID of the enemy you want to spawn.
+Example: "sp 0 1" will spawn one enemy of ID zero naturally. Different moons assign different enemy IDs, so make sure you check the "enemy" command to find the ID of the enemy you want to spawn.
+</details>
 
 ---
-### **TP/Tele/Teleport Optional: (Target A) (Target B)**
 
-Teleports a given player to a given destination. Player being teleported can not be dead. Will automatically sync lighting if your destination is inside or outside. If no arguments are provided, the host will be teleported to the ship's console.
+<details>
+  <summary><h4>TP/Tele/Teleport Optional: (Target A) (Target B)</h4></summary>
+
+Teleports a given player to a given destination. Player being teleported cannot be dead. Will automatically sync lighting if your destination is inside or outside. If no arguments are provided, the host will be teleported to the ship's console.
 
 Arguments:
-* Target A: If this is the only argument given it supports "!", "@(int)", and "$". Otherwise it must be a player.
-* Target B: Can be a player, "!", "@(int)", or "$"
+* Target A: If this is the only argument given it supports "!", "@(int)", and "$". Otherwise, it must be a player.
+* Target B: Can be a player, "!", "@(int)", or "$".
 
 Example: "tp #0 $" will teleport the player with ID to a random location inside the factory.
+</details>
 
 ---
-### **WP/Waypoint/Waypoints Optional: Add/Clear/Door
+
+<details>
+  <summary><h4>WP/Waypoint/Waypoints Optional: Add/Clear/Door</h4></summary>
 
 Lists or creates a waypoint to use as a destination. Waypoints are cleared when leaving a moon.
 
@@ -89,49 +108,64 @@ Arguments (The text added after is the only argument accepted. If not provided i
 * Add: Will create a waypoint at your current position.
 * Clear: Will delete all waypoints.
 * Door: Will create a waypoint inside the factory at the main entrance.
+</details>
 
 ---
-### **Ch/Charge Optional: (Player Target)**
 
-Charges a players held item.
+<details>
+  <summary><h4>Ch/Charge Optional: (Player Target)</h4></summary>
 
-Arguments: 
+Charges a player's held item.
+
+Arguments:
 * Player Target (Default: Host Player): Only supports player names/id.
 
 Example: "ch" will simply charge the host's held item.
+</details>
 
 ---
-### **Heal/Save Optional: (Player Target)**
 
-Fully refills a players health and stamina. Will save a player if they are currently grabbed by a forest giant or have a snare flea on their head. If target player is dead, they will be revived at the ship's terminal.
+<details>
+  <summary><h4>Heal/Save Optional: (Player Target)</h4></summary>
 
-Arguments: 
+Fully refills a player's health and stamina. Will save a player if they are currently grabbed by a forest giant or have a snare flea on their head. If the target player is dead, they will be revived at the ship's terminal.
+
+Arguments:
 * Player Target (Default: Host Player): Only supports player names/id.
 
-Example: "heal John" will heal a player who's name starts with (or is) John.
+Example: "heal John" will heal a player whose name starts with (or is) John.
+</details>
 
 ---
-### **Li/List (List Name) (Page Number)**
 
-Displays a page from the list of currently spawned players, items, or enemies. Will smart-search for list name.
+<details>
+  <summary><h4>Li/List (List Name) (Page Number)</h4></summary>
+
+Displays a page from the list of currently spawned players, items, or enemies. Will smart-search for the list name.
 
 Arguments:
 * List Name (Default: Players): Which list to view, supports "players", "items", and "enemy/enemies".
 
 Example: "li e" will list every enemy currently spawned in the current moon.
+</details>
 
 ---
-### **Credit/Credits/Money Optional (Amount)**
 
-Lists or adjusts the current amount of group credits in the terminal. If amount argument is not given it will just display the current amount of credits.
+<details>
+  <summary><h4>Credit/Credits/Money Optional (Amount)</h4></summary>
+
+Lists or adjusts the current amount of group credits in the terminal. If the amount argument is not given it will just display the current amount of credits.
 
 Arguments:
 * Amount: The amount is the adjustment to be made to the current amount of credits.
 
 Example: "credit -10" will subtract 10 from the current amount of group credits.
+</details>
 
 ---
-### **Code/Codes (Code)**
+
+<details>
+  <summary><h4>Code/Codes (Code)</h4></summary>
 
 Toggles doors/turrets/mines by using their terminal code. If no argument is given it will list all terminal objects on the map.
 
@@ -139,10 +173,14 @@ Arguments:
 * Code: The code that appears on the ship's map corresponding to the object.
 
 Example: "code d2" will toggle all objects on the map with code d2.
+</details>
 
 ---
-### **Br/Breaker**
+
+<details>
+  <summary><h4>Br/Breaker</h4></summary>
 
 Toggles the breaker box's state.
+</details>
 
 ---
