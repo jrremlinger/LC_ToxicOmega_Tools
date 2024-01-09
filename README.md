@@ -15,6 +15,16 @@ Some important notes:
 
 ## Commands
 
+### **Help (Page Number)**
+
+Displays a page of the commands list. Includes brief descriptions  on each command and its purpose.
+
+Arguments:
+* Page Number: Specific page of the commands list to view.
+
+Example: "help" displays page one of the commands list.
+
+---
 ### **Item/Items (Page Number)**
 
 Displays a page of the items list. Includes item names and ID numbers.
@@ -22,7 +32,7 @@ Displays a page of the items list. Includes item names and ID numbers.
 Arguments:
 * Page Number: Specific page of the item list to view. Will default to the last page viewed.
 
-Example: "item 2" displays page two of the items list
+Example: "item 2" displays page two of the items list.
 
 ---
 ### **Give (Item ID) Optional: (Amount) (Value) (Target)**
@@ -45,7 +55,7 @@ Displays a page of the enemies list. Includes enemy names and ID numbers.
 Arguments:
 * Page Number: Specific page of the enemies list to view. Will default to the last page viewed.
 
-Example: "en 2" displays page two of the enemies list
+Example: "en 2" displays page two of the enemies list.
 
 ---
 ### **Sp/Spawn (Enemy ID) Optional: (Amount) (Target)**
