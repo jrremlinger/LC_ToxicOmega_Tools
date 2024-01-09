@@ -349,7 +349,6 @@ namespace ToxicOmega_Tools
             // Sets correct AudioReverbPresets
             if ((bool)FindObjectOfType<AudioReverbPresets>())
             {
-                mls.LogInfo("Audio preset " + (isInside ? 2 : 3));
                 FindObjectOfType<AudioReverbPresets>().audioPresets[isInside ? 2 : 3].ChangeAudioReverbForPlayer(playerController);
             }
 

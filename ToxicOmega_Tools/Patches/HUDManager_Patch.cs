@@ -42,7 +42,6 @@ namespace ToxicOmega_Tools.Patches
                 __instance.chatTextField.Select();
                 __instance.PingHUDElement(__instance.Chat, 0.1f, endAlpha: 1f);
                 __instance.typingIndicator.enabled = true;
-                Plugin.mls.LogError("HUD 3");
                 return false;
             }
             return true;
@@ -131,12 +130,6 @@ namespace ToxicOmega_Tools.Patches
 
                     if (command.Length < 2)
                     {
-                        string text = $"\nItem List (ID | Name) Total Items: { allItemsList.Count }";
-                        for (int i = 0; i < allItemsList.Count; i++)
-                        {
-                            text += $"\n{ i } | { allItemsList[i].itemName }";
-                        }
-                        Plugin.mls.LogInfo(text);
                         FindPage(allItemsList, 1, 10, "Item");
                         break;
                     }
