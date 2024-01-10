@@ -612,7 +612,7 @@ namespace ToxicOmega_Tools.Patches
                     }
                 }
 
-                pageText = pageText.TrimEnd(',', ' ', '\n') + ".";
+                pageText = pageText.TrimEnd(',', ' ', '\n') + (listName == "Player" ? "" : ".");
                 string pageHeader = $"{ listName }{ (appendList ? " List" : "" ) } (Page { page } of { maxPages })";
                 HUDManager.Instance.DisplayTip(pageHeader, pageText);
             }

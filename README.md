@@ -132,7 +132,7 @@ Example: "ch" will simply charge the host's held item.
 <details>
   <summary><h3>Heal/Save Optional: (Player Target)</h3></summary>
 
-Fully refills a player's health and stamina. Will save a player if they are currently in a kill animation with Snare Fleas, Masked Players, or Forest Giants. If the target player is dead, they will be revived at the ship's terminal.
+Fully refills a player's health and stamina. Will save a player if they are currently in a kill animation with Snare Fleas, Forest Giants, or Masked Players. If the target player is dead, they will be revived at the ship's terminal.
 
 Arguments:
 * Player Target (Default: Host Player): Only supports player names/id.

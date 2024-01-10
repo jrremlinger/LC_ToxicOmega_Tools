@@ -507,6 +507,12 @@ namespace ToxicOmega_Tools
                     masked[i].GetComponentInChildren<EnemyAI>().SetEnemyStunned(true, 7.5f, player);
                 }
             }
+
+            // Clears blood off of screen
+            if (StartOfRound.Instance.localPlayerController.playerClientId == player.playerClientId)
+            {
+                HUDManager.Instance.HUDAnimator.SetBool("biohazardDamage", false);
+            }
         }
 
         public static void SpawnEnemy(int enemyID, int amount, string targetString)
