@@ -31,7 +31,7 @@ Example: "help" displays page one of the commands list.
 ---
 
 <details>
-  <summary><h3>Item/Items (Page Number)</h3></summary>
+  <summary><h3>It/Item/Items (Page Number)</h3></summary>
 
 Displays a page of the items list. Includes item names and ID numbers.
 
@@ -44,7 +44,7 @@ Example: "item 2" displays page two of the items list.
 ---
 
 <details>
-  <summary><h3>Give (Item ID) Optional: (Amount) (Value) (Target)</h3></summary>
+  <summary><h3>Gi/Give (Item ID) Optional: (Amount) (Value) (Target)</h3></summary>
 
 Spawns an item based on given ID number. Able to specify how many items, their value, and what player it spawns on. "$" as the player will spawn the item in a random location inside the factory.
 
@@ -130,7 +130,7 @@ Example: "ch" will simply charge the host's held item.
 ---
 
 <details>
-  <summary><h3>Heal/Save Optional: (Player Target)</h3></summary>
+  <summary><h3>He/Heal/Save Optional: (Player Target)</h3></summary>
 
 Fully refills a player's health and stamina. Will save a player if they are currently in a kill animation with Snare Fleas, Forest Giants, or Masked Players. If the target player is dead, they will be revived at the ship's terminal.
 
@@ -156,7 +156,7 @@ Example: "li e" will list every enemy currently spawned in the current moon.
 ---
 
 <details>
-  <summary><h3>Credit/Credits/Money Optional (Amount)</h3></summary>
+  <summary><h3>Cr/Credit/Credits/Money Optional (Amount)</h3></summary>
 
 Lists or adjusts the current amount of group credits in the terminal. If the amount argument is not given it will just display the current amount of credits.
 
@@ -169,7 +169,7 @@ Example: "credit -10" will subtract 10 from the current amount of group credits.
 ---
 
 <details>
-  <summary><h3>Code/Codes (Code)</h3></summary>
+  <summary><h3>Co/Code/Codes (Code)</h3></summary>
 
 Toggles doors/turrets/mines by using their terminal code. If no argument is given it will list all terminal objects on the map.
 

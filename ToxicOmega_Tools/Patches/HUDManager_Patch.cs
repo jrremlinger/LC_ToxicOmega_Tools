@@ -1,12 +1,10 @@
-﻿using DigitalRuby.ThunderAndLightning;
-using GameNetcodeStuff;
+﻿using GameNetcodeStuff;
 using HarmonyLib;
 using LC_API.GameInterfaceAPI.Features;
 using LC_API.Networking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Contexts;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -19,7 +17,6 @@ namespace ToxicOmega_Tools.Patches
     {
         public static bool sendPlayerInside = true;
         private static int itemListPage;
-        private static int outsideListPage;
         private static int enemyListPage;
         private static int itemID;
         private static int itemCount;
@@ -58,9 +55,8 @@ namespace ToxicOmega_Tools.Patches
             PlayerControllerB localPlayerController = GameNetworkManager.Instance.localPlayerController;
 
             allEnemiesList = new List<SpawnableEnemyWithRarity>();
-            allEnemiesList.AddRange(currentRound.currentLevel.DaytimeEnemies);
-            allEnemiesList.AddRange(currentRound.currentLevel.OutsideEnemies);
-            allEnemiesList.AddRange(currentRound.currentLevel.Enemies);
+            allEnemiesList.AddRange(Plugin.Instance.customOutsideList);
+            allEnemiesList.AddRange(Plugin.Instance.customInsideList);
 
             bool flag = true;   // Chat will not be sent if flag = true; If no command prefix is recognized it will be set to false
             string chatMessage = __instance.chatTextField.text;
@@ -112,6 +108,7 @@ namespace ToxicOmega_Tools.Patches
 
                     FindPage(commandList, helpPage, 4, "Command");
                     break;
+                case "it":
                 case "item":
                 case "items":   // Lists all items with their ID numbers
                     if (command.Length > 1)
@@ -122,6 +119,7 @@ namespace ToxicOmega_Tools.Patches
 
                     FindPage(allItemsList, itemListPage, 10, "Item");
                     break;
+                case "gi":
                 case "give":    // Spawns one or more items at a player, custom item value can be set
                     playerString = "";
                     itemID = 0;
@@ -275,13 +273,13 @@ namespace ToxicOmega_Tools.Patches
                 case "waypoints":
                     if (command.Length == 1)
                     {
-                        if (Plugin.waypoints.Count > 0)
+                        if (Plugin.Instance.waypoints.Count > 0)
                         {
                             string pageText = "";
 
-                            for (int i = 0; i < Plugin.waypoints.Count; i++)
+                            for (int i = 0; i < Plugin.Instance.waypoints.Count; i++)
                             {
-                                pageText += $"@{ i }{ Plugin.waypoints[i].position }, ";
+                                pageText += $"@{ i }{ Plugin.Instance.waypoints[i].position }, ";
                             }
 
                             pageText = pageText.TrimEnd(',', ' ') + ".";
@@ -298,19 +296,19 @@ namespace ToxicOmega_Tools.Patches
                         {
                             bool wpInside = Player.Get(localPlayerController).IsInFactory;
                             Vector3 wpPosition = localPlayerController.transform.position;
-                            Plugin.waypoints.Add(new Waypoint { isInside = wpInside, position = wpPosition });
-                            Plugin.LogMessage($"Waypoint @{ Plugin.waypoints.Count - 1 } created at { wpPosition }.");
+                            Plugin.Instance.waypoints.Add(new Waypoint { isInside = wpInside, position = wpPosition });
+                            Plugin.LogMessage($"Waypoint @{ Plugin.Instance.waypoints.Count - 1 } created at { wpPosition }.");
                         }
                     }
                     else if ("clear".StartsWith(command[1]))
                     {
-                        Plugin.waypoints.Clear();
+                        Plugin.Instance.waypoints.Clear();
                         Plugin.LogMessage($"Waypoints cleared.");
                     }
                     else if ("door".StartsWith(command[1]) || "entrance".StartsWith(command[1]))
                     {
-                        Plugin.waypoints.Add(new Waypoint { isInside = true, position = RoundManager.FindMainEntrancePosition(true) });
-                        Plugin.LogMessage($"Waypoint @{ Plugin.waypoints.Count - 1 } created at Main Entrance.");
+                        Plugin.Instance.waypoints.Add(new Waypoint { isInside = true, position = RoundManager.FindMainEntrancePosition(true) });
+                        Plugin.LogMessage($"Waypoint @{ Plugin.Instance.waypoints.Count - 1 } created at Main Entrance.");
                     }
                     break;
                 case "ch":
@@ -352,6 +350,7 @@ namespace ToxicOmega_Tools.Patches
                         Plugin.LogMessage($"Could not charge { playerTarget.playerUsername }'s item!\nPlayer is dead!", true);
                     }
                     break;
+                case "he":
                 case "heal":
                 case "save":    // Sets player health and stamina to max, saves player if in death animation with enemy
                     if (command.Length < 2)
@@ -419,6 +418,7 @@ namespace ToxicOmega_Tools.Patches
                     }
 
                     break;
+                case "cr":
                 case "credit":
                 case "credits":
                 case "money":   // View or adjust current amount of groupCredits
@@ -442,11 +442,12 @@ namespace ToxicOmega_Tools.Patches
                         Plugin.LogMessage("Terminal not found!", true);
                     }
                     break;
+                case "co":
                 case "code":
                 case "codes":
                     TerminalAccessibleObject[] terminalObjects = UnityEngine.Object.FindObjectsOfType<TerminalAccessibleObject>();
                     
-                    if (terminalObjects.Length > 0 && terminalObjects[0] != null)
+                    if (terminalObjects.Length > 0)
                     {
                         if (command.Length < 2)
                         {
@@ -491,8 +492,8 @@ namespace ToxicOmega_Tools.Patches
                                     }
                                 }
                             }
-                            Plugin.LogMessage($"Attempted to toggle all TerminalAccessibleObject of code { command[1] }.");
 
+                            Plugin.LogMessage($"Attempted to toggle all TerminalAccessibleObject of code { command[1] }.");
                         }
                     }
                     else
@@ -560,15 +561,16 @@ namespace ToxicOmega_Tools.Patches
             int totalItems = list.Count;
             int maxPages = (int)Math.Ceiling((double)totalItems / itemsPerPage);
 
+            page = Math.Min(page, maxPages);
+
             int startIndex = (page - 1) * itemsPerPage;
             int endIndex = startIndex + itemsPerPage - 1;
 
-            page = Math.Min(page, maxPages);
             endIndex = Math.Min(endIndex, totalItems - 1);
 
             if (startIndex < 0 || startIndex >= totalItems || startIndex > endIndex)
             {
-                if (startIndex >= totalItems)
+                if (startIndex >= totalItems || list.Count == 0)
                 {
                     Plugin.LogMessage($"{listName} list is empty!", true);
                     return;

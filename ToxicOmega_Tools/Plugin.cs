@@ -11,10 +11,7 @@ using Unity.Netcode;
 using System;
 using ToxicOmega_Tools.Patches;
 using LC_API.Networking;
-using static UnityEngine.InputSystem.InputRemoting;
 using LC_API.GameInterfaceAPI.Features;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace ToxicOmega_Tools
 {
@@ -26,10 +23,14 @@ namespace ToxicOmega_Tools
         private const string modVersion = "1.0.0";
 
         private readonly Harmony harmony = new Harmony(modGUID);
-        private static Plugin Instance;
+
+        internal static Plugin Instance;
         internal static ManualLogSource mls;
-        public static List<Waypoint> waypoints = new List<Waypoint>();
-        public static System.Random shipTeleporterSeed;
+        
+        internal List<SpawnableEnemyWithRarity> customInsideList = new List<SpawnableEnemyWithRarity>();
+        internal List<SpawnableEnemyWithRarity> customOutsideList = new List<SpawnableEnemyWithRarity>();
+        internal List<Waypoint> waypoints = new List<Waypoint>();
+        internal System.Random shipTeleporterSeed;
 
         void Awake()
         {
@@ -118,7 +119,7 @@ namespace ToxicOmega_Tools
                 case 0:
                     if (input == "$")
                     {
-                        if (randomScrapLocations.Length != 0 && randomScrapLocations[0] != null)
+                        if (randomScrapLocations.Length > 0)
                         {
                             position = randomScrapLocations[UnityEngine.Random.Range(0, randomScrapLocations.Length)].transform.position;
                         }
@@ -132,15 +133,15 @@ namespace ToxicOmega_Tools
                     {
                         if (int.TryParse(input.Substring(1), out int wpIndex))
                         {
-                            if (wpIndex < waypoints.Count)
+                            if (wpIndex < Instance.waypoints.Count)
                             {
-                                Waypoint wp = waypoints[wpIndex];
+                                Waypoint wp = Instance.waypoints[wpIndex];
                                 HUDManager_Patch.sendPlayerInside = wp.isInside;
                                 position = wp.position;
                             }
                             else
                             {
-                                LogMessage($"Waypoint @{ input.Substring(1) } is out of bounds!", true);
+                                LogMessage($"Waypoint @{ input.Substring(1) } does not exist!", true);
                                 return Vector3.zero;
                             }
                         }
@@ -162,7 +163,7 @@ namespace ToxicOmega_Tools
                 case 1:
                     if (input == "" || input == "$")
                     {
-                        if (currentRound.outsideAINodes.Length != 0 && currentRound.outsideAINodes[0] != null)
+                        if (currentRound.outsideAINodes.Length > 0 && currentRound.outsideAINodes[0] != null)
                         {
                             position = currentRound.outsideAINodes[UnityEngine.Random.Range(0, currentRound.outsideAINodes.Length)].transform.position;
                             //positionOutput = GameObject.FindGameObjectsWithTag("OutsideAINode")[UnityEngine.Random.Range(0, GameObject.FindGameObjectsWithTag("OutsideAINode").Length - 1)].transform.position;
@@ -177,15 +178,15 @@ namespace ToxicOmega_Tools
                     {
                         if (int.TryParse(input.Substring(1), out int wpIndex))
                         {
-                            if (wpIndex < waypoints.Count)
+                            if (wpIndex < Instance.waypoints.Count)
                             {
-                                Waypoint wp = waypoints[wpIndex];
+                                Waypoint wp = Instance.waypoints[wpIndex];
                                 HUDManager_Patch.sendPlayerInside = wp.isInside;
                                 position = wp.position;
                             }
                             else
                             {
-                                LogMessage($"Waypoint @{ input.Substring(1) } is out of bounds!", true);
+                                LogMessage($"Waypoint @{ input.Substring(1) } does not exist!", true);
                                 return Vector3.zero;
                             }
                         }
@@ -203,7 +204,7 @@ namespace ToxicOmega_Tools
                 case 2:
                     if (input == "" || input == "$")
                     {
-                        if (currentRound.allEnemyVents.Length != 0 && currentRound.allEnemyVents[0] != null)
+                        if (currentRound.allEnemyVents.Length > 0 && currentRound.allEnemyVents[0] != null)
                         {
                             position = currentRound.allEnemyVents[UnityEngine.Random.Range(0, currentRound.allEnemyVents.Length)].floorNode.position;
                         }
@@ -221,11 +222,11 @@ namespace ToxicOmega_Tools
                 case 3:
                     if (input == "$")
                     {
-                        if (currentRound.insideAINodes.Length != 0 && currentRound.insideAINodes[0] != null)
+                        if (currentRound.insideAINodes.Length > 0 && currentRound.insideAINodes[0] != null)
                         {
                             HUDManager_Patch.sendPlayerInside = true;
 
-                            if (shipTeleporterSeed == null)
+                            if (Instance.shipTeleporterSeed == null)
                             {
                                 mls.LogInfo("Teleport Seed: Random");
                                 Vector3 position2 = currentRound.insideAINodes[UnityEngine.Random.Range(0, currentRound.insideAINodes.Length)].transform.position;
@@ -234,8 +235,8 @@ namespace ToxicOmega_Tools
                             else
                             {
                                 mls.LogInfo("Teleport Seed: Inverse-Teleporter");
-                                Vector3 position2 = currentRound.insideAINodes[shipTeleporterSeed.Next(0, currentRound.insideAINodes.Length)].transform.position;
-                                position = currentRound.GetRandomNavMeshPositionInBoxPredictable(position2, randomSeed: shipTeleporterSeed);
+                                Vector3 position2 = currentRound.insideAINodes[Instance.shipTeleporterSeed.Next(0, currentRound.insideAINodes.Length)].transform.position;
+                                position = currentRound.GetRandomNavMeshPositionInBoxPredictable(position2, randomSeed: Instance.shipTeleporterSeed);
                             }
 
                             LogMessage($"Teleported { playerToTP.playerUsername } to random location within factory.");
@@ -264,16 +265,16 @@ namespace ToxicOmega_Tools
                     {
                         if (int.TryParse(input.Substring(1), out int wpIndex))
                         {
-                            if (wpIndex < waypoints.Count)
+                            if (wpIndex < Instance.waypoints.Count)
                             {
-                                Waypoint wp = waypoints[wpIndex];
+                                Waypoint wp = Instance.waypoints[wpIndex];
                                 HUDManager_Patch.sendPlayerInside = wp.isInside;
                                 position = wp.position;
                                 LogMessage($"Teleported { playerToTP.playerUsername } to Waypoint @{wpIndex}.");
                             }
                             else
                             {
-                                LogMessage($"Waypoint @{ input.Substring(1) } is out of bounds!", true);
+                                LogMessage($"Waypoint @{ input.Substring(1) } does not exist!", true);
                                 return Vector3.zero;
                             }
                         }
@@ -520,11 +521,10 @@ namespace ToxicOmega_Tools
             bool inside = false;
             RoundManager currentRound = RoundManager.Instance;
             List<SpawnableEnemyWithRarity> allEnemiesList = new List<SpawnableEnemyWithRarity>();
-            allEnemiesList.AddRange(currentRound.currentLevel.DaytimeEnemies);
-            allEnemiesList.AddRange(currentRound.currentLevel.OutsideEnemies);
-            allEnemiesList.AddRange(currentRound.currentLevel.Enemies);
+            allEnemiesList.AddRange(Instance.customOutsideList);
+            allEnemiesList.AddRange(Instance.customInsideList);
 
-            if (enemyID > (currentRound.currentLevel.DaytimeEnemies.Count + currentRound.currentLevel.OutsideEnemies.Count) - 1)
+            if (enemyID > Instance.customOutsideList.Count)
             {
                 inside = true;
             }

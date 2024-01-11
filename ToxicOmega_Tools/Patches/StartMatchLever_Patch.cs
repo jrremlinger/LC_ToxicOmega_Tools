@@ -1,6 +1,4 @@
-﻿using GameNetcodeStuff;
-using HarmonyLib;
-using LC_API.GameInterfaceAPI.Features;
+﻿using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +14,7 @@ namespace ToxicOmega_Tools.Patches
         [HarmonyPostfix]
         private static void resetWaypoints()
         {
-            Plugin.waypoints.Clear();
+            Plugin.Instance.waypoints.Clear();
         }
     }
 }
