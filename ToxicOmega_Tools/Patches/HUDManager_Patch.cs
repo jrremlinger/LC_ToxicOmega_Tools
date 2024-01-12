@@ -55,12 +55,15 @@ namespace ToxicOmega_Tools.Patches
             List<Item> allItemsList = StartOfRound.Instance.allItemsList.itemsList;
             PlayerControllerB localPlayerController = GameNetworkManager.Instance.localPlayerController;
 
+            __instance.tipsPanelCoroutine = null;   // Vanilla tips set a long coroutine to block other tips from appearing, this clears it
+
             allEnemiesList = new List<SpawnableEnemyWithRarity>();
             allEnemiesList.AddRange(Plugin.Instance.customOutsideList);
             allEnemiesList.AddRange(Plugin.Instance.customInsideList);
 
             bool flag = true;   // Chat will not be sent if flag = true; If no command prefix is recognized it will be set to false
             string chatMessage = __instance.chatTextField.text;
+
 
             // SubmitChat_performed runs anytime "Enter" is pressed, even if chat is closed. This check prevents "Index out of range" when pressing enter in other situations like the terminal
             if (chatMessage == null || chatMessage == "")
