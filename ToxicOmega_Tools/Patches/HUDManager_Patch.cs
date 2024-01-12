@@ -23,6 +23,7 @@ namespace ToxicOmega_Tools.Patches
         private static int itemValue;
         private static int enemyID;
         private static int spawnCount;
+        private static int trapID;
         private static string playerString = "";
         private static PlayerControllerB playerTarget = null;
         public static List<SpawnableEnemyWithRarity> allEnemiesList;
@@ -134,18 +135,14 @@ namespace ToxicOmega_Tools.Patches
 
                     if (!int.TryParse(command[1], out itemID) || itemID >= allItemsList.Count)
                     {
-                        Plugin.LogMessage($"Item ID \"{ command[1] }\" not found!", true);
+                        Plugin.LogMessage($"Item ID \"{command[1]}\" not found!", true);
                         break;
                     }
 
                     if (command.Length > 2)
                     {
                         int.TryParse(command[2], out itemCount);
-                            
-                        if (itemCount <= 0)
-                        {
-                            itemCount = 1;
-                        }
+                        itemCount = Math.Max(itemCount, 1);
                     }
 
                     if (command.Length > 3)
@@ -204,18 +201,14 @@ namespace ToxicOmega_Tools.Patches
 
                     if (!int.TryParse(command[1], out enemyID) || enemyID >= allEnemiesList.Count || enemyID < 0)
                     {
-                        Plugin.LogMessage($"Enemy ID \"{ command[1] }\" not found!", true);
+                        Plugin.LogMessage($"Enemy ID \"{command[1]}\" not found!", true);
                         break;
                     }
 
                     if (command.Length > 2)
                     {
                         int.TryParse(command[2], out spawnCount);
-
-                        if (spawnCount <= 0)
-                        {
-                            spawnCount = 1;
-                        }
+                        spawnCount = Math.Max(spawnCount, 1);
                     }
 
                     if (command.Length > 3)
@@ -224,6 +217,44 @@ namespace ToxicOmega_Tools.Patches
                     }
 
                     Plugin.SpawnEnemy(enemyID, spawnCount, playerString);
+                    break;
+                case "tr":
+                case "trap":
+                    spawnCount = 1;
+                    playerString = "";
+
+                    if (command.Length < 2)
+                    {
+                        HUDManager.Instance.DisplayTip("Trap List", $"ID #0: Mine\nID #1: Turret");
+                        break;
+                    }
+
+                    if ("mine".StartsWith(command[1]) || command[1] == "0")
+                    {
+                        trapID = 0;
+                    }
+                    else if ("turret".StartsWith(command[1]) || command[1] == "1")
+                    {
+                        trapID = 1;
+                    }
+                    else
+                    {
+                        Plugin.LogMessage($"Unable to find a trap with name {command[1]}!", true);
+                        break;
+                    }
+
+                    if (command.Length > 2)
+                    {
+                        int.TryParse(command[2], out spawnCount);
+                        spawnCount = Math.Max(spawnCount, 1);
+                    }
+
+                    if (command.Length > 3)
+                    {
+                        playerString = string.Join(" ", command.Skip(3)).ToLower();
+                    }
+
+                    Plugin.SpawnTrap(trapID, spawnCount, playerString);
                     break;
                 case "tp":
                 case "tele":
@@ -242,7 +273,7 @@ namespace ToxicOmega_Tools.Patches
                                 }
                                 else
                                 {
-                                    Plugin.LogMessage($"Could not teleport { localPlayerController.playerUsername }!\nPlayer is dead!", true);
+                                    Plugin.LogMessage($"Could not teleport {localPlayerController.playerUsername}!\nPlayer is dead!", true);
                                 }
                             }
                             break;
@@ -263,7 +294,7 @@ namespace ToxicOmega_Tools.Patches
                             }
                             else if (playerA != null && playerA.isPlayerDead)
                             {
-                                Plugin.LogMessage($"Could not teleport { playerA.playerUsername }!\nPlayer is dead!", true);
+                                Plugin.LogMessage($"Could not teleport {playerA.playerUsername}!\nPlayer is dead!", true);
                             }
                             break;
                     }
@@ -279,7 +310,7 @@ namespace ToxicOmega_Tools.Patches
 
                             for (int i = 0; i < Plugin.Instance.waypoints.Count; i++)
                             {
-                                pageText += $"@{ i }{ Plugin.Instance.waypoints[i].position }, ";
+                                pageText += $"@{i}{Plugin.Instance.waypoints[i].position}, ";
                             }
 
                             pageText = pageText.TrimEnd(',', ' ') + ".";
@@ -297,7 +328,7 @@ namespace ToxicOmega_Tools.Patches
                             bool wpInside = Player.Get(localPlayerController).IsInFactory;
                             Vector3 wpPosition = localPlayerController.transform.position;
                             Plugin.Instance.waypoints.Add(new Waypoint { isInside = wpInside, position = wpPosition });
-                            Plugin.LogMessage($"Waypoint @{ Plugin.Instance.waypoints.Count - 1 } created at { wpPosition }.");
+                            Plugin.LogMessage($"Waypoint @{Plugin.Instance.waypoints.Count - 1} created at {wpPosition}.");
                         }
                     }
                     else if ("clear".StartsWith(command[1]))
@@ -308,7 +339,7 @@ namespace ToxicOmega_Tools.Patches
                     else if ("door".StartsWith(command[1]) || "entrance".StartsWith(command[1]))
                     {
                         Plugin.Instance.waypoints.Add(new Waypoint { isInside = true, position = RoundManager.FindMainEntrancePosition(true) });
-                        Plugin.LogMessage($"Waypoint @{ Plugin.Instance.waypoints.Count - 1 } created at Main Entrance.");
+                        Plugin.LogMessage($"Waypoint @{Plugin.Instance.waypoints.Count - 1} created at Main Entrance.");
                     }
                     break;
                 case "ch":
@@ -333,21 +364,21 @@ namespace ToxicOmega_Tools.Patches
                                 Plugin.mls.LogInfo("RPC SENDING: \"TOT_CHARGE_PLAYER\".");
                                 Network.Broadcast("TOT_CHARGE_PLAYER", new TOT_PLAYER_Broadcast { playerClientId = playerTarget.playerClientId });
                                 Plugin.mls.LogInfo("RPC END: \"TOT_CHARGE_PLAYER\".");
-                                Plugin.LogMessage($"Charging { playerTarget.playerUsername }'s item \"{ foundItem.itemProperties.itemName }\".");
+                                Plugin.LogMessage($"Charging {playerTarget.playerUsername}'s item \"{foundItem.itemProperties.itemName}\".");
                             }
                             else
                             {
-                                Plugin.LogMessage($"{ playerTarget.playerUsername }'s item \"{ foundItem.itemProperties.itemName }\" does not use a battery!", true);
+                                Plugin.LogMessage($"{playerTarget.playerUsername}'s item \"{foundItem.itemProperties.itemName}\" does not use a battery!", true);
                             }
                         }
                         else
                         {
-                            Plugin.LogMessage($"{ playerTarget.playerUsername } is not holding an item!", true);
+                            Plugin.LogMessage($"{playerTarget.playerUsername} is not holding an item!", true);
                         }
                     }
                     else if (playerTarget.isPlayerDead)
                     {
-                        Plugin.LogMessage($"Could not charge { playerTarget.playerUsername }'s item!\nPlayer is dead!", true);
+                        Plugin.LogMessage($"Could not charge {playerTarget.playerUsername}'s item!\nPlayer is dead!", true);
                     }
                     break;
                 case "he":
@@ -367,11 +398,11 @@ namespace ToxicOmega_Tools.Patches
                     {
                         if (playerTarget.isPlayerDead)
                         {
-                            Plugin.LogMessage($"Attempting to revive { playerTarget.playerUsername }.");
+                            Plugin.LogMessage($"Attempting to revive {playerTarget.playerUsername}.");
                         }
                         else
                         {
-                            Plugin.LogMessage($"Healing { playerTarget.playerUsername }.");
+                            Plugin.LogMessage($"Healing {playerTarget.playerUsername}.");
                         }
 
                         Plugin.mls.LogInfo("RPC SENDING: \"TOT_HEAL_PLAYER\".");
@@ -426,7 +457,7 @@ namespace ToxicOmega_Tools.Patches
                     {
                         if (command.Length < 2)
                         {
-                            Plugin.LogMessage($"Group Credits: { terminal.groupCredits }");
+                            Plugin.LogMessage($"Group Credits: {terminal.groupCredits}");
                         }
                         else
                         {
@@ -434,7 +465,7 @@ namespace ToxicOmega_Tools.Patches
                             Plugin.mls.LogInfo("RPC SENDING: \"TOT_TERMINAL_CREDITS\".");
                             Network.Broadcast("TOT_TERMINAL_CREDITS", new TOT_INT_Broadcast { dataInt = creditsChange });
                             Plugin.mls.LogInfo("RPC END: \"TOT_TERMINAL_CREDITS\".");
-                            Plugin.LogMessage($"Adjusted Credits by { creditsChange }.\nNew Total: { terminal.groupCredits }.");
+                            Plugin.LogMessage($"Adjusted Credits by {creditsChange}.\nNew Total: {terminal.groupCredits}.");
                         }
                     }
                     else
@@ -456,7 +487,7 @@ namespace ToxicOmega_Tools.Patches
                             {
                                 if (obj.objectCode != null)
                                 {
-                                    objectList += $"{ obj.objectCode }";
+                                    objectList += $"{obj.objectCode}";
                                     if (obj.isBigDoor)
                                     {
                                         objectList += "(Door), ";
@@ -493,7 +524,7 @@ namespace ToxicOmega_Tools.Patches
                                 }
                             }
 
-                            Plugin.LogMessage($"Attempted to toggle all TerminalAccessibleObject of code { command[1] }.");
+                            Plugin.LogMessage($"Attempted to toggle all TerminalAccessibleObject of code {command[1]}.");
                         }
                     }
                     else
@@ -507,6 +538,7 @@ namespace ToxicOmega_Tools.Patches
                     if (breaker != null)
                     {
                         breaker.SwitchBreaker(!breaker.isPowerOn);
+                        Plugin.LogMessage($"Turned breaker {(breaker.isPowerOn ? "on" : "off")}.");
                     }
                     else
                     {
@@ -585,37 +617,37 @@ namespace ToxicOmega_Tools.Patches
                 {
                     if (listName == "Item")
                     {
-                        pageText += $"{ allItemsList[i].itemName }({i}), ";
+                        pageText += $"{allItemsList[i].itemName}({i}), ";
                     }
                     else if (listName == "Enemy")
                     {
-                        pageText += $"{ allEnemiesList[i].enemyType.enemyName }({ i }), ";
+                        pageText += $"{allEnemiesList[i].enemyType.enemyName}({i}), ";
                     }
                     else if (listName == "Command")
                     {
-                        pageText += $"{ list[i] }\n";
+                        pageText += $"{list[i]}\n";
                     }
                     else if (listName == "Player")
                     {
                         if (activePlayersList[i].isPlayerControlled)
                         {
-                            pageText += $"Player #{ activePlayersList[i].playerClientId }: { activePlayersList[i].playerUsername }\n";
+                            pageText += $"Player #{activePlayersList[i].playerClientId}: {activePlayersList[i].playerUsername}\n";
                         }
                     }
                     else if (listName == "Active Item")
                     {
-                        pageText += $"{ activeItems[i].itemProperties.itemName }, ";
+                        pageText += $"{activeItems[i].itemProperties.itemName}, ";
                         appendList = false;
                     }
                     else if (listName == "Active Enemy")
                     {
-                        pageText += $"{ activeEnemies[i].enemyType.enemyName }, ";
+                        pageText += $"{activeEnemies[i].enemyType.enemyName}, ";
                         appendList = false;
                     }
                 }
 
                 pageText = pageText.TrimEnd(',', ' ', '\n') + (listName == "Player" ? "" : ".");
-                string pageHeader = $"{ listName }{ (appendList ? " List" : "" ) } (Page { page } of { maxPages })";
+                string pageHeader = $"{listName}{(appendList ? " List" : "")} (Page {page} of {maxPages})";
                 HUDManager.Instance.DisplayTip(pageHeader, pageText);
             }
         }

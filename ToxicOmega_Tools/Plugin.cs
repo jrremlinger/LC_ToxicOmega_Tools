@@ -12,6 +12,7 @@ using System;
 using ToxicOmega_Tools.Patches;
 using LC_API.Networking;
 using LC_API.GameInterfaceAPI.Features;
+using System.ComponentModel;
 
 namespace ToxicOmega_Tools
 {
@@ -69,13 +70,13 @@ namespace ToxicOmega_Tools
                     }
                     else
                     {
-                        LogMessage($"No Player with ID { clientId }!", true);
+                        LogMessage($"No Player with ID {clientId}!", true);
                         return null;
                     }
                 }
                 else
                 {
-                    LogMessage($"Player ID # { clientIdString } is invalid!", true);
+                    LogMessage($"Player ID # {clientIdString} is invalid!", true);
                     return null;
                 }
             }
@@ -89,7 +90,7 @@ namespace ToxicOmega_Tools
                 }
                 else
                 {
-                    LogMessage($"Player { searchString } not found!", true);
+                    LogMessage($"Player {searchString} not found!", true);
                     return null;
                 }
             }
@@ -110,9 +111,6 @@ namespace ToxicOmega_Tools
             RoundManager currentRound = RoundManager.Instance;
             RandomScrapSpawn[] randomScrapLocations = FindObjectsOfType<RandomScrapSpawn>();
             PlayerControllerB localPlayerController = StartOfRound.Instance.localPlayerController;
-
-            // Targets spectated player if playerTarget is dead
-            //    position = (localPlayerController.spectatedPlayerScript).transform.position;
 
             switch (positionType)
             {
@@ -141,13 +139,13 @@ namespace ToxicOmega_Tools
                             }
                             else
                             {
-                                LogMessage($"Waypoint @{ input.Substring(1) } does not exist!", true);
+                                LogMessage($"Waypoint @{input.Substring(1)} does not exist!", true);
                                 return Vector3.zero;
                             }
                         }
                         else
                         {
-                            LogMessage($"Waypoint @{ input.Substring(1) } is invalid!", true);
+                            LogMessage($"Waypoint @{input.Substring(1)} is invalid!", true);
                             return Vector3.zero;
                         }
                     }
@@ -181,18 +179,17 @@ namespace ToxicOmega_Tools
                             if (wpIndex < Instance.waypoints.Count)
                             {
                                 Waypoint wp = Instance.waypoints[wpIndex];
-                                HUDManager_Patch.sendPlayerInside = wp.isInside;
                                 position = wp.position;
                             }
                             else
                             {
-                                LogMessage($"Waypoint @{ input.Substring(1) } does not exist!", true);
+                                LogMessage($"Waypoint @{input.Substring(1)} does not exist!", true);
                                 return Vector3.zero;
                             }
                         }
                         else
                         {
-                            LogMessage($"Waypoint @{ input.Substring(1) } is invalid!", true);
+                            LogMessage($"Waypoint @{input.Substring(1)} is invalid!", true);
                             return Vector3.zero;
                         }
                     }
@@ -211,6 +208,27 @@ namespace ToxicOmega_Tools
                         else
                         {
                             LogMessage($"No allEnemyVents in this area!", true);
+                            return Vector3.zero;
+                        }
+                    }
+                    else if (input.StartsWith("@") && input.Length > 1)
+                    {
+                        if (int.TryParse(input.Substring(1), out int wpIndex))
+                        {
+                            if (wpIndex < Instance.waypoints.Count)
+                            {
+                                Waypoint wp = Instance.waypoints[wpIndex];
+                                position = wp.position;
+                            }
+                            else
+                            {
+                                LogMessage($"Waypoint @{input.Substring(1)} does not exist!", true);
+                                return Vector3.zero;
+                            }
+                        }
+                        else
+                        {
+                            LogMessage($"Waypoint @{input.Substring(1)} is invalid!", true);
                             return Vector3.zero;
                         }
                     }
@@ -239,7 +257,7 @@ namespace ToxicOmega_Tools
                                 position = currentRound.GetRandomNavMeshPositionInBoxPredictable(position2, randomSeed: Instance.shipTeleporterSeed);
                             }
 
-                            LogMessage($"Teleported { playerToTP.playerUsername } to random location within factory.");
+                            LogMessage($"Teleported {playerToTP.playerUsername} to random location within factory.");
                         }
                         else
                         {
@@ -253,7 +271,7 @@ namespace ToxicOmega_Tools
                         {
                             HUDManager_Patch.sendPlayerInside = false;
                             position = terminal.transform.position;
-                            LogMessage($"Teleported { playerToTP.playerUsername } to terminal.");
+                            LogMessage($"Teleported {playerToTP.playerUsername} to terminal.");
                         }
                         else
                         {
@@ -270,23 +288,63 @@ namespace ToxicOmega_Tools
                                 Waypoint wp = Instance.waypoints[wpIndex];
                                 HUDManager_Patch.sendPlayerInside = wp.isInside;
                                 position = wp.position;
-                                LogMessage($"Teleported { playerToTP.playerUsername } to Waypoint @{wpIndex}.");
+                                LogMessage($"Teleported {playerToTP.playerUsername} to Waypoint @{wpIndex}.");
                             }
                             else
                             {
-                                LogMessage($"Waypoint @{ input.Substring(1) } does not exist!", true);
+                                LogMessage($"Waypoint @{input.Substring(1)} does not exist!", true);
                                 return Vector3.zero;
                             }
                         }
                         else
                         {
-                            LogMessage($"Waypoint @{ input.Substring(1) } is invalid!", true);
+                            LogMessage($"Waypoint @{input.Substring(1)} is invalid!", true);
                             return Vector3.zero;
                         }
                     }
                     else
                     {
                         isTP = true;
+                        isPlayerTarget = true;
+                    }
+                    break;
+                case 4:
+                    if (input == "" || input == "$")
+                    {
+                        if (currentRound.insideAINodes.Length > 0 && currentRound.insideAINodes[0] != null)
+                        {
+                            Vector3 position2 = currentRound.insideAINodes[UnityEngine.Random.Range(0, currentRound.insideAINodes.Length)].transform.position;
+                            position = currentRound.GetRandomNavMeshPositionInRadius(position2);
+                        }
+                        else
+                        {
+                            LogMessage($"No insideAINodes in this area!", true);
+                            return Vector3.zero;
+                        }
+                    }
+                    else if (input.StartsWith("@") && input.Length > 1)
+                    {
+                        if (int.TryParse(input.Substring(1), out int wpIndex))
+                        {
+                            if (wpIndex < Instance.waypoints.Count)
+                            {
+                                Waypoint wp = Instance.waypoints[wpIndex];
+                                position = wp.position;
+                            }
+                            else
+                            {
+                                LogMessage($"Waypoint @{input.Substring(1)} does not exist!", true);
+                                return Vector3.zero;
+                            }
+                        }
+                        else
+                        {
+                            LogMessage($"Waypoint @{input.Substring(1)} is invalid!", true);
+                            return Vector3.zero;
+                        }
+                    }
+                    else
+                    {
                         isPlayerTarget = true;
                     }
                     break;
@@ -302,7 +360,7 @@ namespace ToxicOmega_Tools
                 }
                 else if (playerTarget.isPlayerDead)
                 {
-                    LogMessage($"Could not target { playerTarget.playerUsername }!\nPlayer is dead!", true);
+                    LogMessage($"Could not target {playerTarget.playerUsername}!\nPlayer is dead!", true);
                     return Vector3.zero;
                 }
 
@@ -311,7 +369,7 @@ namespace ToxicOmega_Tools
                 if (isTP)
                 {
                     HUDManager_Patch.sendPlayerInside = Player.Get(playerTarget).IsInFactory;
-                    LogMessage($"Teleported { playerToTP.playerUsername } to { playerTarget.playerUsername }.");
+                    LogMessage($"Teleported {playerToTP.playerUsername} to {playerTarget.playerUsername}.");
                 }
             }
 
@@ -364,7 +422,7 @@ namespace ToxicOmega_Tools
             playerController.beamOutBuildupParticle.Play();
         }
         
-        public static void RevivePlayer (ulong playerClientID)  // This function is REALLY long, could probably be shortened
+        public static void RevivePlayer (ulong playerClientID)
         {
             PlayerControllerB localPlayerController = StartOfRound.Instance.localPlayerController;
             PlayerControllerB playerController = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(playerClientID));
@@ -519,7 +577,6 @@ namespace ToxicOmega_Tools
         public static void SpawnEnemy(int enemyID, int amount, string targetString)
         {
             bool inside = false;
-            RoundManager currentRound = RoundManager.Instance;
             List<SpawnableEnemyWithRarity> allEnemiesList = new List<SpawnableEnemyWithRarity>();
             allEnemiesList.AddRange(Instance.customOutsideList);
             allEnemiesList.AddRange(Instance.customInsideList);
@@ -543,14 +600,14 @@ namespace ToxicOmega_Tools
             }
             else if (targetString.StartsWith("@"))
             {
-                logLocation = $"WP @{ targetString.Substring(1) }";
+                logLocation = $"WP @{targetString.Substring(1)}";
             }
             else
             {
                 logLocation = GetPlayerFromString(targetString).playerUsername;
             }
 
-            LogMessage($"Spawned Enemy\nName: { logName }, ID: { enemyID }, Amount: { amount }, Location: { logLocation }.");
+            LogMessage($"Spawned Enemy\nName: {logName}, ID: {enemyID}, Amount: {amount}, Location: {logLocation}.");
 
             try
             {
@@ -561,7 +618,7 @@ namespace ToxicOmega_Tools
             }
             catch (Exception ex)
             {
-                LogMessage($"Unable to Spawn Enemy ID: { enemyID }", true);
+                LogMessage($"Unable to Spawn Enemy ID: {enemyID}", true);
                 mls.LogError(ex);
             }
         }
@@ -575,7 +632,7 @@ namespace ToxicOmega_Tools
                 return;
             }
 
-            string logValue = value >= 0 ? $"{ value }" : "Random";
+            string logValue = value >= 0 ? $"{value}" : "Random";
             string logLocation;
 
             if (targetString == "$")
@@ -591,7 +648,7 @@ namespace ToxicOmega_Tools
                 logLocation = GetPlayerFromString(targetString).playerUsername;
             }
 
-            LogMessage($"Spawned Item\nName: { allItemsList[itemID].name }, ID: { itemID }, Amount: { amount }, Value: { logValue }, Location: { logLocation }.");
+            LogMessage($"Spawned Item\nName: {allItemsList[itemID].name}, ID: {itemID}, Amount: {amount}, Value: {logValue}, Location: {logLocation}.");
 
             for (int i = 0; i < amount; i++)
             {
@@ -624,10 +681,83 @@ namespace ToxicOmega_Tools
                 }
                 catch (Exception ex)
                 {
-                    LogMessage($"Unable to Spawn Item ID: { itemID }", true);
+                    LogMessage($"Unable to Spawn Item ID: {itemID}", true);
                     mls.LogError(ex);
                 }
             }
+        }
+    
+        public static void SpawnTrap(int trapID, int amount, string targetString)
+        {
+            RoundManager currentRound = RoundManager.Instance;
+
+            if (GetPositionFromCommand(targetString, 4) == Vector3.zero)
+            {
+                return;
+            }
+
+            string logLocation;
+
+            if (targetString == "$")
+            {
+                logLocation = "Random";
+            }
+            else if (targetString.StartsWith("@"))
+            {
+                logLocation = $"WP @{targetString.Substring(1)}";
+            }
+            else
+            {
+                logLocation = GetPlayerFromString(targetString).playerUsername;
+            }
+
+            LogMessage($"Spawned Trap\nName: {(trapID == 1 ? "Turret" : "Mine")}, Amount: {amount}, Location: {logLocation}.");
+
+            try
+            {
+                switch (trapID)
+                {
+                    case 0:
+                        foreach (SpawnableMapObject obj in currentRound.currentLevel.spawnableMapObjects)
+                        {
+                            if (obj.prefabToSpawn.GetComponentInChildren<Landmine>() != null)
+                            {
+                                for (int i = 0; i < amount; i++)
+                                {
+                                    Vector3 inBoxPredictable = currentRound.GetRandomNavMeshPositionInRadius(obj.prefabToSpawn.transform.position);
+                                    GameObject mine = Instantiate(obj.prefabToSpawn, GetPositionFromCommand(targetString, 4), Quaternion.identity);
+                                    mine.GetComponent<NetworkObject>().Spawn(true);
+                                }
+                                break;
+                            }
+                        }
+
+                        break;
+                    case 1:
+                        foreach (SpawnableMapObject obj in currentRound.currentLevel.spawnableMapObjects)
+                        {
+                            if (obj.prefabToSpawn.GetComponentInChildren<Turret>() != null)
+                            {
+                                for (int i = 0; i < amount; i++)
+                                {
+                                    Vector3 pos = GetPositionFromCommand(targetString, 4);
+                                    GameObject turret = Instantiate(obj.prefabToSpawn, pos, Quaternion.identity);
+                                    turret.transform.eulerAngles = new Vector3(0.0f, currentRound.YRotationThatFacesTheFarthestFromPosition(pos + Vector3.up * 0.2f), 0.0f);
+                                    turret.GetComponent<NetworkObject>().Spawn(true);
+                                }
+                                break;
+                            }
+                        }
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogMessage($"Unable to Spawn Trap: {(trapID == 1 ? "Turret" : "Mine")}!", true);
+                mls.LogError(ex);
+            }
+
+
         }
     }
 
