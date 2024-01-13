@@ -33,7 +33,7 @@ namespace ToxicOmega_Tools.Patches
         private static bool EnableChatAction(HUDManager __instance) // Allows host to open chat while dead
         {
             PlayerControllerB localPlayer = GameNetworkManager.Instance.localPlayerController;
-            if (localPlayer.isPlayerDead && Player.HostPlayer.ClientId == localPlayer.playerClientId)
+            if (localPlayer.isPlayerDead && Plugin.CheckPlayerIsHost(localPlayer))
             {
                 ShipBuildModeManager.Instance.CancelBuildMode();
                 __instance.localPlayer.isTypingChat = true;
@@ -92,14 +92,16 @@ namespace ToxicOmega_Tools.Patches
                         "Give: Spawns items",
                         "Enemy: Lists spawnable enemies",
                         "Spawn: Spawns enemies",
+                        "Trap: Spawns traps",
+                        "List: Lists current Players/Items/Enemies",
                         "TP: Teleport players",
                         "WP: Creates/lists waypoints",
-                        "Charge: Charges a player's held item",
                         "Heal: Heals/revives a player",
-                        "List: List current Players/Items/Enemies",
-                        "Credit: Lists/adjusts spendable credits",
+                        "GodMode: Disables death",
                         "Code: Lists/toggles blast doors and traps",
-                        "Breaker: Toggles breaker box"
+                        "Breaker: Toggles breaker box",
+                        "Credit: Lists/adjusts spendable credits",
+                        "Charge: Charges a player's held item",
                     };
 
                     int helpPage = 1;
@@ -232,7 +234,7 @@ namespace ToxicOmega_Tools.Patches
                         break;
                     }
 
-                    if ("mine".StartsWith(command[1]) || command[1] == "0")
+                    if ("landmine".StartsWith(command[1]) || "mine".StartsWith(command[1]) || command[1] == "0")
                     {
                         trapID = 0;
                     }
@@ -258,6 +260,42 @@ namespace ToxicOmega_Tools.Patches
                     }
 
                     Plugin.SpawnTrap(trapID, spawnCount, playerString);
+                    break;
+                case "li":
+                case "list": // List currently connected player names with their ID numbers
+                    string listName = "";
+                    int listPage = 1;
+
+                    if (command.Length > 2)
+                    {
+                        int.TryParse(command[2], out listPage);
+                    }
+                    listPage = Math.Max(listPage, 1);
+
+                    if (command.Length < 2 || "players".StartsWith(command[1]))
+                    {
+                        List<PlayerControllerB> activePlayers = StartOfRound.Instance.allPlayerScripts.ToList();
+                        listName = "Player";
+                        FindPage(activePlayers, listPage, 10, listName);
+                    }
+                    else if ("items".StartsWith(command[1]))
+                    {
+                        List<GrabbableObject> activeItems = UnityEngine.Object.FindObjectsOfType<GrabbableObject>().ToList();
+                        listName = "Active Item";
+                        FindPage(activeItems, listPage, 10, listName);
+                    }
+                    else if ("enemy".StartsWith(command[1]) || "enemies".StartsWith(command[1]))
+                    {
+                        List<EnemyAI> activeEnemies = UnityEngine.Object.FindObjectsOfType<EnemyAI>().ToList();
+                        listName = "Active Enemy";
+                        FindPage(activeEnemies, listPage, 10, listName);
+                    }
+                    else
+                    {
+                        Plugin.LogMessage($"Unable to find list by name {command[1]}!", true);
+                        break;
+                    }
+
                     break;
                 case "tp":
                 case "tele":
@@ -345,45 +383,6 @@ namespace ToxicOmega_Tools.Patches
                         Plugin.LogMessage($"Waypoint @{Plugin.Instance.waypoints.Count - 1} created at Main Entrance.");
                     }
                     break;
-                case "ch":
-                case "charge":  // Charges a players held item if it uses a battery
-                    if (command.Length < 2)
-                    {
-                        playerTarget = localPlayerController;
-                    }
-                    else
-                    {
-                        string targetUsername = string.Join(" ", command.Skip(1)).ToLower();
-                        playerTarget = Plugin.GetPlayerFromString(targetUsername);
-                    }
-
-                    if (playerTarget != null && !playerTarget.isPlayerDead)
-                    {
-                        GrabbableObject foundItem = playerTarget.ItemSlots[playerTarget.currentItemSlot];
-                        if (foundItem != null)
-                        {
-                            if (foundItem.itemProperties.requiresBattery)
-                            {
-                                Plugin.mls.LogInfo("RPC SENDING: \"TOT_CHARGE_PLAYER\".");
-                                Network.Broadcast("TOT_CHARGE_PLAYER", new TOT_PLAYER_Broadcast { playerClientId = playerTarget.playerClientId });
-                                Plugin.mls.LogInfo("RPC END: \"TOT_CHARGE_PLAYER\".");
-                                Plugin.LogMessage($"Charging {playerTarget.playerUsername}'s item \"{foundItem.itemProperties.itemName}\".");
-                            }
-                            else
-                            {
-                                Plugin.LogMessage($"{playerTarget.playerUsername}'s item \"{foundItem.itemProperties.itemName}\" does not use a battery!", true);
-                            }
-                        }
-                        else
-                        {
-                            Plugin.LogMessage($"{playerTarget.playerUsername} is not holding an item!", true);
-                        }
-                    }
-                    else if (playerTarget.isPlayerDead)
-                    {
-                        Plugin.LogMessage($"Could not charge {playerTarget.playerUsername}'s item!\nPlayer is dead!", true);
-                    }
-                    break;
                 case "he":
                 case "heal":
                 case "save":    // Sets player health and stamina to max, saves player if in death animation with enemy
@@ -416,65 +415,11 @@ namespace ToxicOmega_Tools.Patches
                         Player.Get(playerTarget).Hurt(-1);  // Player health/status likes not not update unless a damage function is called
                     }
                     break;
-                case "li":
-                case "list": // List currently connected player names with their ID numbers
-                    string listName = "";
-                    int listPage = 1;
-
-                    if (command.Length > 2)
-                    {
-                        int.TryParse(command[2], out listPage);
-                    }
-                    listPage = Math.Max(listPage, 1);
-
-                    if (command.Length < 2 || "players".StartsWith(command[1]))
-                    {
-                        List<PlayerControllerB> activePlayers = StartOfRound.Instance.allPlayerScripts.ToList();
-                        listName = "Player";
-                        FindPage(activePlayers, listPage, 10, listName);
-                    }
-                    else if ("items".StartsWith(command[1]))
-                    {
-                        List<GrabbableObject> activeItems = UnityEngine.Object.FindObjectsOfType<GrabbableObject>().ToList();
-                        listName = "Active Item";
-                        FindPage(activeItems, listPage, 10, listName);
-                    }
-                    else if ("enemy".StartsWith(command[1]) || "enemies".StartsWith(command[1]))
-                    {
-                        List<EnemyAI> activeEnemies = UnityEngine.Object.FindObjectsOfType<EnemyAI>().ToList();
-                        listName = "Active Enemy";
-                        FindPage(activeEnemies, listPage, 10, listName);
-                    }
-                    else
-                    {
-                        Plugin.LogMessage($"Unable to find list by name {command[1]}!", true);
-                        break;
-                    }
-
-                    break;
-                case "cr":
-                case "credit":
-                case "credits":
-                case "money":   // View or adjust current amount of groupCredits
-                    if (terminal != null)
-                    {
-                        if (command.Length < 2)
-                        {
-                            Plugin.LogMessage($"Group Credits: {terminal.groupCredits}");
-                        }
-                        else
-                        {
-                            int.TryParse(command[1], out int creditsChange);
-                            Plugin.mls.LogInfo("RPC SENDING: \"TOT_TERMINAL_CREDITS\".");
-                            Network.Broadcast("TOT_TERMINAL_CREDITS", new TOT_INT_Broadcast { dataInt = creditsChange });
-                            Plugin.mls.LogInfo("RPC END: \"TOT_TERMINAL_CREDITS\".");
-                            Plugin.LogMessage($"Adjusted Credits by {creditsChange}.\nNew Total: {terminal.groupCredits}.");
-                        }
-                    }
-                    else
-                    {
-                        Plugin.LogMessage("Terminal not found!", true);
-                    }
+                case "gm":
+                case "god":
+                case "godmode":
+                    Plugin.Instance.enableGod = !Plugin.Instance.enableGod;
+                    Plugin.LogMessage($"GodMode toggled {(Plugin.Instance.enableGod ? "on!" : "off.")}");
                     break;
                 case "co":
                 case "code":
@@ -548,6 +493,69 @@ namespace ToxicOmega_Tools.Patches
                         Plugin.LogMessage("BreakerBox not found!", true);
                     }
                     break;
+                case "cr":
+                case "credit":
+                case "credits":
+                case "money":   // View or adjust current amount of groupCredits
+                    if (terminal != null)
+                    {
+                        if (command.Length < 2)
+                        {
+                            Plugin.LogMessage($"Group Credits: {terminal.groupCredits}");
+                        }
+                        else
+                        {
+                            int.TryParse(command[1], out int creditsChange);
+                            Plugin.mls.LogInfo("RPC SENDING: \"TOT_TERMINAL_CREDITS\".");
+                            Network.Broadcast("TOT_TERMINAL_CREDITS", new TOT_INT_Broadcast { dataInt = creditsChange });
+                            Plugin.mls.LogInfo("RPC END: \"TOT_TERMINAL_CREDITS\".");
+                            Plugin.LogMessage($"Adjusted Credits by {creditsChange}.\nNew Total: {terminal.groupCredits}.");
+                        }
+                    }
+                    else
+                    {
+                        Plugin.LogMessage("Terminal not found!", true);
+                    }
+                    break;
+                case "ch":
+                case "charge":  // Charges a players held item if it uses a battery
+                    if (command.Length < 2)
+                    {
+                        playerTarget = localPlayerController;
+                    }
+                    else
+                    {
+                        string targetUsername = string.Join(" ", command.Skip(1)).ToLower();
+                        playerTarget = Plugin.GetPlayerFromString(targetUsername);
+                    }
+
+                    if (playerTarget != null && !playerTarget.isPlayerDead)
+                    {
+                        GrabbableObject foundItem = playerTarget.ItemSlots[playerTarget.currentItemSlot];
+                        if (foundItem != null)
+                        {
+                            if (foundItem.itemProperties.requiresBattery)
+                            {
+                                Plugin.mls.LogInfo("RPC SENDING: \"TOT_CHARGE_PLAYER\".");
+                                Network.Broadcast("TOT_CHARGE_PLAYER", new TOT_PLAYER_Broadcast { playerClientId = playerTarget.playerClientId });
+                                Plugin.mls.LogInfo("RPC END: \"TOT_CHARGE_PLAYER\".");
+                                Plugin.LogMessage($"Charging {playerTarget.playerUsername}'s item \"{foundItem.itemProperties.itemName}\".");
+                            }
+                            else
+                            {
+                                Plugin.LogMessage($"{playerTarget.playerUsername}'s item \"{foundItem.itemProperties.itemName}\" does not use a battery!", true);
+                            }
+                        }
+                        else
+                        {
+                            Plugin.LogMessage($"{playerTarget.playerUsername} is not holding an item!", true);
+                        }
+                    }
+                    else if (playerTarget.isPlayerDead)
+                    {
+                        Plugin.LogMessage($"Could not charge {playerTarget.playerUsername}'s item!\nPlayer is dead!", true);
+                    }
+                    break;
                 default:
                     // No command recognized, send chat normally
                     flag = false;
@@ -561,7 +569,7 @@ namespace ToxicOmega_Tools.Patches
             }
 
             // Perform regular chat if player is the host and dead, this overrides the way the game blocks dead players from chatting.
-            if (localPlayerController.isPlayerDead && Player.HostPlayer.ClientId == localPlayerController.playerClientId)
+            if (localPlayerController.isPlayerDead && Plugin.CheckPlayerIsHost(localPlayerController))
             {
                 if (!string.IsNullOrEmpty(__instance.chatTextField.text) && __instance.chatTextField.text.Length < 50)
                     __instance.AddTextToChatOnServer(__instance.chatTextField.text, (int)__instance.localPlayer.playerClientId);
@@ -575,7 +583,7 @@ namespace ToxicOmega_Tools.Patches
                 }
                 localPlayerController.isTypingChat = false;
                 __instance.chatTextField.text = "";
-                EventSystem.current.SetSelectedGameObject((GameObject)null);
+                EventSystem.current.SetSelectedGameObject(null);
                 __instance.PingHUDElement(__instance.Chat);
                 __instance.typingIndicator.enabled = false;
                 return false;

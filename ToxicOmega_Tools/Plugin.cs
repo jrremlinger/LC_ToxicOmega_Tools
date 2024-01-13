@@ -32,6 +32,7 @@ namespace ToxicOmega_Tools
         internal List<SpawnableEnemyWithRarity> customOutsideList = new List<SpawnableEnemyWithRarity>();
         internal List<Waypoint> waypoints = new List<Waypoint>();
         internal System.Random shipTeleporterSeed;
+        internal bool enableGod = false;
 
         void Awake()
         {

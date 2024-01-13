@@ -10,8 +10,8 @@ Some important notes:
 * Where applicable, certain symbols can be used when determining a destination:
 	* $: Using "$" indicates random/natural destination. For players this will act as an inverse-teleporter putting them inside the factory. For items it will choose a normal item spawnpoint. For enemies it will either use vents or outside spawnpoints depending on the type of enemy.
 	* !: Using "!" chooses the ships terminal as a target. This is only applicable for teleportation.
-	* @(int): Using "@" followed by a number will choose the waypoint with that index as the target.
-	* #(int): Using "#" followed by a number will choose the player with that Client ID as the target.
+	* @(num): Using "@" followed by a number will choose the waypoint with that index as the target.
+	* #(num): Using "#" followed by a number will choose the player with that Client ID as the target.
 
 ---
 
@@ -52,7 +52,7 @@ Arguments:
 * Item ID: Numerical ID of item you want to spawn. In the future names may be supported.
 * Amount (Default: 1): How many copies of the item should be spawned.
 * Value (Default: Random): Override the default value of the item with a given number.
-* Target (Default: Host Player): Where to spawn the item, supports natural spawning with "$" and waypoints with @(int).
+* Target (Default: Host Player): Where to spawn the item, supports natural spawning with "$" and waypoints with @(num).
 
 Example: "give 17 1 420 #3" will spawn one Airhorn worth $420 on the player whose ID is 3.
 </details>
@@ -80,9 +80,37 @@ Spawns an enemy based on given ID number. Able to specify how many enemies, and 
 Arguments:
 * Enemy ID: Numerical ID of enemy you want to spawn. In the future names may be supported.
 * Amount (Default: 1): How many copies of the enemy should be spawned.
-* Target (Default: Natural): Player target, also supports natural spawning with "$" and waypoints with @(int).
+* Target (Default: Natural): Player target, also supports natural spawning with "$" and waypoints with @(num).
 
 Example: "sp 0 1" will spawn one enemy of ID zero naturally. Different moons assign different enemy IDs, so make sure you check the "enemy" command to find the ID of the enemy you want to spawn.
+</details>
+
+---
+
+<details>
+  <summary><h3>Tr/Trap (Type) Optional: (Amount) (Target)</h3></summary>
+
+Spawns trap based on given ID number. If no arguments are given it will instead list available traps with their ID #'s.
+
+Arguments:
+* Type: Name or ID of the trap you want to spawn. Will auto-complete name if the beginning is given.
+* Amount (Default: 1): How many copies of the trap should be spawned.
+* Target (Default: Natural): Player target, also supports natural spawning with "$" and waypoints with @(num).
+
+Example: "tr mi 30" will spawn 30 landmines randomly throughout the factory.
+</details>
+
+---
+
+<details>
+  <summary><h3>Li/List (List Name) (Page Number)</h3></summary>
+
+Displays a page from the list of currently spawned players, items, or enemies. Will smart-search for the list name.
+
+Arguments:
+* List Name (Default: Players): Which list to view, supports "players", "items", and "enemy/enemies".
+
+Example: "li e" will list every enemy currently spawned in the current moon.
 </details>
 
 ---
@@ -93,8 +121,8 @@ Example: "sp 0 1" will spawn one enemy of ID zero naturally. Different moons ass
 Teleports a given player to a given destination. Player being teleported cannot be dead. Will automatically sync lighting if your destination is inside or outside. If no arguments are provided, the host will be teleported to the ship's console.
 
 Arguments:
-* Target A: If this is the only argument given it supports "!", "@(int)", and "$". Otherwise, it must be a player.
-* Target B: Can be a player, "!", "@(int)", or "$".
+* Target A: If this is the only argument given it supports "!", "@(num)", and "$". Otherwise, it must be a player.
+* Target B: Can be a player, "!", "@(num)", or "$".
 
 Example: "tp #0 $" will teleport the player with ID to a random location inside the factory.
 </details>
@@ -117,19 +145,6 @@ Example: "wp add" will create a waypoint at your current location.
 ---
 
 <details>
-  <summary><h3>Ch/Charge Optional: (Player Target)</h3></summary>
-
-Charges a player's held item.
-
-Arguments:
-* Player Target (Default: Host Player): Only supports player names/id.
-
-Example: "ch" will simply charge the host's held item.
-</details>
-
----
-
-<details>
   <summary><h3>He/Heal/Save Optional: (Player Target)</h3></summary>
 
 Fully refills a player's health and stamina. Will save a player if they are currently in a kill animation with Snare Fleas, Forest Giants, or Masked Players. If the target player is dead, they will be revived at the ship's terminal.
@@ -143,27 +158,11 @@ Example: "heal John" will heal a player whose name starts with (or is) John.
 ---
 
 <details>
-  <summary><h3>Li/List (List Name) (Page Number)</h3></summary>
+  <summary><h3>GM/God/GodMode</h3></summary>
 
-Displays a page from the list of currently spawned players, items, or enemies. Will smart-search for the list name.
+Toggle whether or not you take damage.
 
-Arguments:
-* List Name (Default: Players): Which list to view, supports "players", "items", and "enemy/enemies".
-
-Example: "li e" will list every enemy currently spawned in the current moon.
-</details>
-
----
-
-<details>
-  <summary><h3>Cr/Credit/Credits/Money Optional (Amount)</h3></summary>
-
-Lists or adjusts the current amount of group credits in the terminal. If the amount argument is not given it will just display the current amount of credits.
-
-Arguments:
-* Amount: The amount is the adjustment to be made to the current amount of credits.
-
-Example: "credit -10" will subtract 10 from the current amount of group credits.
+Example: "gm" while godmode is off will toggle it on.
 </details>
 
 ---
@@ -188,6 +187,32 @@ Toggles the breaker box's state.
 
 Example: "br" while the breaker is on will toggle it to be off.
 
+</details>
+
+---
+
+<details>
+  <summary><h3>Cr/Credit/Credits/Money Optional (Amount)</h3></summary>
+
+Lists or adjusts the current amount of group credits in the terminal. If the amount argument is not given it will just display the current amount of credits.
+
+Arguments:
+* Amount: The amount is the adjustment to be made to the current amount of credits.
+
+Example: "credit -10" will subtract 10 from the current amount of group credits.
+</details>
+
+---
+
+<details>
+  <summary><h3>Ch/Charge Optional: (Player Target)</h3></summary>
+
+Charges a player's held item.
+
+Arguments:
+* Player Target (Default: Host Player): Only supports player names/id.
+
+Example: "ch" will simply charge the host's held item.
 </details>
 
 ---

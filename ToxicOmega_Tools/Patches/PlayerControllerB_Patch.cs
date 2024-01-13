@@ -23,5 +23,15 @@ namespace ToxicOmega_Tools.Patches
                 HUD.ToggleHUD(true);
             }
         }
+
+        [HarmonyPatch("AllowPlayerDeath")]
+        [HarmonyPrefix]
+        static bool OverrideDeath(PlayerControllerB __instance)
+        {
+            PlayerControllerB localPlayer = GameNetworkManager.Instance.localPlayerController;
+            if (!Plugin.CheckPlayerIsHost(localPlayer)) { return true; }
+            return !Plugin.Instance.enableGod;
+        }
+
     }
 }
