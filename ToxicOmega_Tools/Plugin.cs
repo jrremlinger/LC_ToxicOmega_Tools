@@ -37,9 +37,7 @@ namespace ToxicOmega_Tools
         void Awake()
         {
             if (Instance == null)
-            {
                 Instance = this;
-            }
 
             mls = BepInEx.Logging.Logger.CreateLogSource(modGUID);
             mls.LogInfo("ToxicOmega Tools mod has awoken.");
@@ -54,7 +52,6 @@ namespace ToxicOmega_Tools
 
         public static PlayerControllerB GetPlayerFromString(string searchString)
         {
-            // Use string to find playername
             PlayerControllerB[] allPlayerScripts = StartOfRound.Instance.allPlayerScripts;
 
             // Search player by ID# if string starts with "#"
@@ -65,10 +62,9 @@ namespace ToxicOmega_Tools
                 if (ulong.TryParse(clientIdString, out ulong clientId))
                 {
                     PlayerControllerB foundPlayer = allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(clientId));
+                    
                     if (foundPlayer != null)
-                    {
                         return foundPlayer;
-                    }
                     else
                     {
                         LogMessage($"No Player with ID {clientId}!", true);
@@ -83,12 +79,10 @@ namespace ToxicOmega_Tools
             }
             else
             {
-                // Returns a player who's name starts with the input string
                 PlayerControllerB foundPlayer = allPlayerScripts.FirstOrDefault(player => player.playerUsername.ToLower().StartsWith(searchString.ToLower()));
+                
                 if (foundPlayer != null)
-                {
                     return foundPlayer;
-                }
                 else
                 {
                     LogMessage($"Player {searchString} not found!", true);
@@ -119,9 +113,7 @@ namespace ToxicOmega_Tools
                     if (input == "$")
                     {
                         if (randomScrapLocations.Length > 0)
-                        {
                             position = randomScrapLocations[UnityEngine.Random.Range(0, randomScrapLocations.Length)].transform.position;
-                        }
                         else
                         {
                             LogMessage($"No RandomScrapSpawn in this area!", true);
@@ -151,22 +143,15 @@ namespace ToxicOmega_Tools
                         }
                     }
                     else if (input == "")
-                    {
                         position = localPlayerController.transform.position;
-                    }
                     else
-                    {
                         isPlayerTarget = true;
-                    }
                     break;
                 case 1:
                     if (input == "" || input == "$")
                     {
                         if (currentRound.outsideAINodes.Length > 0 && currentRound.outsideAINodes[0] != null)
-                        {
                             position = currentRound.outsideAINodes[UnityEngine.Random.Range(0, currentRound.outsideAINodes.Length)].transform.position;
-                            //positionOutput = GameObject.FindGameObjectsWithTag("OutsideAINode")[UnityEngine.Random.Range(0, GameObject.FindGameObjectsWithTag("OutsideAINode").Length - 1)].transform.position;
-                        }
                         else
                         {
                             LogMessage($"No outsideAINodes in this area!", true);
@@ -195,17 +180,13 @@ namespace ToxicOmega_Tools
                         }
                     }
                     else
-                    {
                         isPlayerTarget = true;
-                    }
                     break;
                 case 2:
                     if (input == "" || input == "$")
                     {
                         if (currentRound.allEnemyVents.Length > 0 && currentRound.allEnemyVents[0] != null)
-                        {
                             position = currentRound.allEnemyVents[UnityEngine.Random.Range(0, currentRound.allEnemyVents.Length)].floorNode.position;
-                        }
                         else
                         {
                             LogMessage($"No allEnemyVents in this area!", true);
@@ -234,9 +215,7 @@ namespace ToxicOmega_Tools
                         }
                     }
                     else
-                    {
                         isPlayerTarget = true;
-                    }
                     break;
                 case 3:
                     if (input == "$")
@@ -345,9 +324,7 @@ namespace ToxicOmega_Tools
                         }
                     }
                     else
-                    {
                         isPlayerTarget = true;
-                    }
                     break;
             }
 
@@ -356,9 +333,7 @@ namespace ToxicOmega_Tools
                 PlayerControllerB playerTarget = GetPlayerFromString(input);
 
                 if (playerTarget == null || !playerTarget.isPlayerControlled)
-                {
                     return Vector3.zero;
-                }
                 else if (playerTarget.isPlayerDead)
                 {
                     LogMessage($"Could not target {playerTarget.playerUsername}!\nPlayer is dead!", true);
@@ -380,6 +355,7 @@ namespace ToxicOmega_Tools
         public static void LogMessage(string message, bool isError = false)
         {
             string headerText = string.Empty;
+
             if (isError)
             {
                 headerText = "Error!";
@@ -390,6 +366,7 @@ namespace ToxicOmega_Tools
                 headerText = "Success!";
                 mls.LogInfo(message);
             }
+
             HUDManager.Instance.DisplayTip(headerText, message, isError);
         }
 
@@ -397,26 +374,19 @@ namespace ToxicOmega_Tools
         {
             PlayerControllerB playerController = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(playerClientID));
 
-            // Redirects centipedes, unsure if actually working :p
+            // Redirects enemies in animation with player, unsure if actually working
             if (playerController.redirectToEnemy != null)
-            {
                 playerController.redirectToEnemy.ShipTeleportEnemy();
-            }
 
-            // Saves player from any creatures they are in an animation with
             SavePlayer(playerController);
 
-            // Sets correct AudioReverbPresets
+            // Update reverb to inside or outside
             if ((bool)FindObjectOfType<AudioReverbPresets>())
-            {
                 FindObjectOfType<AudioReverbPresets>().audioPresets[isInside ? 2 : 3].ChangeAudioReverbForPlayer(playerController);
-            }
 
-            // Ensures player fog/lighting is consistent after a teleport
             playerController.isInElevator = !isInside;
             playerController.isInHangarShipRoom = !isInside;
             playerController.isInsideFactory = isInside;
-
             playerController.averageVelocity = 0.0f;
             playerController.velocityLastFrame = Vector3.zero;
             playerController.beamUpParticle.Play();
@@ -449,12 +419,6 @@ namespace ToxicOmega_Tools
                     playerController.isInsideFactory = false;
                     playerController.wasInElevatorLastFrame = false;
                     round.SetPlayerObjectExtrapolate(false);
-
-
-
-
-
-
                     //playerController.TeleportPlayer(round.GetPlayerSpawnPosition((int)playerClientID));
                     playerController.TeleportPlayer(terminal.transform.position);
                     playerController.setPositionOfDeadPlayer = false;
@@ -541,9 +505,7 @@ namespace ToxicOmega_Tools
             for (int i = 0; i < centipedes.Length; i++)
             {
                 if (centipedes[i].clingingToPlayer == player)
-                {
                     centipedes[i].HitEnemy(0, player, true);
-                }
             }
             
             // Makes forest giant drop player and stuns them
@@ -551,9 +513,7 @@ namespace ToxicOmega_Tools
             for (int i = 0; i < giants.Length; i++)
             {
                 if (giants[i].inSpecialAnimationWithPlayer == player)
-                {
                     giants[i].GetComponentInChildren<EnemyAI>().SetEnemyStunned(true, 7.5f, player);
-                }
             }
 
             // Save player from the Masked
@@ -570,9 +530,7 @@ namespace ToxicOmega_Tools
 
             // Clears blood off of screen
             if (StartOfRound.Instance.localPlayerController.playerClientId == player.playerClientId)
-            {
                 HUDManager.Instance.HUDAnimator.SetBool("biohazardDamage", false);
-            }
         }
 
         public static void SpawnEnemy(int enemyID, int amount, string targetString)
@@ -583,44 +541,34 @@ namespace ToxicOmega_Tools
             allEnemiesList.AddRange(Instance.customInsideList);
 
             if (enemyID > Instance.customOutsideList.Count)
-            {
                 inside = true;
-            }
 
             if (GetPositionFromCommand(targetString, inside ? 2 : 1) == Vector3.zero)
-            {
                 return;
-            }
 
             string logLocation;
             string logName = allEnemiesList[enemyID].enemyType.enemyName;
 
             if (targetString == "" || targetString == "$")
-            {
                 logLocation = "Random";
-            }
             else if (targetString.StartsWith("@"))
-            {
                 logLocation = $"WP @{targetString.Substring(1)}";
-            }
             else
-            {
                 logLocation = GetPlayerFromString(targetString).playerUsername;
-            }
 
             LogMessage($"Spawned Enemy\nName: {logName}, ID: {enemyID}, Amount: {amount}, Location: {logLocation}.");
 
-            try
+            for (int i = 0; i < amount; i++)
             {
-                for (int i = 0; i < amount; i++)
+                try
                 {
                     Instantiate(allEnemiesList[enemyID].enemyType.enemyPrefab, GetPositionFromCommand(targetString, inside ? 2 : 1), Quaternion.Euler(Vector3.zero)).gameObject.GetComponentInChildren<NetworkObject>().Spawn(true);
                 }
-            }
-            catch (Exception ex)
-            {
-                LogMessage($"Unable to Spawn Enemy ID: {enemyID}", true);
-                mls.LogError(ex);
+                catch (Exception ex)
+                {
+                    LogMessage($"Unable to Spawn Enemy ID: {enemyID}", true);
+                    mls.LogError(ex);
+                }
             }
         }
 
@@ -629,25 +577,17 @@ namespace ToxicOmega_Tools
             List<Item> allItemsList = StartOfRound.Instance.allItemsList.itemsList;
 
             if (GetPositionFromCommand(targetString, 0) == Vector3.zero)
-            {
                 return;
-            }
 
             string logValue = value >= 0 ? $"{value}" : "Random";
             string logLocation;
 
             if (targetString == "$")
-            {
                 logLocation = "Random";
-            }
             else if (targetString.StartsWith("@"))
-            {
                 logLocation = $"WP @{ targetString.Substring(1) }";
-            }
             else
-            {
                 logLocation = GetPlayerFromString(targetString).playerUsername;
-            }
 
             LogMessage($"Spawned Item\nName: {allItemsList[itemID].name}, ID: {itemID}, Amount: {amount}, Value: {logValue}, Location: {logLocation}.");
 
@@ -655,7 +595,7 @@ namespace ToxicOmega_Tools
             {
                 try
                 {
-                    // The Shotgun (and maybe other items I haven't noticed) have their max and min values backwards causing an error unless I flip them... c'mon Zeekers...
+                    // The Shotgun (and maybe other items I haven't noticed) have their max and min values backwards causing an index error without this
                     if (allItemsList[itemID].minValue > allItemsList[itemID].maxValue)
                     {
                         int temp = allItemsList[itemID].minValue;
@@ -663,7 +603,6 @@ namespace ToxicOmega_Tools
                         allItemsList[itemID].maxValue = temp;
                     }
 
-                    // Spawns item using LC API
                     LC_API.GameInterfaceAPI.Features.Item item = LC_API.GameInterfaceAPI.Features.Item.CreateAndSpawnItem(allItemsList[itemID].itemName, true, GetPositionFromCommand(targetString, 0));
 
                     // RPC to set Shotgun shells loaded to be two for all players
@@ -674,11 +613,8 @@ namespace ToxicOmega_Tools
                         mls.LogInfo("RPC END: \"TOT_SYNC_AMMO\".");
                     }
 
-                    // Overrides default scrap value if a new value is passed as an argument
                     if (item != null && value != -1)
-                    {
                         item.ScrapValue = value;
-                    }
                 }
                 catch (Exception ex)
                 {
@@ -693,33 +629,25 @@ namespace ToxicOmega_Tools
             RoundManager currentRound = RoundManager.Instance;
 
             if (GetPositionFromCommand(targetString, 4) == Vector3.zero)
-            {
                 return;
-            }
 
             string logLocation;
 
             if (targetString == "$")
-            {
                 logLocation = "Random";
-            }
             else if (targetString.StartsWith("@"))
-            {
                 logLocation = $"WP @{targetString.Substring(1)}";
-            }
             else
-            {
                 logLocation = GetPlayerFromString(targetString).playerUsername;
-            }
 
             LogMessage($"Spawned Trap\nName: {(trapID == 1 ? "Turret" : "Mine")}, Amount: {amount}, Location: {logLocation}.");
 
-            try
+            switch (trapID)
             {
-                switch (trapID)
-                {
-                    case 0:
-                        foreach (SpawnableMapObject obj in currentRound.currentLevel.spawnableMapObjects)
+                case 0:
+                    foreach (SpawnableMapObject obj in currentRound.currentLevel.spawnableMapObjects)
+                    {
+                        try
                         {
                             if (obj.prefabToSpawn.GetComponentInChildren<Landmine>() != null)
                             {
@@ -732,10 +660,17 @@ namespace ToxicOmega_Tools
                                 break;
                             }
                         }
-
-                        break;
-                    case 1:
-                        foreach (SpawnableMapObject obj in currentRound.currentLevel.spawnableMapObjects)
+                        catch (Exception ex)
+                        {
+                            LogMessage($"Unable to Spawn Trap: {(trapID == 1 ? "Turret" : "Mine")}!", true);
+                            mls.LogError(ex);
+                        }
+                    }
+                    break;
+                case 1:
+                    foreach (SpawnableMapObject obj in currentRound.currentLevel.spawnableMapObjects)
+                    {
+                        try
                         {
                             if (obj.prefabToSpawn.GetComponentInChildren<Turret>() != null)
                             {
@@ -749,16 +684,14 @@ namespace ToxicOmega_Tools
                                 break;
                             }
                         }
-                        break;
-                }
+                        catch (Exception ex)
+                        {
+                            LogMessage($"Unable to Spawn Trap: {(trapID == 1 ? "Turret" : "Mine")}!", true);
+                            mls.LogError(ex);
+                        }
+                    }
+                    break;
             }
-            catch (Exception ex)
-            {
-                LogMessage($"Unable to Spawn Trap: {(trapID == 1 ? "Turret" : "Mine")}!", true);
-                mls.LogError(ex);
-            }
-
-
         }
     }
 

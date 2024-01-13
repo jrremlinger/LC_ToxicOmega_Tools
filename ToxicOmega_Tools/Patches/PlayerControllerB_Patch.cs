@@ -12,10 +12,11 @@ namespace ToxicOmega_Tools.Patches
     [HarmonyPatch(typeof(PlayerControllerB))]
     internal class PlayerControllerB_Patch
     {
-        [HarmonyPatch("KillPlayer")]
+        [HarmonyPatch(nameof(PlayerControllerB.KillPlayer))]
         [HarmonyPostfix]
-        private static void DeadPlayerEnableHUD(PlayerControllerB __instance)   // Allows host to see UI while dead so they can still use commands
+        private static void DeadPlayerEnableHUD(PlayerControllerB __instance)
         {
+            // Allows host to see UI while dead so they can still use commands
             if (Player.HostPlayer.ClientId == __instance.playerClientId)
             {
                 HUDManager HUD = HUDManager.Instance;
@@ -24,12 +25,13 @@ namespace ToxicOmega_Tools.Patches
             }
         }
 
-        [HarmonyPatch("AllowPlayerDeath")]
+        [HarmonyPatch(nameof(PlayerControllerB.AllowPlayerDeath))]
         [HarmonyPrefix]
         static bool OverrideDeath(PlayerControllerB __instance)
         {
             PlayerControllerB localPlayer = GameNetworkManager.Instance.localPlayerController;
-            if (!Plugin.CheckPlayerIsHost(localPlayer)) { return true; }
+            if (!Plugin.CheckPlayerIsHost(localPlayer))
+                return true;
             return !Plugin.Instance.enableGod;
         }
 

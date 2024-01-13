@@ -27,14 +27,10 @@ namespace ToxicOmega_Tools.Patches
                 GrabbableObject foundItem = playerTarget.ItemSlots[playerTarget.currentItemSlot];
 
                 if (foundItem != null && foundItem.itemProperties.requiresBattery)
-                {
                     foundItem.insertedBattery.charge = 1f;
-                }
             }
             else
-            {
                 Plugin.mls.LogInfo(nonHostSenderMessage);
-            }
         }
 
         [NetworkMessage("TOT_HEAL_PLAYER", true)]
@@ -49,9 +45,7 @@ namespace ToxicOmega_Tools.Patches
                 PlayerControllerB playerTarget = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(message.playerClientId));
 
                 if (playerTarget != null && playerTarget.isPlayerDead)
-                {
                     Plugin.RevivePlayer(playerTarget.playerClientId);
-                }
 
                 if (playerTarget != null)
                 {
@@ -61,9 +55,7 @@ namespace ToxicOmega_Tools.Patches
                 }
             }
             else
-            {
                 Plugin.mls.LogInfo(nonHostSenderMessage);
-            }
         }
 
         [NetworkMessage("TOT_TERMINAL_CREDITS", true)]
@@ -78,14 +70,10 @@ namespace ToxicOmega_Tools.Patches
                 Terminal terminal = UnityEngine.Object.FindObjectOfType<Terminal>();
 
                 if (terminal != null)
-                {
                     terminal.groupCredits += message.dataInt;
-                }
             }
             else
-            {
                 Plugin.mls.LogInfo(nonHostSenderMessage);
-            }
         }
 
         [NetworkMessage("TOT_TP_PLAYER", true)]
@@ -97,17 +85,11 @@ namespace ToxicOmega_Tools.Patches
             if (Plugin.CheckPlayerIsHost(playerSender))
             {
                 Plugin.mls.LogInfo(hostVerifiedMessage);
-
-                //Player.TryGet(message.playerClientId, out Player player);   // null reference on client when tp self
                 Plugin.mls.LogInfo($"Found: {StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(sender)).playerUsername}, Sending Inside: {message.isInside}");
-
                 Plugin.PlayerTeleportEffects(message.playerClientId, message.isInside);
-                //Plugin.PlayerTeleportEffects(StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(message.playerClientId)), message.isInside);
             }
             else
-            {
                 Plugin.mls.LogInfo(nonHostSenderMessage);
-            }
         }
 
         [NetworkMessage("TOT_SYNC_AMMO", true)]
@@ -122,9 +104,7 @@ namespace ToxicOmega_Tools.Patches
                 LC_API.GameInterfaceAPI.Features.Item.List.FirstOrDefault(item => item.NetworkObjectId.Equals(message.networkObjectID)).GetComponentInChildren<ShotgunItem>().shellsLoaded = 2;
             }
             else
-            {
                 Plugin.mls.LogInfo(nonHostSenderMessage);
-            }
         }
     }
 

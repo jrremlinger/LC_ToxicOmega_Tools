@@ -28,11 +28,13 @@ namespace ToxicOmega_Tools.Patches
         private static PlayerControllerB playerTarget = null;
         public static List<SpawnableEnemyWithRarity> allEnemiesList;
 
-        [HarmonyPatch("EnableChat_performed")]
+        [HarmonyPatch(nameof(HUDManager.EnableChat_performed))]
         [HarmonyPrefix]
-        private static bool EnableChatAction(HUDManager __instance) // Allows host to open chat while dead
+        private static bool EnableChatAction(HUDManager __instance)
         {
             PlayerControllerB localPlayer = GameNetworkManager.Instance.localPlayerController;
+
+            // Open chat skipping original method (and its dead player check) to allow host to open chat while dead
             if (localPlayer.isPlayerDead && Plugin.CheckPlayerIsHost(localPlayer))
             {
                 ShipBuildModeManager.Instance.CancelBuildMode();
@@ -42,20 +44,20 @@ namespace ToxicOmega_Tools.Patches
                 __instance.typingIndicator.enabled = true;
                 return false;
             }
+
             return true;
         }
 
-        [HarmonyPatch("SubmitChat_performed")]
+        [HarmonyPatch(nameof(HUDManager.SubmitChat_performed))]
         [HarmonyPrefix]
         private static bool RegisterChatCommand(HUDManager __instance)
         {
-            // Grab instances and refs as soon as chat is submitted
             RoundManager currentRound = RoundManager.Instance;
             Terminal terminal = UnityEngine.Object.FindObjectOfType<Terminal>();
             List<Item> allItemsList = StartOfRound.Instance.allItemsList.itemsList;
             PlayerControllerB localPlayerController = GameNetworkManager.Instance.localPlayerController;
 
-            __instance.tipsPanelCoroutine = null;   // Vanilla tips set a long coroutine to block other tips from appearing, this clears it
+            __instance.tipsPanelCoroutine = null;   // Clears vanilla tip coroutine to prevent Plugin.LogMessage() from being blocked
 
             allEnemiesList = new List<SpawnableEnemyWithRarity>();
             allEnemiesList.AddRange(Plugin.Instance.customOutsideList);
@@ -65,23 +67,18 @@ namespace ToxicOmega_Tools.Patches
             string chatMessage = __instance.chatTextField.text;
 
 
-            // SubmitChat_performed runs anytime "Enter" is pressed, even if chat is closed. This check prevents "Index out of range" when pressing enter in other situations like the terminal
+            // Return if SubmitChat_performed() runs when user is not actually sending a chat
             if (chatMessage == null || chatMessage == "")
-            {
                 return true;
-            }
 
-            // Split chat message up by spaces, trim trailing spaces
+            // Split chat message up by spaces, trim trailing spaces, convert to lowercase
             string[] command = chatMessage
                 .Split(new char[1] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
                 .Select(s => s.TrimEnd().ToLowerInvariant())
                 .ToArray();
 
-            // Only run commands if user is host
             if (!Plugin.CheckPlayerIsHost(localPlayerController))
-            {
                 return true;
-            }
 
             switch (command[0].Replace("/", "").ToLower())
             {
@@ -105,24 +102,17 @@ namespace ToxicOmega_Tools.Patches
                     };
 
                     int helpPage = 1;
-
-                    if (command.Length > 1)
-                    {
+                    if (command.Length > 1) 
                         int.TryParse(command[1], out helpPage);
-                    }
                     helpPage = Math.Max(helpPage, 1);
-
                     FindPage(commandList, helpPage, 4, "Command");
                     break;
                 case "it":
                 case "item":
                 case "items":   // Lists all items with their ID numbers
-                    if (command.Length > 1)
-                    {
+                    if (command.Length > 1) 
                         int.TryParse(command[1], out itemListPage);
-                    }
                     itemListPage = Math.Max(itemListPage, 1);
-
                     FindPage(allItemsList, itemListPage, 10, "Item");
                     break;
                 case "gi":
@@ -145,32 +135,23 @@ namespace ToxicOmega_Tools.Patches
                     }
 
                     if (command.Length > 2)
-                    {
                         int.TryParse(command[2], out itemCount);
-                        itemCount = Math.Max(itemCount, 1);
-                    }
+                    itemCount = Math.Max(itemCount, 1);
 
                     if (command.Length > 3)
                     {
                         if (command[3] == "$")
-                        {
                             itemValue = -1;
-                        }
                         else
                         {
                             int.TryParse(command[3], out itemValue);
-
                             if (itemValue < 0)
-                            {
                                 itemValue = 0;
-                            }
                         }
                     }
 
                     if (command.Length > 4)
-                    {
                         playerString = string.Join(" ", command.Skip(4)).ToLower();
-                    }
 
                     Plugin.SpawnItem(itemID, itemCount, itemValue, playerString);
                     break;
@@ -178,11 +159,8 @@ namespace ToxicOmega_Tools.Patches
                 case "enemy":
                 case "enemies":   // Lists all enemies with their ID numbers
                     if (command.Length > 1)
-                    {
                         int.TryParse(command[1], out enemyListPage);
-                    }
                     enemyListPage = Math.Max(enemyListPage, 1);
-
                     FindPage(allEnemiesList, enemyListPage, 10, "Enemy");
                     break;
                 case "sp":
@@ -194,13 +172,9 @@ namespace ToxicOmega_Tools.Patches
                     if (command.Length < 2)
                     {
                         if (allEnemiesList.Count > 0)
-                        {
                             FindPage(allEnemiesList, 1, 10, "Enemy");
-                        }
                         else
-                        {
                             Plugin.LogMessage("No valid Enemies for this location!", true);
-                        }
                         break;
                     }
 
@@ -217,9 +191,7 @@ namespace ToxicOmega_Tools.Patches
                     }
 
                     if (command.Length > 3)
-                    {
                         playerString = string.Join(" ", command.Skip(3)).ToLower();
-                    }
 
                     Plugin.SpawnEnemy(enemyID, spawnCount, playerString);
                     break;
@@ -235,13 +207,9 @@ namespace ToxicOmega_Tools.Patches
                     }
 
                     if ("landmine".StartsWith(command[1]) || "mine".StartsWith(command[1]) || command[1] == "0")
-                    {
                         trapID = 0;
-                    }
                     else if ("turret".StartsWith(command[1]) || command[1] == "1")
-                    {
                         trapID = 1;
-                    }
                     else
                     {
                         Plugin.LogMessage($"Unable to find a trap with name {command[1]}!", true);
@@ -255,9 +223,7 @@ namespace ToxicOmega_Tools.Patches
                     }
 
                     if (command.Length > 3)
-                    {
                         playerString = string.Join(" ", command.Skip(3)).ToLower();
-                    }
 
                     Plugin.SpawnTrap(trapID, spawnCount, playerString);
                     break;
@@ -267,9 +233,7 @@ namespace ToxicOmega_Tools.Patches
                     int listPage = 1;
 
                     if (command.Length > 2)
-                    {
                         int.TryParse(command[2], out listPage);
-                    }
                     listPage = Math.Max(listPage, 1);
 
                     if (command.Length < 2 || "players".StartsWith(command[1]))
@@ -295,7 +259,6 @@ namespace ToxicOmega_Tools.Patches
                         Plugin.LogMessage($"Unable to find list by name {command[1]}!", true);
                         break;
                     }
-
                     break;
                 case "tp":
                 case "tele":
@@ -313,9 +276,7 @@ namespace ToxicOmega_Tools.Patches
                                     Player.Get(localPlayerController).Position = Plugin.GetPositionFromCommand("!", 3, localPlayerController);
                                 }
                                 else
-                                {
                                     Plugin.LogMessage($"Could not teleport {localPlayerController.playerUsername}!\nPlayer is dead!", true);
-                                }
                             }
                             break;
                         case 2:
@@ -329,14 +290,11 @@ namespace ToxicOmega_Tools.Patches
                                     Plugin.mls.LogInfo("RPC SENDING: \"TOT_TP_PLAYER\".");
                                     Network.Broadcast("TOT_TP_PLAYER", new TOT_TP_PLAYER_Broadcast { isInside = sendPlayerInside, playerClientId = playerA.playerClientId });
                                     Plugin.mls.LogInfo("RPC END: \"TOT_TP_PLAYER\".");
-
                                     Player.Get(playerA).Position = Plugin.GetPositionFromCommand(command.Length > 2 ? command[2] : command[1], 3, playerA);
                                 }
                             }
                             else if (playerA != null && playerA.isPlayerDead)
-                            {
                                 Plugin.LogMessage($"Could not teleport {playerA.playerUsername}!\nPlayer is dead!", true);
-                            }
                             break;
                     }
                     break;
@@ -350,17 +308,13 @@ namespace ToxicOmega_Tools.Patches
                             string pageText = "";
 
                             for (int i = 0; i < Plugin.Instance.waypoints.Count; i++)
-                            {
                                 pageText += $"@{i}{Plugin.Instance.waypoints[i].position}, ";
-                            }
 
                             pageText = pageText.TrimEnd(',', ' ') + ".";
                             HUDManager.Instance.DisplayTip("Waypoint List", pageText);
                         }
                         else
-                        {
                             Plugin.LogMessage("Waypoint List is empty!", true);
-                        }
                     }
                     else if ("add".StartsWith(command[1]))
                     {
@@ -387,9 +341,7 @@ namespace ToxicOmega_Tools.Patches
                 case "heal":
                 case "save":    // Sets player health and stamina to max, saves player if in death animation with enemy
                     if (command.Length < 2)
-                    {
                         playerTarget = localPlayerController;
-                    }
                     else
                     {
                         string targetUsername = string.Join(" ", command.Skip(1)).ToLower();
@@ -399,13 +351,9 @@ namespace ToxicOmega_Tools.Patches
                     if (playerTarget != null)
                     {
                         if (playerTarget.isPlayerDead)
-                        {
                             Plugin.LogMessage($"Attempting to revive {playerTarget.playerUsername}.");
-                        }
                         else
-                        {
                             Plugin.LogMessage($"Healing {playerTarget.playerUsername}.");
-                        }
 
                         Plugin.mls.LogInfo("RPC SENDING: \"TOT_HEAL_PLAYER\".");
                         Network.Broadcast("TOT_HEAL_PLAYER", new TOT_PLAYER_Broadcast { playerClientId = playerTarget.playerClientId });
@@ -437,17 +385,11 @@ namespace ToxicOmega_Tools.Patches
                                 {
                                     objectList += $"{obj.objectCode}";
                                     if (obj.isBigDoor)
-                                    {
                                         objectList += "(Door), ";
-                                    }
                                     else if (obj.GetComponentInChildren<Turret>())
-                                    {
                                         objectList += "(Turret), ";
-                                    }
                                     else if (obj.GetComponentInChildren<Landmine>())
-                                    {
                                         objectList += "(Landmine), ";
-                                    }
                                 }
                             }
                             objectList = objectList.TrimEnd(',', ' ') + ".";
@@ -462,13 +404,9 @@ namespace ToxicOmega_Tools.Patches
                                     obj.CallFunctionFromTerminal();
 
                                     if (obj.GetComponentInChildren<Turret>())
-                                    {
                                         obj.GetComponentInChildren<Turret>().ToggleTurretEnabled(false);
-                                    }
                                     else if (obj.GetComponentInChildren<Landmine>())
-                                    {
                                         obj.GetComponentInChildren<Landmine>().ToggleMine(false);
-                                    }
                                 }
                             }
 
@@ -476,9 +414,7 @@ namespace ToxicOmega_Tools.Patches
                         }
                     }
                     else
-                    {
                         Plugin.LogMessage($"No TerminalAccessibleObject in this area!", true);
-                    }
                     break;
                 case "br":
                 case "breaker":
@@ -489,9 +425,7 @@ namespace ToxicOmega_Tools.Patches
                         Plugin.LogMessage($"Turned breaker {(breaker.isPowerOn ? "on" : "off")}.");
                     }
                     else
-                    {
                         Plugin.LogMessage("BreakerBox not found!", true);
-                    }
                     break;
                 case "cr":
                 case "credit":
@@ -500,9 +434,7 @@ namespace ToxicOmega_Tools.Patches
                     if (terminal != null)
                     {
                         if (command.Length < 2)
-                        {
                             Plugin.LogMessage($"Group Credits: {terminal.groupCredits}");
-                        }
                         else
                         {
                             int.TryParse(command[1], out int creditsChange);
@@ -513,16 +445,12 @@ namespace ToxicOmega_Tools.Patches
                         }
                     }
                     else
-                    {
                         Plugin.LogMessage("Terminal not found!", true);
-                    }
                     break;
                 case "ch":
                 case "charge":  // Charges a players held item if it uses a battery
                     if (command.Length < 2)
-                    {
                         playerTarget = localPlayerController;
-                    }
                     else
                     {
                         string targetUsername = string.Join(" ", command.Skip(1)).ToLower();
@@ -542,19 +470,13 @@ namespace ToxicOmega_Tools.Patches
                                 Plugin.LogMessage($"Charging {playerTarget.playerUsername}'s item \"{foundItem.itemProperties.itemName}\".");
                             }
                             else
-                            {
                                 Plugin.LogMessage($"{playerTarget.playerUsername}'s item \"{foundItem.itemProperties.itemName}\" does not use a battery!", true);
-                            }
                         }
                         else
-                        {
                             Plugin.LogMessage($"{playerTarget.playerUsername} is not holding an item!", true);
-                        }
                     }
                     else if (playerTarget.isPlayerDead)
-                    {
                         Plugin.LogMessage($"Could not charge {playerTarget.playerUsername}'s item!\nPlayer is dead!", true);
-                    }
                     break;
                 default:
                     // No command recognized, send chat normally
@@ -562,11 +484,8 @@ namespace ToxicOmega_Tools.Patches
                     break;
             }
 
-            if (flag)
-            {
-                // Empty chatTextField, this prevents anything from being sent to the in-game chat
+            if (flag)   // Empty chatTextField, this prevents anything from being sent to the in-game chat
                 __instance.chatTextField.text = string.Empty;
-            }
 
             // Perform regular chat if player is the host and dead, this overrides the way the game blocks dead players from chatting.
             if (localPlayerController.isPlayerDead && Plugin.CheckPlayerIsHost(localPlayerController))
@@ -627,24 +546,14 @@ namespace ToxicOmega_Tools.Patches
                 for (int i = startIndex; i <= endIndex; i++)
                 {
                     if (listName == "Item")
-                    {
                         pageText += $"{allItemsList[i].itemName}({i}), ";
-                    }
                     else if (listName == "Enemy")
-                    {
                         pageText += $"{allEnemiesList[i].enemyType.enemyName}({i}), ";
-                    }
                     else if (listName == "Command")
-                    {
                         pageText += $"{list[i]}\n";
-                    }
                     else if (listName == "Player")
-                    {
                         if (activePlayersList[i].isPlayerControlled)
-                        {
                             pageText += $"Player #{activePlayersList[i].playerClientId}: {activePlayersList[i].playerUsername}\n";
-                        }
-                    }
                     else if (listName == "Active Item")
                     {
                         pageText += $"{activeItems[i].itemProperties.itemName}, ";

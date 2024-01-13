@@ -10,14 +10,14 @@ namespace ToxicOmega_Tools.Patches
     [HarmonyPatch(typeof(ShipTeleporter))]
     internal class ShipTeleporter_Patch
     {
-        [HarmonyPatch("SetRandomSeed")]
+        [HarmonyPatch(nameof(ShipTeleporter.SetRandomSeed))]
         [HarmonyPostfix]
         private static void grabTeleporterSeed(ref System.Random ___shipTeleporterSeed)
         {
             Plugin.Instance.shipTeleporterSeed = ___shipTeleporterSeed;
         }
 
-        [HarmonyPatch("OnDisable")]
+        [HarmonyPatch(nameof(ShipTeleporter.OnDisable))]
         [HarmonyPostfix]
         private static void resetTeleporterSeed()
         {
