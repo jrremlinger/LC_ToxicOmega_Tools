@@ -98,6 +98,7 @@ namespace ToxicOmega_Tools
             // 1: Random outsideAINodes[]
             // 2: Random allEnemyVents[]
             // 3: Teleport Destination
+            // 4: Random insideAINodes[]
 
             bool isPlayerTarget = false;
             bool isTP = false;
