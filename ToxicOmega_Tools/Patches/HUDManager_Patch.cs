@@ -551,9 +551,8 @@ namespace ToxicOmega_Tools.Patches
                         pageText += $"{allEnemiesList[i].enemyType.enemyName}({i}), ";
                     else if (listName == "Command")
                         pageText += $"{list[i]}\n";
-                    else if (listName == "Player")
-                        if (activePlayersList[i].isPlayerControlled)
-                            pageText += $"Player #{activePlayersList[i].playerClientId}: {activePlayersList[i].playerUsername}\n";
+                    else if (listName == "Player" && activePlayersList[i].isPlayerControlled)
+                        pageText += $"Player #{activePlayersList[i].playerClientId}: {activePlayersList[i].playerUsername}\n";
                     else if (listName == "Active Item")
                     {
                         pageText += $"{activeItems[i].itemProperties.itemName}, ";

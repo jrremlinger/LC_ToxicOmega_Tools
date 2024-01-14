@@ -15,7 +15,7 @@ namespace ToxicOmega_Tools.Patches
         [HarmonyPrefix]
         static void ModifyLevel(ref SelectableLevel newLevel)
         {
-            Plugin.Instance.customOutsideList.AddRange(newLevel.DaytimeEnemies);
+            Plugin.Instance.customOutsideList = newLevel.DaytimeEnemies;
             Plugin.Instance.customOutsideList.AddRange(newLevel.OutsideEnemies);
 
             foreach (SpawnableEnemyWithRarity enemy in FixOutsideEnemySpawns())
@@ -24,7 +24,7 @@ namespace ToxicOmega_Tools.Patches
                     Plugin.Instance.customOutsideList.Add(enemy);
             }
 
-            Plugin.Instance.customInsideList.AddRange(newLevel.Enemies);
+            Plugin.Instance.customInsideList = newLevel.Enemies;
 
             foreach (SpawnableEnemyWithRarity enemy in FixInsideEnemySpawns())
             {
