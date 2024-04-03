@@ -46,6 +46,10 @@
     <Reference Include="LethalNetworkAPI">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\BepInEx\plugins\LethalNetworkAPI.dll</HintPath>
     </Reference>
+    <Reference Include="OdinSerializer, Version=2022.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\BepInEx\plugins\OdinSerializer.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -86,7 +90,6 @@
     <Compile Include="Patches\RoundManagerPatch.cs" />
     <Compile Include="Patches\ShipTeleporter_Patch.cs" />
     <Compile Include="Patches\StartMatchLever_Patch.cs" />
-    <Compile Include="Patches\StartOfRound_Patch.cs" />
     <Compile Include="TOTNetworking.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

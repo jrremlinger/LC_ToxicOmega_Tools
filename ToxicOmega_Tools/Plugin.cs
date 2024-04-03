@@ -13,6 +13,7 @@ using ToxicOmega_Tools.Patches;
 using System.ComponentModel;
 using LethalNetworkAPI;
 using System.Xml.Linq;
+using static BepInEx.BepInDependency;
 
 namespace ToxicOmega_Tools
 {
@@ -606,28 +607,29 @@ namespace ToxicOmega_Tools
                         allItemsList[itemID].maxValue = temp;
                     }
 
-                    //LC_API.GameInterfaceAPI.Features.Item item = LC_API.GameInterfaceAPI.Features.Item.CreateAndSpawnItem(allItemsList[itemID].itemName, true, GetPositionFromCommand(targetString, 0));
+                    int setValue = (int)((double)(value == -1 ? UnityEngine.Random.Range(allItemsList[itemID].minValue, allItemsList[itemID].maxValue) : value) * RoundManager.Instance.scrapValueMultiplier);
 
                     GameObject item = Instantiate(allItemsList[itemID].spawnPrefab, GetPositionFromCommand(targetString, 0), Quaternion.identity);
                     item.GetComponent<GrabbableObject>().transform.rotation = Quaternion.Euler(item.GetComponent<GrabbableObject>().itemProperties.restingRotation);
-                    item.GetComponent<GrabbableObject>().fallTime = 0.0f;
+                    item.GetComponent<GrabbableObject>().fallTime = 0f;
                     item.GetComponent<NetworkObject>().Spawn();
+                    item.GetComponent<GrabbableObject>().SetScrapValue(setValue);
 
                     // RPC to set Shotgun shells loaded to be two for all players
                     if (itemID == 59)
                     {
                         mls.LogInfo("RPC SENDING: \"TOT_SYNC_AMMO\".");
-                        //Network.Broadcast("TOT_SYNC_AMMO", new TOT_ITEM_Broadcast { networkObjectID = item.NetworkObjectId });
-                        TOTNetworking.syncAmmoRPC.SendAllClients(item.GetComponent<NetworkObject>().NetworkObjectId);
+                        TOTNetworking.syncAmmoServerMessage.SendAllClients(item.GetComponent<GrabbableObject>().NetworkObjectId);
                         mls.LogInfo("RPC END: \"TOT_SYNC_AMMO\".");
                     }
 
-                    if (item != null && value != -1)
-                    {
-                        //item.ScrapValue = value;
-                        item.GetComponent<ScanNodeProperties>().scrapValue = value;
-                        item.GetComponent<GrabbableObject>().scrapValue = value;
-                    }
+                    //if (item != null && value != -1)
+                    //{
+                    //    //item.ScrapValue = value;
+                    //    grabbableObject.SetScrapValue(value);
+                    //    item.GetComponent<ScanNodeProperties>().scrapValue = value;
+                    //    grabbableObject.scrapValue = value;
+                    //}
                 }
                 catch (Exception ex)
                 {
@@ -646,7 +648,7 @@ namespace ToxicOmega_Tools
 
             string logLocation;
 
-            if (targetString == "$")
+            if (targetString == "" || targetString == "$")
                 logLocation = "Random";
             else if (targetString.StartsWith("@"))
                 logLocation = $"WP @{targetString.Substring(1)}";
