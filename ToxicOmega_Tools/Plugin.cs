@@ -10,9 +10,9 @@ using GameNetcodeStuff;
 using Unity.Netcode;
 using System;
 using ToxicOmega_Tools.Patches;
-using LC_API.Networking;
-using LC_API.GameInterfaceAPI.Features;
 using System.ComponentModel;
+using LethalNetworkAPI;
+using System.Xml.Linq;
 
 namespace ToxicOmega_Tools
 {
@@ -27,7 +27,7 @@ namespace ToxicOmega_Tools
 
         internal static Plugin Instance;
         internal static ManualLogSource mls;
-        
+
         internal List<SpawnableEnemyWithRarity> customInsideList = new List<SpawnableEnemyWithRarity>();
         internal List<SpawnableEnemyWithRarity> customOutsideList = new List<SpawnableEnemyWithRarity>();
         internal List<Waypoint> waypoints = new List<Waypoint>();
@@ -42,12 +42,13 @@ namespace ToxicOmega_Tools
             mls = BepInEx.Logging.Logger.CreateLogSource(modGUID);
             mls.LogInfo("ToxicOmega Tools mod has awoken.");
             harmony.PatchAll();
-            Network.RegisterAll();
+            //Network.RegisterAll();    // LC API Networking
         }
-        
+
         public static bool CheckPlayerIsHost(PlayerControllerB player)
         {
-            return Player.HostPlayer.ClientId == player.playerClientId;
+            //return Player.HostPlayer.ClientId == player.playerClientId;
+            return player.isHostPlayerObject;   // IDK IF THIS WORKS
         }
 
         public static PlayerControllerB GetPlayerFromString(string searchString)
@@ -345,7 +346,8 @@ namespace ToxicOmega_Tools
 
                 if (isTP)
                 {
-                    HUDManager_Patch.sendPlayerInside = Player.Get(playerTarget).IsInFactory;
+                    //HUDManager_Patch.sendPlayerInside = Player.Get(playerTarget).IsInFactory;
+                    HUDManager_Patch.sendPlayerInside = playerTarget.isInsideFactory;
                     LogMessage($"Teleported {playerToTP.playerUsername} to {playerTarget.playerUsername}.");
                 }
             }
@@ -604,18 +606,28 @@ namespace ToxicOmega_Tools
                         allItemsList[itemID].maxValue = temp;
                     }
 
-                    LC_API.GameInterfaceAPI.Features.Item item = LC_API.GameInterfaceAPI.Features.Item.CreateAndSpawnItem(allItemsList[itemID].itemName, true, GetPositionFromCommand(targetString, 0));
+                    //LC_API.GameInterfaceAPI.Features.Item item = LC_API.GameInterfaceAPI.Features.Item.CreateAndSpawnItem(allItemsList[itemID].itemName, true, GetPositionFromCommand(targetString, 0));
+
+                    GameObject item = Instantiate(allItemsList[itemID].spawnPrefab, GetPositionFromCommand(targetString, 0), Quaternion.identity);
+                    item.GetComponent<GrabbableObject>().transform.rotation = Quaternion.Euler(item.GetComponent<GrabbableObject>().itemProperties.restingRotation);
+                    item.GetComponent<GrabbableObject>().fallTime = 0.0f;
+                    item.GetComponent<NetworkObject>().Spawn();
 
                     // RPC to set Shotgun shells loaded to be two for all players
                     if (itemID == 59)
                     {
                         mls.LogInfo("RPC SENDING: \"TOT_SYNC_AMMO\".");
-                        Network.Broadcast("TOT_SYNC_AMMO", new TOT_ITEM_Broadcast { networkObjectID = item.NetworkObjectId });
+                        //Network.Broadcast("TOT_SYNC_AMMO", new TOT_ITEM_Broadcast { networkObjectID = item.NetworkObjectId });
+                        TOTNetworking.syncAmmoRPC.SendAllClients(item.GetComponent<NetworkObject>().NetworkObjectId);
                         mls.LogInfo("RPC END: \"TOT_SYNC_AMMO\".");
                     }
 
                     if (item != null && value != -1)
-                        item.ScrapValue = value;
+                    {
+                        //item.ScrapValue = value;
+                        item.GetComponent<ScanNodeProperties>().scrapValue = value;
+                        item.GetComponent<GrabbableObject>().scrapValue = value;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -624,7 +636,7 @@ namespace ToxicOmega_Tools
                 }
             }
         }
-    
+
         public static void SpawnTrap(int trapID, int amount, string targetString)
         {
             RoundManager currentRound = RoundManager.Instance;

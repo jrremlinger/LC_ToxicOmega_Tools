@@ -1,20 +1,44 @@
 ﻿using GameNetcodeStuff;
-using LC_API.Networking;
+using LethalNetworkAPI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using Unity.Netcode;
 using UnityEngine;
+using static UnityEngine.InputSystem.InputRemoting;
 
 namespace ToxicOmega_Tools.Patches
 {
     internal class TOTNetworking
     {
+        public static LethalServerMessage<ulong> syncAmmoRPC = new LethalServerMessage<ulong>(identifier: "TOT_SYNC_AMMO");
+
         private static string hostVerifiedMessage = "RPC SENDER VERIFIED AS HOST, PROCEEDING WITH HANDLER METHOD.";
         private static string nonHostSenderMessage = "RPC SENDER IS NOT THE HOST, HANDLER METHOD CANCELLED.";
 
-        [NetworkMessage("TOT_CHARGE_PLAYER", true)]
+
+        public static void TOT_SYNC_AMMO(ulong data, ulong clientId)
+        {
+            Plugin.mls.LogInfo("RPC RECEIVED: \"TOT_SYNC_AMMO\".");
+            //PlayerControllerB playerSender = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(sender));
+            PlayerControllerB playerSender = clientId.GetPlayerController();
+
+            if (Plugin.CheckPlayerIsHost(playerSender))
+            {
+                Plugin.mls.LogInfo(hostVerifiedMessage);
+                //LC_API.GameInterfaceAPI.Features.Item.List.FirstOrDefault(item => item.NetworkObjectId.Equals(message.networkObjectID)).GetComponentInChildren<ShotgunItem>().shellsLoaded = 2;
+                UnityEngine.Object.FindObjectsOfType<NetworkObject>().FirstOrDefault(item => item.NetworkObjectId.Equals(data)).GetComponentInChildren<ShotgunItem>().shellsLoaded = 2;
+            }
+            else
+                Plugin.mls.LogInfo(nonHostSenderMessage);
+        }
+
+
+
+        //[NetworkMessage("TOT_CHARGE_PLAYER", true)]
         public static void TOT_CHARGE_PLAYER_HANDLER(ulong sender, TOT_PLAYER_Broadcast message)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"TOT_CHARGE_PLAYER\".");
@@ -33,7 +57,7 @@ namespace ToxicOmega_Tools.Patches
                 Plugin.mls.LogInfo(nonHostSenderMessage);
         }
 
-        [NetworkMessage("TOT_HEAL_PLAYER", true)]
+        //[NetworkMessage("TOT_HEAL_PLAYER", true)]
         public static void TOT_HEAL_PLAYER_HANDLER(ulong sender, TOT_PLAYER_Broadcast message)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"TOT_HEAL_PLAYER\".");
@@ -58,7 +82,7 @@ namespace ToxicOmega_Tools.Patches
                 Plugin.mls.LogInfo(nonHostSenderMessage);
         }
 
-        [NetworkMessage("TOT_TERMINAL_CREDITS", true)]
+        //[NetworkMessage("TOT_TERMINAL_CREDITS", true)]
         public static void TOT_TERMINAL_CREDITS_HANDLER(ulong sender, TOT_INT_Broadcast message)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"TOT_TERMINAL_CREDITS\".");
@@ -76,7 +100,7 @@ namespace ToxicOmega_Tools.Patches
                 Plugin.mls.LogInfo(nonHostSenderMessage);
         }
 
-        [NetworkMessage("TOT_TP_PLAYER", true)]
+        //[NetworkMessage("TOT_TP_PLAYER", true)]
         public static void TOT_TP_PLAYER_HANDLER(ulong sender, TOT_TP_PLAYER_Broadcast message)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"TOT_TP_PLAYER\".");
@@ -92,7 +116,7 @@ namespace ToxicOmega_Tools.Patches
                 Plugin.mls.LogInfo(nonHostSenderMessage);
         }
 
-        [NetworkMessage("TOT_SYNC_AMMO", true)]
+        //[NetworkMessage("TOT_SYNC_AMMO", true)]
         public static void TOT_SYNC_AMMO_HANDLER(ulong sender, TOT_ITEM_Broadcast message)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"TOT_SYNC_AMMO\".");
@@ -101,7 +125,7 @@ namespace ToxicOmega_Tools.Patches
             if (Plugin.CheckPlayerIsHost(playerSender))
             {
                 Plugin.mls.LogInfo(hostVerifiedMessage);
-                LC_API.GameInterfaceAPI.Features.Item.List.FirstOrDefault(item => item.NetworkObjectId.Equals(message.networkObjectID)).GetComponentInChildren<ShotgunItem>().shellsLoaded = 2;
+                //LC_API.GameInterfaceAPI.Features.Item.List.FirstOrDefault(item => item.NetworkObjectId.Equals(message.networkObjectID)).GetComponentInChildren<ShotgunItem>().shellsLoaded = 2;
             }
             else
                 Plugin.mls.LogInfo(nonHostSenderMessage);

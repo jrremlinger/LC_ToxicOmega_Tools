@@ -1,11 +1,11 @@
 ﻿using GameNetcodeStuff;
 using HarmonyLib;
-using LC_API.GameInterfaceAPI.Features;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.Netcode;
 
 namespace ToxicOmega_Tools.Patches
 {
@@ -17,7 +17,8 @@ namespace ToxicOmega_Tools.Patches
         private static void DeadPlayerEnableHUD(PlayerControllerB __instance)
         {
             // Allows host to see UI while dead so they can still use commands
-            if (Player.HostPlayer.ClientId == __instance.playerClientId)
+            //if (Player.HostPlayer.ClientId == __instance.playerClientId)
+            if (__instance.isHostPlayerObject)  //  || NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer
             {
                 HUDManager HUD = HUDManager.Instance;
                 HUD.HideHUD(false);
