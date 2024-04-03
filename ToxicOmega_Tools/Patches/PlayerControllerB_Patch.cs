@@ -18,7 +18,7 @@ namespace ToxicOmega_Tools.Patches
         {
             // Allows host to see UI while dead so they can still use commands
             //if (Player.HostPlayer.ClientId == __instance.playerClientId)
-            if (__instance.isHostPlayerObject)  //  || NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer
+            if (Plugin.CheckPlayerIsHost(__instance))
             {
                 HUDManager HUD = HUDManager.Instance;
                 HUD.HideHUD(false);

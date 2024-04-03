@@ -3,21 +3,17 @@ using BepInEx;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using GameNetcodeStuff;
 using Unity.Netcode;
 using System;
 using ToxicOmega_Tools.Patches;
-using System.ComponentModel;
-using LethalNetworkAPI;
-using System.Xml.Linq;
 using static BepInEx.BepInDependency;
 
 namespace ToxicOmega_Tools
 {
     [BepInPlugin(modGUID, modName, modVersion)]
+    [BepInDependency(StaticNetcodeLib.StaticNetcodeLib.Guid, DependencyFlags.HardDependency)]
     public class Plugin : BaseUnityPlugin
     {
         private const string modGUID = "com.toxicomega.toxicomega_tools";
@@ -52,6 +48,16 @@ namespace ToxicOmega_Tools
             return player.isHostPlayerObject;   // IDK IF THIS WORKS
         }
 
+        public static GrabbableObject GetGrabbableObject(ulong networkObjectID)
+        {
+            return FindObjectsOfType<GrabbableObject>().FirstOrDefault(item => item.NetworkObjectId.Equals(networkObjectID));
+        }
+
+        public static PlayerControllerB GetPlayerController(ulong clientId)
+        {
+            return StartOfRound.Instance.allPlayerScripts[StartOfRound.Instance.ClientPlayerList[clientId]];
+        }
+
         public static PlayerControllerB GetPlayerFromString(string searchString)
         {
             PlayerControllerB[] allPlayerScripts = StartOfRound.Instance.allPlayerScripts;
@@ -63,7 +69,7 @@ namespace ToxicOmega_Tools
 
                 if (ulong.TryParse(clientIdString, out ulong clientId))
                 {
-                    PlayerControllerB foundPlayer = allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(clientId));
+                    PlayerControllerB foundPlayer = GetPlayerController(clientId);
                     
                     if (foundPlayer != null)
                         return foundPlayer;
@@ -92,7 +98,7 @@ namespace ToxicOmega_Tools
                 }
             }
         }
-        
+
         public static Vector3 GetPositionFromCommand(string input, int positionType, PlayerControllerB playerToTP = null)
         {
             // Position types if player name is not given:
@@ -347,7 +353,6 @@ namespace ToxicOmega_Tools
 
                 if (isTP)
                 {
-                    //HUDManager_Patch.sendPlayerInside = Player.Get(playerTarget).IsInFactory;
                     HUDManager_Patch.sendPlayerInside = playerTarget.isInsideFactory;
                     LogMessage($"Teleported {playerToTP.playerUsername} to {playerTarget.playerUsername}.");
                 }
@@ -613,23 +618,16 @@ namespace ToxicOmega_Tools
                     item.GetComponent<GrabbableObject>().transform.rotation = Quaternion.Euler(item.GetComponent<GrabbableObject>().itemProperties.restingRotation);
                     item.GetComponent<GrabbableObject>().fallTime = 0f;
                     item.GetComponent<NetworkObject>().Spawn();
-                    item.GetComponent<GrabbableObject>().SetScrapValue(setValue);
+
+                    mls.LogInfo("RPC SENDING: \"SyncScrapClientRpc\".");
+                    TOTNetworking.SyncScrapClientRpc(new TOT_SyncScrapData { itemID = item.GetComponent<GrabbableObject>().NetworkObjectId, scrapValue = setValue });
 
                     // RPC to set Shotgun shells loaded to be two for all players
                     if (itemID == 59)
                     {
-                        mls.LogInfo("RPC SENDING: \"TOT_SYNC_AMMO\".");
-                        TOTNetworking.syncAmmoServerMessage.SendAllClients(item.GetComponent<GrabbableObject>().NetworkObjectId);
-                        mls.LogInfo("RPC END: \"TOT_SYNC_AMMO\".");
+                        mls.LogInfo("RPC SENDING: \"SyncAmmoClientRpc\".");
+                        TOTNetworking.SyncAmmoClientRpc(item.GetComponent<GrabbableObject>().NetworkObjectId);
                     }
-
-                    //if (item != null && value != -1)
-                    //{
-                    //    //item.ScrapValue = value;
-                    //    grabbableObject.SetScrapValue(value);
-                    //    item.GetComponent<ScanNodeProperties>().scrapValue = value;
-                    //    grabbableObject.scrapValue = value;
-                    //}
                 }
                 catch (Exception ex)
                 {

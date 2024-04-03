@@ -3,8 +3,6 @@ using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -270,15 +268,13 @@ namespace ToxicOmega_Tools.Patches
                             {
                                 if (!localPlayerController.isPlayerDead)
                                 {
-                                    Plugin.mls.LogInfo("RPC SENDING: \"TOT_TP_PLAYER\".");
+                                    Plugin.mls.LogInfo("RPC SENDING: \"TPPlayerClientRpc\".");
                                     Vector3 destination = Plugin.GetPositionFromCommand("!", 3, localPlayerController);
-                                    Plugin.mls.LogInfo("DEST 1: " + destination);
-                                    TOTNetworking.TPPlayerServerMessage.SendAllClients(
-                                        new TOT_TP_PLAYER_Broadcast {
+                                    TOTNetworking.TPPlayerClientRpc(
+                                        new TOT_TPPlayerData {
                                             isInside = false,
                                             playerClientId = localPlayerController.playerClientId,
                                             pos = destination });
-                                    Plugin.mls.LogInfo("RPC END: \"TOT_TP_PLAYER\".");
                                 }
                                 else
                                     Plugin.LogMessage($"Could not teleport {localPlayerController.playerUsername}!\nPlayer is dead!", true);
@@ -292,14 +288,13 @@ namespace ToxicOmega_Tools.Patches
                             {
                                 if (Plugin.GetPositionFromCommand(command.Length > 2 ? command[2] : command[1], 3, playerA) != Vector3.zero)
                                 {
-                                    Plugin.mls.LogInfo("RPC SENDING: \"TOT_TP_PLAYER\".");
+                                    Plugin.mls.LogInfo("RPC SENDING: \"TPPlayerClientRpc\".");
                                     //Network.Broadcast("TOT_TP_PLAYER", new TOT_TP_PLAYER_Broadcast { isInside = sendPlayerInside, playerClientId = playerA.playerClientId });
-                                    TOTNetworking.TPPlayerServerMessage.SendAllClients(
-                                        new TOT_TP_PLAYER_Broadcast { 
+                                    TOTNetworking.TPPlayerClientRpc(
+                                        new TOT_TPPlayerData { 
                                             isInside = sendPlayerInside, 
                                             playerClientId = playerA.playerClientId, 
                                             pos = Plugin.GetPositionFromCommand(command.Length > 2 ? command[2] : command[1], 3, playerA) });
-                                    Plugin.mls.LogInfo("RPC END: \"TOT_TP_PLAYER\".");
                                 }
                             }
                             else if (playerA != null && playerA.isPlayerDead)
@@ -365,9 +360,8 @@ namespace ToxicOmega_Tools.Patches
                         else
                             Plugin.LogMessage($"Healing {playerTarget.playerUsername}.");
 
-                        Plugin.mls.LogInfo("RPC SENDING: \"TOT_HEAL_PLAYER\".");
-                        TOTNetworking.healPlayerServerMessage.SendAllClients(playerTarget.playerClientId);
-                        Plugin.mls.LogInfo("RPC END: \"TOT_HEAL_PLAYER\".");
+                        Plugin.mls.LogInfo("RPC SENDING: \"HealPlayerClientRpc\".");
+                        TOTNetworking.HealPlayerClientRpc(playerTarget.playerClientId);
                     }
                     break;
                 case "gm":
@@ -445,9 +439,8 @@ namespace ToxicOmega_Tools.Patches
                         else
                         {
                             int.TryParse(command[1], out int creditsChange);
-                            Plugin.mls.LogInfo("RPC SENDING: \"TOT_TERMINAL_CREDITS\".");
-                            TOTNetworking.terminalCreditsServerMessage.SendAllClients(creditsChange);
-                            Plugin.mls.LogInfo("RPC END: \"TOT_TERMINAL_CREDITS\".");
+                            Plugin.mls.LogInfo("RPC SENDING: \"TerminalCreditsClientRpc\".");
+                            TOTNetworking.TerminalCreditsClientRpc(creditsChange);
                             Plugin.LogMessage($"Adjusted Credits by {creditsChange}.\nNew Total: {terminal.groupCredits}.");
                         }
                     }
@@ -471,9 +464,8 @@ namespace ToxicOmega_Tools.Patches
                         {
                             if (foundItem.itemProperties.requiresBattery)
                             {
-                                Plugin.mls.LogInfo("RPC SENDING: \"TOT_CHARGE_PLAYER\".");
-                                TOTNetworking.chargePlayerServerMessage.SendAllClients(playerTarget.playerClientId);
-                                Plugin.mls.LogInfo("RPC END: \"TOT_CHARGE_PLAYER\".");
+                                Plugin.mls.LogInfo("RPC SENDING: \"ChargePlayerClientRpc\".");
+                                TOTNetworking.ChargePlayerClientRpc(playerTarget.playerClientId);
                                 Plugin.LogMessage($"Charging {playerTarget.playerUsername}'s item \"{foundItem.itemProperties.itemName}\".");
                             }
                             else
