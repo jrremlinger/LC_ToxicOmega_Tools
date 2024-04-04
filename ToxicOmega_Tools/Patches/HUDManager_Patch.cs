@@ -53,8 +53,7 @@ namespace ToxicOmega_Tools.Patches
             List<Item> allItemsList = StartOfRound.Instance.allItemsList.itemsList;
             PlayerControllerB localPlayerController = GameNetworkManager.Instance.localPlayerController;
 
-            //__instance.tipsPanelCoroutine = null;   // Clears vanilla tip coroutine to prevent Plugin.LogMessage() from being blocked
-            if (__instance.tipsPanelCoroutine != null)
+            if (__instance.tipsPanelCoroutine != null)  // Clears vanilla tip coroutine to prevent Plugin.LogMessage() from being blocked
                 __instance.StopCoroutine(__instance.tipsPanelCoroutine);
 
             allEnemiesList = new List<SpawnableEnemyWithRarity>();
@@ -289,7 +288,6 @@ namespace ToxicOmega_Tools.Patches
                                 if (Plugin.GetPositionFromCommand(command.Length > 2 ? command[2] : command[1], 3, playerA) != Vector3.zero)
                                 {
                                     Plugin.mls.LogInfo("RPC SENDING: \"TPPlayerClientRpc\".");
-                                    //Network.Broadcast("TOT_TP_PLAYER", new TOT_TP_PLAYER_Broadcast { isInside = sendPlayerInside, playerClientId = playerA.playerClientId });
                                     TOTNetworking.TPPlayerClientRpc(
                                         new TOT_TPPlayerData { 
                                             isInside = sendPlayerInside, 
@@ -324,7 +322,6 @@ namespace ToxicOmega_Tools.Patches
                     {
                         if (localPlayerController != null && !localPlayerController.isPlayerDead)
                         {
-                            //bool wpInside = Player.Get(localPlayerController).IsInFactory;
                             bool wpInside = localPlayerController.isInsideFactory;
                             Vector3 wpPosition = localPlayerController.transform.position;
                             Plugin.Instance.waypoints.Add(new Waypoint { isInside = wpInside, position = wpPosition });

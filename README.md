@@ -4,7 +4,7 @@
 
 Some important notes:
 * All commands only register if you are the host.
-* All players must have this mod installed, along with LC_API, for it to work properly.
+* All players must have this mod (including dependencies) installed for it to work properly. It will still work otherwise, but you will encounter desyncs.
 * Text chat will stay enabled while dead if you are the host.
 * Only the beginning of player names are required when using them in commands (example: searching John will return a player with the name Johnny).
 * Where applicable, certain symbols can be used when determining a destination:

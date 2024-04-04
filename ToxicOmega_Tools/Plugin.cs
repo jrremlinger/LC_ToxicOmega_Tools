@@ -39,13 +39,11 @@ namespace ToxicOmega_Tools
             mls = BepInEx.Logging.Logger.CreateLogSource(modGUID);
             mls.LogInfo("ToxicOmega Tools mod has awoken.");
             harmony.PatchAll();
-            //Network.RegisterAll();    // LC API Networking
         }
 
         public static bool CheckPlayerIsHost(PlayerControllerB player)
         {
-            //return Player.HostPlayer.ClientId == player.playerClientId;
-            return player.isHostPlayerObject;   // IDK IF THIS WORKS
+            return player.isHostPlayerObject;
         }
 
         public static GrabbableObject GetGrabbableObject(ulong networkObjectID)
@@ -612,7 +610,7 @@ namespace ToxicOmega_Tools
                         allItemsList[itemID].maxValue = temp;
                     }
 
-                    int setValue = (int)((double)(value == -1 ? UnityEngine.Random.Range(allItemsList[itemID].minValue, allItemsList[itemID].maxValue) : value) * RoundManager.Instance.scrapValueMultiplier);
+                    int setValue = (int)(double)(value == -1 ? UnityEngine.Random.Range(allItemsList[itemID].minValue, allItemsList[itemID].maxValue) * RoundManager.Instance.scrapValueMultiplier : value);
 
                     GameObject item = Instantiate(allItemsList[itemID].spawnPrefab, GetPositionFromCommand(targetString, 0), Quaternion.identity);
                     item.GetComponent<GrabbableObject>().transform.rotation = Quaternion.Euler(item.GetComponent<GrabbableObject>().itemProperties.restingRotation);

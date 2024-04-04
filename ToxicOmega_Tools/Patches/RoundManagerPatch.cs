@@ -31,10 +31,6 @@ namespace ToxicOmega_Tools.Patches
                 if (!ListHasEnemy(Plugin.Instance.customInsideList, enemy.enemyType.enemyName))
                     Plugin.Instance.customInsideList.Add(enemy);
             }
-
-            // if allow all enemies is true
-            //newLevel.Enemies = TutorialModBase.Instance.InsideEnemyList;
-            //newLevel.OutsideEnemies = TutorialModBase.Instance.OutsideEnemyList;
         }
 
         private static bool ListHasEnemy(List<SpawnableEnemyWithRarity> list, string enemyName)
@@ -59,7 +55,6 @@ namespace ToxicOmega_Tools.Patches
             MaskedPlayerEnemy maskedRef = null;
             NutcrackerEnemyAI nutRef = null;
             PufferAI pufferRef = null;
-            RadMechAI radMechRef = null;
             SandSpiderAI spiderRef = null;
             SpringManAI springRef = null;
 
@@ -154,13 +149,6 @@ namespace ToxicOmega_Tools.Patches
                 pufferSpawnable.enemyType = pufferRef.enemyType;
             returnList.Add(pufferSpawnable);
 
-            foreach (UnityEngine.Object obj in Resources.FindObjectsOfTypeAll(typeof(RadMechAI)))
-                radMechRef = (RadMechAI)obj;
-            SpawnableEnemyWithRarity radMechSpawnable = new SpawnableEnemyWithRarity();
-            if (radMechRef != null)
-                radMechSpawnable.enemyType = radMechRef.enemyType;
-            returnList.Add(radMechSpawnable);
-
             foreach (UnityEngine.Object obj in Resources.FindObjectsOfTypeAll(typeof(SandSpiderAI)))
                 spiderRef = (SandSpiderAI)obj;
             SpawnableEnemyWithRarity spiderSpawnable = new SpawnableEnemyWithRarity();
@@ -187,6 +175,7 @@ namespace ToxicOmega_Tools.Patches
             DoublewingAI doublewingRef = null;
             ForestGiantAI forestGiantRef = null;
             MouthDogAI mouthDogRef = null;
+            RadMechAI radMechRef = null;
             RedLocustBees redLocustRef = null;
             SandWormAI sandWormRef = null;
 
@@ -224,6 +213,13 @@ namespace ToxicOmega_Tools.Patches
             if (mouthDogRef != null)
                 mouthDogSpawnable.enemyType = mouthDogRef.enemyType;
             returnList.Add(mouthDogSpawnable);
+
+            foreach (UnityEngine.Object obj in Resources.FindObjectsOfTypeAll(typeof(RadMechAI)))
+                radMechRef = (RadMechAI)obj;
+            SpawnableEnemyWithRarity radMechSpawnable = new SpawnableEnemyWithRarity();
+            if (radMechRef != null)
+                radMechSpawnable.enemyType = radMechRef.enemyType;
+            returnList.Add(radMechSpawnable);
 
             foreach (UnityEngine.Object obj in Resources.FindObjectsOfTypeAll(typeof(RedLocustBees)))
                 redLocustRef = (RedLocustBees)obj;

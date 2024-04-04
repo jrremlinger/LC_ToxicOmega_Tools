@@ -17,7 +17,6 @@ namespace ToxicOmega_Tools.Patches
         private static void DeadPlayerEnableHUD(PlayerControllerB __instance)
         {
             // Allows host to see UI while dead so they can still use commands
-            //if (Player.HostPlayer.ClientId == __instance.playerClientId)
             if (Plugin.CheckPlayerIsHost(__instance))
             {
                 HUDManager HUD = HUDManager.Instance;
