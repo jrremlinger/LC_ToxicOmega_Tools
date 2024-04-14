@@ -85,6 +85,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TOTGUI.cs" />
     <Compile Include="Patches\HUDManager_Patch.cs" />
     <Compile Include="Patches\PlayerControllerB_Patch.cs" />
     <Compile Include="Patches\RoundManagerPatch.cs" />

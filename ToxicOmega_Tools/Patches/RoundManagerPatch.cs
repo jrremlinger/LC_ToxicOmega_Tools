@@ -173,6 +173,7 @@ namespace ToxicOmega_Tools.Patches
             BaboonBirdAI baboonRef = null;
             DocileLocustBeesAI docileLocustRef = null;
             DoublewingAI doublewingRef = null;
+            FlowerSnakeEnemy flowerSnakeRef = null;
             ForestGiantAI forestGiantRef = null;
             MouthDogAI mouthDogRef = null;
             RadMechAI radMechRef = null;
@@ -199,6 +200,13 @@ namespace ToxicOmega_Tools.Patches
             if (doublewingRef != null)
                 doublewingSpawnable.enemyType = doublewingRef.enemyType;
             returnList.Add(doublewingSpawnable);
+
+            foreach (UnityEngine.Object obj in Resources.FindObjectsOfTypeAll(typeof(FlowerSnakeEnemy)))
+                flowerSnakeRef = (FlowerSnakeEnemy)obj;
+            SpawnableEnemyWithRarity flowerSnakeSpawnable = new SpawnableEnemyWithRarity();
+            if (flowerSnakeRef != null)
+                flowerSnakeSpawnable.enemyType = flowerSnakeRef.enemyType;
+            returnList.Add(flowerSnakeSpawnable);
 
             foreach (UnityEngine.Object obj in Resources.FindObjectsOfTypeAll(typeof(ForestGiantAI)))
                 forestGiantRef = (ForestGiantAI)obj;
