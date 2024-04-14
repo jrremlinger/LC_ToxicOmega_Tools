@@ -129,7 +129,7 @@ namespace ToxicOmega_Tools
                 {
                     PlayerControllerB foundPlayer = GetPlayerController(clientId);
 
-                    if (foundPlayer != null && foundPlayer.isPlayerControlled)
+                    if (foundPlayer != null && (foundPlayer.isPlayerControlled || foundPlayer.isPlayerDead))
                     {
                         return foundPlayer;
                     }
@@ -541,8 +541,13 @@ namespace ToxicOmega_Tools
                     return Vector3.zero;
                 else if (playerTarget.isPlayerDead)
                 {
-                    LogMessage($"Could not target {playerTarget.playerUsername}!\nPlayer is dead!", true);
-                    return Vector3.zero;
+                    if (localPlayerController.playerClientId == playerTarget.playerClientId && playerTarget.spectatedPlayerScript != null)
+                        return playerTarget.spectatedPlayerScript.transform.position;
+                    else
+                    {
+                        LogMessage($"Could not target {playerTarget.playerUsername}!\nPlayer is dead!", true);
+                        return Vector3.zero;
+                    }
                 }
 
                 position = playerTarget.transform.position;

@@ -101,6 +101,7 @@ namespace ToxicOmega_Tools.Patches
                         "Code: Toggles blast doors and traps",
                         "Breaker: Toggles breaker box",
                         "Credit: Adjusts spendable credits",
+                        "Suit: Changes the suit of a player",
                         "Charge: Charges a player's held item",
                     };
 
@@ -526,6 +527,7 @@ namespace ToxicOmega_Tools.Patches
                         itemTarget = Plugin.GetGrabbableObject(networkId);
                         targetName = $"{itemTarget.itemProperties.itemName} ({itemTarget.NetworkObjectId})";
                         UnityEngine.Object.Destroy(itemTarget.gameObject);
+                        Plugin.LogMessage($"Killing {targetName}!");
                     }
                     else if (foundId && Plugin.GetEnemyAI(networkId) != null)
                     {
@@ -548,24 +550,56 @@ namespace ToxicOmega_Tools.Patches
                         {
                             UnityEngine.Object.Destroy(enemyTarget.gameObject);
                         }
+                        Plugin.LogMessage($"Killing {targetName}!");
                     }
                     else
                     {
                         playerTarget = Plugin.GetPlayerFromString(command[1]);
 
-                        if (playerTarget != null)
+                        if (playerTarget != null && !playerTarget.isPlayerDead && playerTarget.isPlayerControlled)
                         {
                             targetName = playerTarget.playerUsername;
                             Plugin.mls.LogInfo("RPC SENDING: \"HurtPlayerClientRpc\".");
                             TOTNetworking.HurtPlayerClientRpc(new TOT_DamagePlayerData { playerClientId = playerTarget.playerClientId, damage = 999999 });
+                            Plugin.LogMessage($"Killing {targetName}!");
                         }
-                        
+                        else if (playerTarget.isPlayerDead)
+                            Plugin.LogMessage($"Unable to kill {playerTarget.playerUsername}, player already dead!", true);
                     }
-                    Plugin.LogMessage($"Killing {targetName}!");
                     break;
                 case "gui":
                 case "hud":
                     TOTGUI.visible = !TOTGUI.visible;
+                    break;
+                case "su":
+                case "suit":
+                    List<UnlockableItem> allSuits = StartOfRound.Instance.unlockablesList.unlockables;
+                    UnlockableSuit suitManager = new UnlockableSuit();
+                    if (command.Length < 2)
+                    {
+                        string suitList = "";
+                        foreach (UnlockableItem suit in allSuits)
+                        {
+                            if (suit.unlockableType == 0)
+                                suitList += $"{suit.unlockableName} ({allSuits.IndexOf(suit)}), ";
+                        }
+                        suitList = suitList.TrimEnd(',', ' ') + ".";
+                        HUDManager.Instance.DisplayTip("Suit List", suitList);
+                    }
+                    else
+                    {
+                        int selectedSuit = allSuits.IndexOf(allSuits.FirstOrDefault(suit => suit.unlockableType == 0 && suit.unlockableName.ToLower().StartsWith(command[1])));
+                        if (selectedSuit == -1 || allSuits[selectedSuit].unlockableType != 0)
+                        {
+                            Plugin.LogMessage($"Unable to find suit \"{command[1]}\"!", true);
+                            break;
+                        }
+                        playerTarget = command.Length > 2 ? Plugin.GetPlayerFromString(command[2]) : localPlayerController;
+                        if (playerTarget == null) { break; }
+                        Plugin.mls.LogInfo("RPC SENDING: \"SyncScrapClientRpc\".");
+                        TOTNetworking.SyncSuitClientRpc(new TOT_SyncSuitData { playerId = playerTarget.playerClientId, suitId = selectedSuit });
+                        Plugin.LogMessage($"Setting {playerTarget.playerUsername} to {allSuits[selectedSuit].unlockableName}.");
+                    }
                     break;
                 default:
                     // No command recognized, send chat normally

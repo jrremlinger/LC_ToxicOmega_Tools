@@ -67,6 +67,13 @@ namespace ToxicOmega_Tools.Patches
         }
 
         [ClientRpc]
+        public static void SyncSuitClientRpc(TOT_SyncSuitData data)
+        {
+            Plugin.mls.LogInfo("RPC RECEIVED: \"SyncSuitClientRpc\".");
+            UnlockableSuit.SwitchSuitForPlayer(Plugin.GetPlayerController(data.playerId), data.suitId);
+        }
+
+        [ClientRpc]
         public static void TerminalCreditsClientRpc(int val)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"TerminalCreditsClientRpc\".");
@@ -103,13 +110,6 @@ namespace ToxicOmega_Tools.Patches
 
     }
 
-    public struct TOT_TPItemData
-    {
-        [OdinSerialize]
-        public ulong itemId { get; set; }
-        [OdinSerialize]
-        public Vector3 pos { get; set; }
-    }
 
     public struct TOT_DamagePlayerData
     {
@@ -119,6 +119,30 @@ namespace ToxicOmega_Tools.Patches
         public int damage { get; set; }
     }
 
+    public struct TOT_SyncScrapData
+    {
+        [OdinSerialize]
+        public ulong itemId { get; set; }
+        [OdinSerialize]
+        public int scrapValue { get; set; }
+    }
+    
+    public struct TOT_SyncSuitData
+    {
+        [OdinSerialize]
+        public ulong playerId { get; set; }
+        [OdinSerialize]
+        public int suitId { get; set; }
+    }
+
+    public struct TOT_TPItemData
+    {
+        [OdinSerialize]
+        public ulong itemId { get; set; }
+        [OdinSerialize]
+        public Vector3 pos { get; set; }
+    }
+    
     public struct TOT_TPPlayerData
     {
         [OdinSerialize]
@@ -129,12 +153,7 @@ namespace ToxicOmega_Tools.Patches
         public Vector3 pos { get; set; }
     }
 
-    public struct TOT_SyncScrapData
-    {
-        [OdinSerialize]
-        public ulong itemId { get; set; }
-        [OdinSerialize]
-        public int scrapValue { get; set; }
-    }
+
+
 
 }
