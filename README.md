@@ -10,9 +10,9 @@ Some important notes:
 * There are several ways to target different entities/areas when running commands:
   * The network ID (shown in list command and hud) can be used to target already existing items/enemies.
   * $: Using "$" indicates random/natural destination. For teleporting this will act as an inverse-teleporter putting the teleport target randomly inside the factory. For spawning items it will choose a normal scrap spawnpoint. For enemies it will either use vents or outside spawnpoints depending on the type of enemy.
-	* !: Using "!" chooses the ships terminal as a target. This is only applicable for teleportation.
-	* @(num): Using "@" followed by a number will choose the waypoint with that index as the target.
-	* #(num): Using "#" followed by a number will choose the player with that Client ID as the target.
+  * !: Using "!" chooses the ships terminal as a target. This is only applicable for teleportation.
+  * @(num): Using "@" followed by a number will choose the waypoint with that index as the target.
+  * #(num): Using "#" followed by a number will choose the player with that Client ID as the target.
   * Typing the beginning of a players name will target that player. 
 
 ---
