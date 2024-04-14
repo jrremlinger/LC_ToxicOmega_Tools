@@ -54,7 +54,7 @@ Arguments:
 * Item Type: Name or numerical ID of item you want to spawn. Will auto-complete name if the beginning is given. Use underscores "_" in place of spaces.
 * Amount (Default: 1): How many copies of the item should be spawned.
 * Value (Default: Random): Override the default value of the item with a given number.
-* Target (Default: Host Player): Where to spawn the item, supports all targeting methods listed at the beginning of this readme.
+* Target (Default: Self): Where to spawn the item, supports all targeting methods listed at the beginning of this readme.
 
 Example: "give gold_bar 1 420 #3" will spawn one gold bar worth $420 on the player whose ID is 3.
 </details>
@@ -162,7 +162,7 @@ Example: "wp add" will create a waypoint at your current location.
 Fully refills a player's health and stamina. Will save a player if they are currently in a kill animation with Snare Fleas, Forest Giants, or Masked Players. If the target player is dead, they will be revived at the ship's terminal.
 
 Arguments:
-* Player Target (Default: Host Player): Only supports player name/client ID (enemy ID not supported yet).
+* Player Target (Default: Self): Only supports player name/client ID (enemy ID not supported yet).
 
 Example: "heal John" will heal a player whose name starts with (or is) John.
 </details>
@@ -230,12 +230,26 @@ Example: "credit -10" will subtract 10 from the current amount of group credits.
 ---
 
 <details>
+  <summary><h3>Su/Suit Optional: (Suit Name) (Player Target)</h3></summary>
+
+Changes a players suit. If no arguments are given it will instead list all available suits.
+
+Arguments:
+* Suit Name: The name of the suit you want to equip.
+* Player Target (Default: Self): The player who's suit will be changed.
+
+Example: "suit purple Joe" will change the suit of player named Joe to be the purple suit.
+</details>
+
+---
+
+<details>
   <summary><h3>Ch/Charge Optional: (Player Target)</h3></summary>
 
 Charges a player's held item.
 
 Arguments:
-* Player Target (Default: Host Player): Only supports player name/client ID.
+* Player Target (Default: Self): Only supports player name/client ID.
 
 Example: "ch" will simply charge the host's held item.
 </details>
