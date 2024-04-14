@@ -36,14 +36,16 @@
     <Reference Include="0Harmony">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\BepInEx\core\0Harmony.dll</HintPath>
     </Reference>
-    <Reference Include="Assembly-CSharp" Publicize="true">
+    <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL" Publicize="true">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\BepInEx\core\BepInEx.dll</HintPath>
     </Reference>
-    <Reference Include="LC_API">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\BepInEx\plugins\LC_API.dll</HintPath>
+    <Reference Include="OdinSerializer, Version=2022.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\BepInEx\plugins\OdinSerializer.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -78,8 +80,12 @@
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\UnityEngine.ParticleSystemModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+    <Reference Include="Xilophor.StaticNetcodeLib">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\BepInEx\plugins\Xilophor.StaticNetcodeLib.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TOTGUI.cs" />
     <Compile Include="Patches\HUDManager_Patch.cs" />
     <Compile Include="Patches\PlayerControllerB_Patch.cs" />
     <Compile Include="Patches\RoundManagerPatch.cs" />

@@ -31,10 +31,6 @@ namespace ToxicOmega_Tools.Patches
                 if (!ListHasEnemy(Plugin.Instance.customInsideList, enemy.enemyType.enemyName))
                     Plugin.Instance.customInsideList.Add(enemy);
             }
-
-            // if allow all enemies is true
-            //newLevel.Enemies = TutorialModBase.Instance.InsideEnemyList;
-            //newLevel.OutsideEnemies = TutorialModBase.Instance.OutsideEnemyList;
         }
 
         private static bool ListHasEnemy(List<SpawnableEnemyWithRarity> list, string enemyName)
@@ -47,6 +43,8 @@ namespace ToxicOmega_Tools.Patches
             List<SpawnableEnemyWithRarity> returnList = new List<SpawnableEnemyWithRarity>();
 
             BlobAI blobRef = null;
+            ButlerEnemyAI butlerRef = null;
+            ButlerBeesEnemyAI maskHornetsRef = null;
             CentipedeAI centipedeRef = null;
             CrawlerAI crawlerRef = null;
             DressGirlAI dressGirlRef = null;
@@ -66,6 +64,20 @@ namespace ToxicOmega_Tools.Patches
             if (blobRef != null)
                 blobSpawnable.enemyType = blobRef.enemyType;
             returnList.Add(blobSpawnable);
+
+            foreach (UnityEngine.Object obj in Resources.FindObjectsOfTypeAll(typeof(ButlerEnemyAI)))
+                butlerRef = (ButlerEnemyAI)obj;
+            SpawnableEnemyWithRarity butlerSpawnable = new SpawnableEnemyWithRarity();
+            if (butlerRef != null)
+                butlerSpawnable.enemyType = butlerRef.enemyType;
+            returnList.Add(butlerSpawnable);
+
+            foreach (UnityEngine.Object obj in Resources.FindObjectsOfTypeAll(typeof(ButlerBeesEnemyAI)))
+                maskHornetsRef = (ButlerBeesEnemyAI)obj;
+            SpawnableEnemyWithRarity maskHornetsSpawnable = new SpawnableEnemyWithRarity();
+            if (maskHornetsRef != null)
+                maskHornetsSpawnable.enemyType = maskHornetsRef.enemyType;
+            returnList.Add(maskHornetsSpawnable);
 
             foreach (UnityEngine.Object obj in Resources.FindObjectsOfTypeAll(typeof(CentipedeAI)))
                 centipedeRef = (CentipedeAI)obj;
@@ -161,8 +173,10 @@ namespace ToxicOmega_Tools.Patches
             BaboonBirdAI baboonRef = null;
             DocileLocustBeesAI docileLocustRef = null;
             DoublewingAI doublewingRef = null;
+            FlowerSnakeEnemy flowerSnakeRef = null;
             ForestGiantAI forestGiantRef = null;
             MouthDogAI mouthDogRef = null;
+            RadMechAI radMechRef = null;
             RedLocustBees redLocustRef = null;
             SandWormAI sandWormRef = null;
 
@@ -187,6 +201,13 @@ namespace ToxicOmega_Tools.Patches
                 doublewingSpawnable.enemyType = doublewingRef.enemyType;
             returnList.Add(doublewingSpawnable);
 
+            foreach (UnityEngine.Object obj in Resources.FindObjectsOfTypeAll(typeof(FlowerSnakeEnemy)))
+                flowerSnakeRef = (FlowerSnakeEnemy)obj;
+            SpawnableEnemyWithRarity flowerSnakeSpawnable = new SpawnableEnemyWithRarity();
+            if (flowerSnakeRef != null)
+                flowerSnakeSpawnable.enemyType = flowerSnakeRef.enemyType;
+            returnList.Add(flowerSnakeSpawnable);
+
             foreach (UnityEngine.Object obj in Resources.FindObjectsOfTypeAll(typeof(ForestGiantAI)))
                 forestGiantRef = (ForestGiantAI)obj;
             SpawnableEnemyWithRarity forestGiantSpawnable = new SpawnableEnemyWithRarity();
@@ -200,6 +221,13 @@ namespace ToxicOmega_Tools.Patches
             if (mouthDogRef != null)
                 mouthDogSpawnable.enemyType = mouthDogRef.enemyType;
             returnList.Add(mouthDogSpawnable);
+
+            foreach (UnityEngine.Object obj in Resources.FindObjectsOfTypeAll(typeof(RadMechAI)))
+                radMechRef = (RadMechAI)obj;
+            SpawnableEnemyWithRarity radMechSpawnable = new SpawnableEnemyWithRarity();
+            if (radMechRef != null)
+                radMechSpawnable.enemyType = radMechRef.enemyType;
+            returnList.Add(radMechSpawnable);
 
             foreach (UnityEngine.Object obj in Resources.FindObjectsOfTypeAll(typeof(RedLocustBees)))
                 redLocustRef = (RedLocustBees)obj;

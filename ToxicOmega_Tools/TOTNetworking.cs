@@ -1,131 +1,140 @@
 ﻿using GameNetcodeStuff;
-using LC_API.Networking;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using OdinSerializer;
+using StaticNetcodeLib;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace ToxicOmega_Tools.Patches
 {
+    [StaticNetcode]
     internal class TOTNetworking
     {
-        private static string hostVerifiedMessage = "RPC SENDER VERIFIED AS HOST, PROCEEDING WITH HANDLER METHOD.";
-        private static string nonHostSenderMessage = "RPC SENDER IS NOT THE HOST, HANDLER METHOD CANCELLED.";
-
-        [NetworkMessage("TOT_CHARGE_PLAYER", true)]
-        public static void TOT_CHARGE_PLAYER_HANDLER(ulong sender, TOT_PLAYER_Broadcast message)
+        [ClientRpc]
+        public static void ChargePlayerClientRpc(ulong playerId)
         {
-            Plugin.mls.LogInfo("RPC RECEIVED: \"TOT_CHARGE_PLAYER\".");
-            PlayerControllerB playerSender = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(sender));
+            Plugin.mls.LogInfo("RPC RECEIVED: \"ChargePlayerClientRpc\".");
+            PlayerControllerB playerTarget = Plugin.GetPlayerController(playerId);
 
-            if (Plugin.CheckPlayerIsHost(playerSender))
+            if (playerTarget != null)
             {
-                Plugin.mls.LogInfo(hostVerifiedMessage);
-                PlayerControllerB playerTarget = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(message.playerClientId));
                 GrabbableObject foundItem = playerTarget.ItemSlots[playerTarget.currentItemSlot];
 
                 if (foundItem != null && foundItem.itemProperties.requiresBattery)
                     foundItem.insertedBattery.charge = 1f;
             }
-            else
-                Plugin.mls.LogInfo(nonHostSenderMessage);
         }
 
-        [NetworkMessage("TOT_HEAL_PLAYER", true)]
-        public static void TOT_HEAL_PLAYER_HANDLER(ulong sender, TOT_PLAYER_Broadcast message)
+        [ClientRpc]
+        public static void HealPlayerClientRpc(ulong playerId)
         {
-            Plugin.mls.LogInfo("RPC RECEIVED: \"TOT_HEAL_PLAYER\".");
-            PlayerControllerB playerSender = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(sender));
+            Plugin.mls.LogInfo("RPC RECEIVED: \"HealPlayerClientRpc\".");
+            PlayerControllerB playerTarget = Plugin.GetPlayerController(playerId);
 
-            if (Plugin.CheckPlayerIsHost(playerSender))
+            playerTarget.sprintMeter = 100f;
+            playerTarget.health = 100;
+            playerTarget.DamagePlayer(-1);
+
+            if (playerTarget != null && playerTarget.isPlayerDead)
+                Plugin.RevivePlayer(playerTarget.playerClientId);
+
+            if (playerTarget != null)
             {
-                Plugin.mls.LogInfo(hostVerifiedMessage);
-                PlayerControllerB playerTarget = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(message.playerClientId));
-
-                if (playerTarget != null && playerTarget.isPlayerDead)
-                    Plugin.RevivePlayer(playerTarget.playerClientId);
-
-                if (playerTarget != null)
-                {
-                    Plugin.SavePlayer(playerTarget);
-                    playerTarget.isExhausted = false;
-                    playerTarget.bleedingHeavily = false;
-                }
+                Plugin.SavePlayer(playerTarget);
+                playerTarget.isExhausted = false;
+                playerTarget.bleedingHeavily = false;
             }
-            else
-                Plugin.mls.LogInfo(nonHostSenderMessage);
         }
 
-        [NetworkMessage("TOT_TERMINAL_CREDITS", true)]
-        public static void TOT_TERMINAL_CREDITS_HANDLER(ulong sender, TOT_INT_Broadcast message)
+        [ClientRpc]
+        public static void HurtPlayerClientRpc(TOT_DamagePlayerData data)
         {
-            Plugin.mls.LogInfo("RPC RECEIVED: \"TOT_TERMINAL_CREDITS\".");
-            PlayerControllerB playerSender = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(sender));
-
-            if (Plugin.CheckPlayerIsHost(playerSender))
-            {
-                Plugin.mls.LogInfo(hostVerifiedMessage);
-                Terminal terminal = UnityEngine.Object.FindObjectOfType<Terminal>();
-
-                if (terminal != null)
-                    terminal.groupCredits += message.dataInt;
-            }
-            else
-                Plugin.mls.LogInfo(nonHostSenderMessage);
+            Plugin.mls.LogInfo("RPC RECEIVED: \"HurtPlayerClientRpc\".");
+            Plugin.GetPlayerController(data.playerClientId).DamagePlayer(data.damage);
         }
 
-        [NetworkMessage("TOT_TP_PLAYER", true)]
-        public static void TOT_TP_PLAYER_HANDLER(ulong sender, TOT_TP_PLAYER_Broadcast message)
+        [ClientRpc]
+        public static void SyncAmmoClientRpc(ulong itemId)
         {
-            Plugin.mls.LogInfo("RPC RECEIVED: \"TOT_TP_PLAYER\".");
-            PlayerControllerB playerSender = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(sender));
-
-            if (Plugin.CheckPlayerIsHost(playerSender))
-            {
-                Plugin.mls.LogInfo(hostVerifiedMessage);
-                Plugin.mls.LogInfo($"Found: {StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(sender)).playerUsername}, Sending Inside: {message.isInside}");
-                Plugin.PlayerTeleportEffects(message.playerClientId, message.isInside);
-            }
-            else
-                Plugin.mls.LogInfo(nonHostSenderMessage);
+            Plugin.mls.LogInfo("RPC RECEIVED: \"SyncAmmoClientRpc\".");
+            Plugin.GetGrabbableObject(itemId).GetComponentInChildren<ShotgunItem>().shellsLoaded = 2;
         }
 
-        [NetworkMessage("TOT_SYNC_AMMO", true)]
-        public static void TOT_SYNC_AMMO_HANDLER(ulong sender, TOT_ITEM_Broadcast message)
+        [ClientRpc]
+        public static void SyncScrapClientRpc(TOT_SyncScrapData data)
         {
-            Plugin.mls.LogInfo("RPC RECEIVED: \"TOT_SYNC_AMMO\".");
-            PlayerControllerB playerSender = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(sender));
-
-            if (Plugin.CheckPlayerIsHost(playerSender))
-            {
-                Plugin.mls.LogInfo(hostVerifiedMessage);
-                LC_API.GameInterfaceAPI.Features.Item.List.FirstOrDefault(item => item.NetworkObjectId.Equals(message.networkObjectID)).GetComponentInChildren<ShotgunItem>().shellsLoaded = 2;
-            }
-            else
-                Plugin.mls.LogInfo(nonHostSenderMessage);
+            Plugin.mls.LogInfo("RPC RECEIVED: \"SyncScrapClientRpc\".");
+            Plugin.GetGrabbableObject(data.itemId).SetScrapValue(data.scrapValue);
         }
+
+        [ClientRpc]
+        public static void TerminalCreditsClientRpc(int val)
+        {
+            Plugin.mls.LogInfo("RPC RECEIVED: \"TerminalCreditsClientRpc\".");
+            Terminal terminal = UnityEngine.Object.FindObjectOfType<Terminal>();
+
+            if (terminal != null)
+                terminal.groupCredits += val;
+        }
+
+        [ClientRpc]
+        public static void TPItemClientRpc(TOT_TPItemData data)
+        {
+            Plugin.mls.LogInfo("RPC RECEIVED: \"TPItemClientRpc\".");
+            GrabbableObject foundItem = Plugin.GetGrabbableObject(data.itemId);
+            foundItem.transform.position = data.pos;
+            foundItem.startFallingPosition = data.pos;
+            if (foundItem.transform.parent != null)
+                foundItem.startFallingPosition = foundItem.transform.parent.InverseTransformPoint(foundItem.startFallingPosition);
+            foundItem.FallToGround();
+        }
+
+        [ClientRpc]
+        public static void TPPlayerClientRpc(TOT_TPPlayerData data)
+        {
+            Plugin.mls.LogInfo("RPC RECEIVED: \"TPPlayerClientRpc\".");
+            Plugin.mls.LogInfo($"Found: {Plugin.GetPlayerController(data.playerClientId).playerUsername}, Sending Inside: {data.isInside}");
+            Plugin.GetPlayerController(data.playerClientId).transform.position = data.pos;
+            if (data.pos.y >= -50)
+                data.isInside = false;
+            else if (data.pos.y <= -100)
+                data.isInside = true;
+            Plugin.PlayerTeleportEffects(data.playerClientId, data.isInside);
+        }
+
     }
 
-    internal class TOT_INT_Broadcast
+    public struct TOT_TPItemData
     {
-        public int dataInt { get; set; }
+        [OdinSerialize]
+        public ulong itemId { get; set; }
+        [OdinSerialize]
+        public Vector3 pos { get; set; }
     }
 
-    internal class TOT_ITEM_Broadcast
+    public struct TOT_DamagePlayerData
     {
-        public ulong networkObjectID { get; set; }
-    }
-
-    internal class TOT_PLAYER_Broadcast
-    {
+        [OdinSerialize]
         public ulong playerClientId { get; set; }
+        [OdinSerialize]
+        public int damage { get; set; }
     }
 
-    internal class TOT_TP_PLAYER_Broadcast
+    public struct TOT_TPPlayerData
     {
+        [OdinSerialize]
         public bool isInside { get; set; }
+        [OdinSerialize]
         public ulong playerClientId { get; set; }
+        [OdinSerialize]
+        public Vector3 pos { get; set; }
     }
+
+    public struct TOT_SyncScrapData
+    {
+        [OdinSerialize]
+        public ulong itemId { get; set; }
+        [OdinSerialize]
+        public int scrapValue { get; set; }
+    }
+
 }

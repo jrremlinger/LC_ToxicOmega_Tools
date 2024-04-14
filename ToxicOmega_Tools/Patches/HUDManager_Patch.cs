@@ -1,12 +1,9 @@
 ﻿using GameNetcodeStuff;
 using HarmonyLib;
-using LC_API.GameInterfaceAPI.Features;
-using LC_API.Networking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -18,12 +15,16 @@ namespace ToxicOmega_Tools.Patches
         public static bool sendPlayerInside = true;
         private static int itemListPage;
         private static int enemyListPage;
-        private static int itemID;
+        private static int itemId;
         private static int itemCount;
         private static int itemValue;
-        private static int enemyID;
+        private static int enemyId;
         private static int spawnCount;
-        private static int trapID;
+        private static int trapId;
+        private static bool foundId;
+        private static GrabbableObject itemTarget;
+        private static EnemyAI enemyTarget;
+        private static ulong networkId;
         private static string playerString = "";
         private static PlayerControllerB playerTarget = null;
         public static List<SpawnableEnemyWithRarity> allEnemiesList;
@@ -77,7 +78,7 @@ namespace ToxicOmega_Tools.Patches
                 .Select(s => s.TrimEnd().ToLowerInvariant())
                 .ToArray();
 
-            if (!Plugin.CheckPlayerIsHost(localPlayerController))
+            if (!Plugin.CheckPlayerIsHost(localPlayerController) && !(NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer))
                 return true;
 
             switch (command[0].Replace("/", "").ToLower())
@@ -90,14 +91,16 @@ namespace ToxicOmega_Tools.Patches
                         "Enemy: Lists spawnable enemies",
                         "Spawn: Spawns enemies",
                         "Trap: Spawns traps",
-                        "List: Lists current Players/Items/Enemies",
+                        "List: Lists existing players/items/enemies",
+                        "GUI: Toggles a GUI displaying nearby items/enemies",
                         "TP: Teleport players",
                         "WP: Creates/lists waypoints",
                         "Heal: Heals/revives a player",
-                        "GodMode: Disables death",
-                        "Code: Lists/toggles blast doors and traps",
+                        "Kill: Kills a player/item/enemy",
+                        "GodMode: Toggles invincibility",
+                        "Code: Toggles blast doors and traps",
                         "Breaker: Toggles breaker box",
-                        "Credit: Lists/adjusts spendable credits",
+                        "Credit: Adjusts spendable credits",
                         "Charge: Charges a player's held item",
                     };
 
@@ -118,7 +121,7 @@ namespace ToxicOmega_Tools.Patches
                 case "gi":
                 case "give":    // Spawns one or more items at a player, custom item value can be set
                     playerString = "";
-                    itemID = 0;
+                    itemId = 0;
                     itemCount = 1;
                     itemValue = -1;
 
@@ -128,11 +131,9 @@ namespace ToxicOmega_Tools.Patches
                         break;
                     }
 
-                    if (!int.TryParse(command[1], out itemID) || itemID >= allItemsList.Count)
-                    {
-                        Plugin.LogMessage($"Item ID \"{command[1]}\" not found!", true);
+                    itemId = Plugin.GetItemFromString(command[1]);
+                    if (itemId == -1)
                         break;
-                    }
 
                     if (command.Length > 2)
                         int.TryParse(command[2], out itemCount);
@@ -153,7 +154,7 @@ namespace ToxicOmega_Tools.Patches
                     if (command.Length > 4)
                         playerString = string.Join(" ", command.Skip(4)).ToLower();
 
-                    Plugin.SpawnItem(itemID, itemCount, itemValue, playerString);
+                    Plugin.SpawnItem(itemId, itemCount, itemValue, playerString);
                     break;
                 case "en":
                 case "enemy":
@@ -165,7 +166,7 @@ namespace ToxicOmega_Tools.Patches
                     break;
                 case "sp":
                 case "spawn":
-                    enemyID = 0;
+                    enemyId = 0;
                     spawnCount = 1;
                     playerString = "";
 
@@ -178,11 +179,9 @@ namespace ToxicOmega_Tools.Patches
                         break;
                     }
 
-                    if (!int.TryParse(command[1], out enemyID) || enemyID >= allEnemiesList.Count || enemyID < 0)
-                    {
-                        Plugin.LogMessage($"Enemy ID \"{command[1]}\" not found!", true);
+                    enemyId = Plugin.GetEnemyFromString(command[1]);
+                    if (enemyId == -1)
                         break;
-                    }
 
                     if (command.Length > 2)
                     {
@@ -193,7 +192,7 @@ namespace ToxicOmega_Tools.Patches
                     if (command.Length > 3)
                         playerString = string.Join(" ", command.Skip(3)).ToLower();
 
-                    Plugin.SpawnEnemy(enemyID, spawnCount, playerString);
+                    Plugin.SpawnEnemy(enemyId, spawnCount, playerString);
                     break;
                 case "tr":
                 case "trap":
@@ -207,9 +206,9 @@ namespace ToxicOmega_Tools.Patches
                     }
 
                     if ("landmine".StartsWith(command[1]) || "mine".StartsWith(command[1]) || command[1] == "0")
-                        trapID = 0;
+                        trapId = 0;
                     else if ("turret".StartsWith(command[1]) || command[1] == "1")
-                        trapID = 1;
+                        trapId = 1;
                     else
                     {
                         Plugin.LogMessage($"Unable to find a trap with name {command[1]}!", true);
@@ -225,7 +224,7 @@ namespace ToxicOmega_Tools.Patches
                     if (command.Length > 3)
                         playerString = string.Join(" ", command.Skip(3)).ToLower();
 
-                    Plugin.SpawnTrap(trapID, spawnCount, playerString);
+                    Plugin.SpawnTrap(trapId, spawnCount, playerString);
                     break;
                 case "li":
                 case "list": // List currently connected player names with their ID numbers
@@ -266,14 +265,17 @@ namespace ToxicOmega_Tools.Patches
                     switch (command.Length)
                     {
                         case 1:
-                            if (Plugin.GetPositionFromCommand("!", 3, localPlayerController) != Vector3.zero)
+                            if (Plugin.GetPositionFromCommand("!", 3, localPlayerController.playerUsername) != Vector3.zero)
                             {
                                 if (!localPlayerController.isPlayerDead)
                                 {
-                                    Plugin.mls.LogInfo("RPC SENDING: \"TOT_TP_PLAYER\".");
-                                    Network.Broadcast("TOT_TP_PLAYER", new TOT_TP_PLAYER_Broadcast { isInside = false, playerClientId = localPlayerController.playerClientId });
-                                    Plugin.mls.LogInfo("RPC END: \"TOT_TP_PLAYER\".");
-                                    Player.Get(localPlayerController).Position = Plugin.GetPositionFromCommand("!", 3, localPlayerController);
+                                    Plugin.mls.LogInfo("RPC SENDING: \"TPPlayerClientRpc\".");
+                                    Vector3 destination = Plugin.GetPositionFromCommand("!", 3, localPlayerController.playerUsername);
+                                    TOTNetworking.TPPlayerClientRpc(
+                                        new TOT_TPPlayerData {
+                                            isInside = false,
+                                            playerClientId = localPlayerController.playerClientId,
+                                            pos = destination });
                                 }
                                 else
                                     Plugin.LogMessage($"Could not teleport {localPlayerController.playerUsername}!\nPlayer is dead!", true);
@@ -281,20 +283,48 @@ namespace ToxicOmega_Tools.Patches
                             break;
                         case 2:
                         case 3:
-                            PlayerControllerB playerA = command.Length > 2 ? Plugin.GetPlayerFromString(command[1]) : localPlayerController;
-
-                            if (playerA != null && !playerA.isPlayerDead)
+                            // Look for item/enemy by ID and break the switch function if one is found
+                            if (command.Length > 2)
                             {
-                                if (Plugin.GetPositionFromCommand(command.Length > 2 ? command[2] : command[1], 3, playerA) != Vector3.zero)
+                                foundId = ulong.TryParse(command[1], out networkId);
+
+                                if (foundId && Plugin.GetGrabbableObject(networkId) != null)
                                 {
-                                    Plugin.mls.LogInfo("RPC SENDING: \"TOT_TP_PLAYER\".");
-                                    Network.Broadcast("TOT_TP_PLAYER", new TOT_TP_PLAYER_Broadcast { isInside = sendPlayerInside, playerClientId = playerA.playerClientId });
-                                    Plugin.mls.LogInfo("RPC END: \"TOT_TP_PLAYER\".");
-                                    Player.Get(playerA).Position = Plugin.GetPositionFromCommand(command.Length > 2 ? command[2] : command[1], 3, playerA);
+                                    Vector3 newPos = Plugin.GetPositionFromCommand(command[2], 3, Plugin.GetGrabbableObject(networkId).itemProperties.itemName);
+                                    Plugin.mls.LogInfo("RPC SENDING: \"TPPlayerClientRpc\".");
+                                    TOTNetworking.TPItemClientRpc(new TOT_TPItemData { itemId = networkId, pos = newPos });
+                                    break;
+                                }
+                                else if (foundId && Plugin.GetEnemyAI(networkId) != null)
+                                {
+                                    enemyTarget = Plugin.GetEnemyAI(networkId);
+                                    Vector3 newPos = Plugin.GetPositionFromCommand(command[2], 3, enemyTarget.enemyType.enemyName);
+                                    enemyTarget.agent.enabled = false;
+                                    enemyTarget.transform.position = newPos;
+                                    enemyTarget.agent.enabled = true;
+                                    enemyTarget.serverPosition = newPos;
+                                    enemyTarget.SetEnemyOutside(newPos.y > -50);
+                                    break;
                                 }
                             }
-                            else if (playerA != null && playerA.isPlayerDead)
-                                Plugin.LogMessage($"Could not teleport {playerA.playerUsername}!\nPlayer is dead!", true);
+
+                            // Player teleport handler
+                            playerTarget = command.Length > 2 ? Plugin.GetPlayerFromString(command[1]) : localPlayerController;
+
+                            if (playerTarget != null && !playerTarget.isPlayerDead)
+                            {
+                                if (Plugin.GetPositionFromCommand(command.Length > 2 ? command[2] : command[1], 3, playerTarget.playerUsername) != Vector3.zero)
+                                {
+                                    Plugin.mls.LogInfo("RPC SENDING: \"TPPlayerClientRpc\".");
+                                    TOTNetworking.TPPlayerClientRpc(
+                                        new TOT_TPPlayerData { 
+                                            isInside = sendPlayerInside, 
+                                            playerClientId = playerTarget.playerClientId, 
+                                            pos = Plugin.GetPositionFromCommand(command.Length > 2 ? command[2] : command[1], 3, playerTarget.playerUsername) });
+                                }
+                            }
+                            else if (playerTarget != null && playerTarget.isPlayerDead)
+                                Plugin.LogMessage($"Could not teleport {playerTarget.playerUsername}!\nPlayer is dead!", true);
                             break;
                     }
                     break;
@@ -320,7 +350,7 @@ namespace ToxicOmega_Tools.Patches
                     {
                         if (localPlayerController != null && !localPlayerController.isPlayerDead)
                         {
-                            bool wpInside = Player.Get(localPlayerController).IsInFactory;
+                            bool wpInside = localPlayerController.isInsideFactory;
                             Vector3 wpPosition = localPlayerController.transform.position;
                             Plugin.Instance.waypoints.Add(new Waypoint { isInside = wpInside, position = wpPosition });
                             Plugin.LogMessage($"Waypoint @{Plugin.Instance.waypoints.Count - 1} created at {wpPosition}.");
@@ -355,12 +385,8 @@ namespace ToxicOmega_Tools.Patches
                         else
                             Plugin.LogMessage($"Healing {playerTarget.playerUsername}.");
 
-                        Plugin.mls.LogInfo("RPC SENDING: \"TOT_HEAL_PLAYER\".");
-                        Network.Broadcast("TOT_HEAL_PLAYER", new TOT_PLAYER_Broadcast { playerClientId = playerTarget.playerClientId });
-                        Plugin.mls.LogInfo("RPC END: \"TOT_HEAL_PLAYER\".");
-                        Player.Get(playerTarget).SprintMeter = 100f;
-                        Player.Get(playerTarget).Health = 100;
-                        Player.Get(playerTarget).Hurt(-1);  // Player health/status likes not not update unless a damage function is called
+                        Plugin.mls.LogInfo("RPC SENDING: \"HealPlayerClientRpc\".");
+                        TOTNetworking.HealPlayerClientRpc(playerTarget.playerClientId);
                     }
                     break;
                 case "gm":
@@ -438,9 +464,8 @@ namespace ToxicOmega_Tools.Patches
                         else
                         {
                             int.TryParse(command[1], out int creditsChange);
-                            Plugin.mls.LogInfo("RPC SENDING: \"TOT_TERMINAL_CREDITS\".");
-                            Network.Broadcast("TOT_TERMINAL_CREDITS", new TOT_INT_Broadcast { dataInt = creditsChange });
-                            Plugin.mls.LogInfo("RPC END: \"TOT_TERMINAL_CREDITS\".");
+                            Plugin.mls.LogInfo("RPC SENDING: \"TerminalCreditsClientRpc\".");
+                            TOTNetworking.TerminalCreditsClientRpc(creditsChange);
                             Plugin.LogMessage($"Adjusted Credits by {creditsChange}.\nNew Total: {terminal.groupCredits}.");
                         }
                     }
@@ -464,9 +489,8 @@ namespace ToxicOmega_Tools.Patches
                         {
                             if (foundItem.itemProperties.requiresBattery)
                             {
-                                Plugin.mls.LogInfo("RPC SENDING: \"TOT_CHARGE_PLAYER\".");
-                                Network.Broadcast("TOT_CHARGE_PLAYER", new TOT_PLAYER_Broadcast { playerClientId = playerTarget.playerClientId });
-                                Plugin.mls.LogInfo("RPC END: \"TOT_CHARGE_PLAYER\".");
+                                Plugin.mls.LogInfo("RPC SENDING: \"ChargePlayerClientRpc\".");
+                                TOTNetworking.ChargePlayerClientRpc(playerTarget.playerClientId);
                                 Plugin.LogMessage($"Charging {playerTarget.playerUsername}'s item \"{foundItem.itemProperties.itemName}\".");
                             }
                             else
@@ -477,6 +501,71 @@ namespace ToxicOmega_Tools.Patches
                     }
                     else if (playerTarget.isPlayerDead)
                         Plugin.LogMessage($"Could not charge {playerTarget.playerUsername}'s item!\nPlayer is dead!", true);
+                    break;
+                case "ki":
+                case "kill":
+                    if (command.Length < 2)
+                    {
+                        Plugin.LogMessage($"Kill command requires a target!", true);
+                        break;
+                    }
+
+                    string targetName = "";
+                    bool forceDestroy = false;
+
+                    if (command[1][command[1].Length - 1] == '*')
+                    {
+                        forceDestroy = true;
+                        command[1] = command[1].Remove(command[1].Length - 1, 1);
+                    }
+
+                    foundId = ulong.TryParse(command[1], out networkId);
+
+                    if (foundId && Plugin.GetGrabbableObject(networkId) != null)
+                    {
+                        itemTarget = Plugin.GetGrabbableObject(networkId);
+                        targetName = $"{itemTarget.itemProperties.itemName} ({itemTarget.NetworkObjectId})";
+                        UnityEngine.Object.Destroy(itemTarget.gameObject);
+                    }
+                    else if (foundId && Plugin.GetEnemyAI(networkId) != null)
+                    {
+                        enemyTarget = Plugin.GetEnemyAI(networkId);
+                        targetName = $"{enemyTarget.enemyType.enemyName} ({enemyTarget.NetworkObjectId})";
+                        enemyTarget.HitEnemy(999999);
+
+                        // Despawn invincible enemies
+                        if (enemyTarget.GetComponentInChildren<BlobAI>() != null || 
+                            enemyTarget.GetComponentInChildren<ButlerBeesEnemyAI>() != null ||
+                            enemyTarget.GetComponentInChildren<DressGirlAI>() != null ||
+                            enemyTarget.GetComponentInChildren<JesterAI>() != null ||
+                            enemyTarget.GetComponentInChildren<LassoManAI>() != null ||
+                            enemyTarget.GetComponentInChildren<SpringManAI>() != null ||
+                            enemyTarget.GetComponentInChildren<DocileLocustBeesAI>() != null ||
+                            enemyTarget.GetComponentInChildren<RadMechAI>() != null ||
+                            enemyTarget.GetComponentInChildren<RedLocustBees>() != null ||
+                            enemyTarget.GetComponentInChildren<SandWormAI>() != null || 
+                            forceDestroy || (command.Length > 2 && command[2] == "*"))
+                        {
+                            UnityEngine.Object.Destroy(enemyTarget.gameObject);
+                        }
+                    }
+                    else
+                    {
+                        playerTarget = Plugin.GetPlayerFromString(command[1]);
+
+                        if (playerTarget != null)
+                        {
+                            targetName = playerTarget.playerUsername;
+                            Plugin.mls.LogInfo("RPC SENDING: \"HurtPlayerClientRpc\".");
+                            TOTNetworking.HurtPlayerClientRpc(new TOT_DamagePlayerData { playerClientId = playerTarget.playerClientId, damage = 999999 });
+                        }
+                        
+                    }
+                    Plugin.LogMessage($"Killing {targetName}!");
+                    break;
+                case "gui":
+                case "hud":
+                    TOTGUI.visible = !TOTGUI.visible;
                     break;
                 default:
                     // No command recognized, send chat normally
@@ -555,12 +644,12 @@ namespace ToxicOmega_Tools.Patches
                         pageText += $"Player #{activePlayersList[i].playerClientId}: {activePlayersList[i].playerUsername}\n";
                     else if (listName == "Active Item")
                     {
-                        pageText += $"{activeItems[i].itemProperties.itemName}, ";
+                        pageText += $"{activeItems[i].itemProperties.itemName} ({activeItems[i].NetworkObjectId}), ";
                         appendList = false;
                     }
                     else if (listName == "Active Enemy")
                     {
-                        pageText += $"{activeEnemies[i].enemyType.enemyName}, ";
+                        pageText += $"{activeEnemies[i].enemyType.enemyName} ({activeEnemies[i].NetworkObjectId}), ";
                         appendList = false;
                     }
                 }

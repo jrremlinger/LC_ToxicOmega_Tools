@@ -4,14 +4,16 @@
 
 Some important notes:
 * All commands only register if you are the host.
-* All players must have this mod installed, along with LC_API, for it to work properly.
+* It is not required for all players to have the mod installed, but it may lead to desyncs if a player doesn't have it.
 * Text chat will stay enabled while dead if you are the host.
-* Only the beginning of player names are required when using them in commands (example: searching John will return a player with the name Johnny).
-* Where applicable, certain symbols can be used when determining a destination:
-	* $: Using "$" indicates random/natural destination. For players this will act as an inverse-teleporter putting them inside the factory. For items it will choose a normal item spawnpoint. For enemies it will either use vents or outside spawnpoints depending on the type of enemy.
-	* !: Using "!" chooses the ships terminal as a target. This is only applicable for teleportation.
-	* @(num): Using "@" followed by a number will choose the waypoint with that index as the target.
-	* #(num): Using "#" followed by a number will choose the player with that Client ID as the target.
+* Only the beginning of player/item/enemy names are required when using them in commands.
+* There are several ways to target different entities/areas when running commands:
+  * The network ID (shown in list command and hud) can be used to target already existing items/enemies.
+  * $: Using "$" indicates random/natural destination. For teleporting this will act as an inverse-teleporter putting the teleport target randomly inside the factory. For spawning items it will choose a normal scrap spawnpoint. For enemies it will either use vents or outside spawnpoints depending on the type of enemy.
+  * !: Using "!" chooses the ships terminal as a target. This is only applicable for teleportation.
+  * @(num): Using "@" followed by a number will choose the waypoint with that index as the target.
+  * #(num): Using "#" followed by a number will choose the player with that Client ID as the target.
+  * Typing the beginning of a players name will target that player. 
 
 ---
 
@@ -44,17 +46,17 @@ Example: "item 2" displays page two of the items list.
 ---
 
 <details>
-  <summary><h3>Gi/Give (Item ID) Optional: (Amount) (Value) (Target)</h3></summary>
+  <summary><h3>Gi/Give (Item Type) Optional: (Amount) (Value) (Target)</h3></summary>
 
-Spawns an item based on given ID number. Able to specify how many items, their value, and what player it spawns on. "$" as the player will spawn the item in a random location inside the factory.
+Spawns an item based on given name or ID number. Able to specify how many items, their value, and where they spawn.
 
 Arguments:
-* Item ID: Numerical ID of item you want to spawn. In the future names may be supported.
+* Item Type: Name or numerical ID of item you want to spawn. Will auto-complete name if the beginning is given. Use underscores "_" in place of spaces.
 * Amount (Default: 1): How many copies of the item should be spawned.
 * Value (Default: Random): Override the default value of the item with a given number.
-* Target (Default: Host Player): Where to spawn the item, supports natural spawning with "$" and waypoints with @(num).
+* Target (Default: Host Player): Where to spawn the item, supports all targeting methods listed at the beginning of this readme.
 
-Example: "give 17 1 420 #3" will spawn one Airhorn worth $420 on the player whose ID is 3.
+Example: "give gold_bar 1 420 #3" will spawn one gold bar worth $420 on the player whose ID is 3.
 </details>
 
 ---
@@ -73,29 +75,29 @@ Example: "en 2" displays page two of the enemies list.
 ---
 
 <details>
-  <summary><h3>Sp/Spawn (Enemy ID) Optional: (Amount) (Target)</h3></summary>
+  <summary><h3>Sp/Spawn (Enemy Type) Optional: (Amount) (Target)</h3></summary>
 
-Spawns an enemy based on given ID number. Able to specify how many enemies, and where they spawn.
+Spawns an enemy based on given name or ID number. Able to specify how many enemies, and where they spawn.
 
 Arguments:
-* Enemy ID: Numerical ID of enemy you want to spawn. In the future names may be supported.
+* Enemy Type: Name or numerical ID of enemy you want to spawn. Will auto-complete name if the beginning is given. Use underscores "_" in place of spaces.
 * Amount (Default: 1): How many copies of the enemy should be spawned.
-* Target (Default: Natural): Player target, also supports natural spawning with "$" and waypoints with @(num).
+* Target (Default: Natural): Where to spawn the enemy, supports all targeting methods listed at the beginning of this readme.
 
-Example: "sp 0 1" will spawn one enemy of ID zero naturally. Different moons assign different enemy IDs, so make sure you check the "enemy" command to find the ID of the enemy you want to spawn.
+Example: "sp 0 1" will spawn one enemy of ID zero naturally. Make sure you check the "enemy" command to find the ID of the enemy you want to spawn or just use their name instead.
 </details>
 
 ---
 
 <details>
-  <summary><h3>Tr/Trap (Type) Optional: (Amount) (Target)</h3></summary>
+  <summary><h3>Tr/Trap (Trap Type) Optional: (Amount) (Target)</h3></summary>
 
-Spawns trap based on given ID number. If no arguments are given it will instead list available traps with their ID #'s.
+Spawns trap based on given name or ID number. If no arguments are given it will instead list available traps with their ID #'s.
 
 Arguments:
 * Type: Name or ID of the trap you want to spawn. Will auto-complete name if the beginning is given.
 * Amount (Default: 1): How many copies of the trap should be spawned.
-* Target (Default: Natural): Player target, also supports natural spawning with "$" and waypoints with @(num).
+* Target (Default: Natural): Where to spawn the trap, supports all targeting methods listed at the beginning of this readme.
 
 Example: "tr mi 30" will spawn 30 landmines randomly throughout the factory.
 </details>
@@ -105,7 +107,7 @@ Example: "tr mi 30" will spawn 30 landmines randomly throughout the factory.
 <details>
   <summary><h3>Li/List (List Name) (Page Number)</h3></summary>
 
-Displays a page from the list of currently spawned players, items, or enemies. Will smart-search for the list name.
+Displays a page from the list of currently spawned players, items, or enemies. Network ID's will be listed in the items and enemies lists. Will smart-search for the list name.
 
 Arguments:
 * List Name (Default: Players): Which list to view, supports "players", "items", and "enemy/enemies".
@@ -116,13 +118,23 @@ Example: "li e" will list every enemy currently spawned in the current moon.
 ---
 
 <details>
+  <summary><h3>GUI/HUD</h3></summary>
+
+Toggles a HUD that displays the players coordinates as well as nearby items and enemies. The Network ID of the items/enemies will be listed as well.
+
+Example: "hud" will enable the hud if it is currently hidden.
+</details>
+
+---
+
+<details>
   <summary><h3>TP/Tele/Teleport Optional: (Target A) (Target B)</h3></summary>
 
 Teleports a given player to a given destination. Player being teleported cannot be dead. Will automatically sync lighting if your destination is inside or outside. If no arguments are provided, the host will be teleported to the ship's console.
 
 Arguments:
-* Target A: If this is the only argument given it supports "!", "@(num)", and "$". Otherwise, it must be a player.
-* Target B: Can be a player, "!", "@(num)", or "$".
+* Target A: If this is the only argument given it supports all targeting methods. Otherwise, it will not accept "!", "$", or "@" since they are not able to be moved.
+* Target B: Can any targeting method listed at the beginning of this readme.
 
 Example: "tp #0 $" will teleport the player with ID to a random location inside the factory.
 </details>
@@ -150,9 +162,22 @@ Example: "wp add" will create a waypoint at your current location.
 Fully refills a player's health and stamina. Will save a player if they are currently in a kill animation with Snare Fleas, Forest Giants, or Masked Players. If the target player is dead, they will be revived at the ship's terminal.
 
 Arguments:
-* Player Target (Default: Host Player): Only supports player names/id.
+* Player Target (Default: Host Player): Only supports player name/client ID (enemy ID not supported yet).
 
 Example: "heal John" will heal a player whose name starts with (or is) John.
+</details>
+
+---
+
+<details>
+  <summary><h3>Ki/Kill (Target)</h3></summary>
+
+Kills/Destroys a given player or item/enemy (if given their Network ID as the target). Items and invincible enemies are destroyed. Players and normal enemies are killed unless they are forced to by destroyed by adding * to the end of the target argument.
+
+Arguments:
+* Target: Any player name/client ID, or the network ID of an enemy/item. A "*" can be added anywhere at the end of the target to force the target to be deleted instead of killed.
+
+Example: "kill 69*" will delete whatever enemy or item currently has the network ID 69 rather than killing them with damage.
 </details>
 
 ---
@@ -210,7 +235,7 @@ Example: "credit -10" will subtract 10 from the current amount of group credits.
 Charges a player's held item.
 
 Arguments:
-* Player Target (Default: Host Player): Only supports player names/id.
+* Player Target (Default: Host Player): Only supports player name/client ID.
 
 Example: "ch" will simply charge the host's held item.
 </details>
