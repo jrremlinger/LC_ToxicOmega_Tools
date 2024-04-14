@@ -224,7 +224,7 @@ namespace ToxicOmega_Tools
                         }
                     }
                     else if (input == "")
-                        position = localPlayerController.transform.position;
+                        position = (localPlayerController.isPlayerDead && localPlayerController.spectatedPlayerScript != null) ? localPlayerController.spectatedPlayerScript.transform.position : localPlayerController.transform.position;
                     else
                     {
                         bool foundId = ulong.TryParse(input, out ulong networkId);

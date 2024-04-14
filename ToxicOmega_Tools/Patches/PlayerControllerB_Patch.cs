@@ -44,13 +44,14 @@ namespace ToxicOmega_Tools.Patches
         {
             GrabbableObject[] grabbableObjectList = UnityEngine.Object.FindObjectsOfType<GrabbableObject>();
             EnemyAI[] enemyList = UnityEngine.Object.FindObjectsOfType<EnemyAI>();
-            TOTGUI.posLabelText = $"X: {Math.Round(__instance.transform.position.x, 1)}\nY: {Math.Round(__instance.transform.position.y, 1)}\nZ: {Math.Round(__instance.transform.position.z, 1)}\n";
+            Vector3 localPos = (__instance.isPlayerDead && __instance.spectatedPlayerScript != null) ? __instance.spectatedPlayerScript.transform.position : __instance.transform.position;
+            TOTGUI.posLabelText = $"X: {Math.Round(localPos.x, 1)}\nY: {Math.Round(localPos.y, 1)}\nZ: {Math.Round(localPos.z, 1)}\n";
             TOTGUI.itemListText = "";
             TOTGUI.enemyListText = "";
 
             foreach (GrabbableObject obj in grabbableObjectList)
             {
-                if (Vector3.Distance(obj.transform.position, __instance.transform.position) < 25.0f)
+                if (Vector3.Distance(obj.transform.position, localPos) < 25.0f)
                 {
                     TOTGUI.itemListText += $"{obj.itemProperties.itemName} ({obj.NetworkObjectId})\n";
                 }
@@ -58,7 +59,7 @@ namespace ToxicOmega_Tools.Patches
 
             foreach (PlayerControllerB player in StartOfRound.Instance.allPlayerScripts)
             {
-                if (Vector3.Distance(player.transform.position, __instance.transform.position) < 25.0f)
+                if (Vector3.Distance(player.transform.position, localPos) < 25.0f)
                 {
                     TOTGUI.enemyListText += $"{player.playerUsername} (#{player.playerClientId}{(Plugin.CheckPlayerIsHost(player) ? " - HOST" : "")})\n";
                 }
@@ -66,7 +67,7 @@ namespace ToxicOmega_Tools.Patches
 
             foreach (EnemyAI enemy in enemyList)
             {
-                if (Vector3.Distance(enemy.transform.position, __instance.transform.position) < 25.0f)
+                if (Vector3.Distance(enemy.transform.position, localPos) < 25.0f)
                 {
                     TOTGUI.enemyListText += $"{enemy.enemyType.enemyName} ({enemy.NetworkObjectId})\n";
                 }
