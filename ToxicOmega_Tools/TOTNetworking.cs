@@ -23,8 +23,8 @@ namespace ToxicOmega_Tools.Patches
                 {
                     foundItem.insertedBattery.empty = false;
                     foundItem.insertedBattery.charge = 1f;
+                }
             }
-        }
         }
 
         [ClientRpc]

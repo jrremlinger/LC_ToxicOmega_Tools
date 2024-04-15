@@ -42,18 +42,38 @@ namespace ToxicOmega_Tools.Patches
         [HarmonyPostfix]
         static void Update(PlayerControllerB __instance)
         {
-            GrabbableObject[] grabbableObjectList = UnityEngine.Object.FindObjectsOfType<GrabbableObject>();
-            EnemyAI[] enemyList = UnityEngine.Object.FindObjectsOfType<EnemyAI>();
             Vector3 localPos = (__instance.isPlayerDead && __instance.spectatedPlayerScript != null) ? __instance.spectatedPlayerScript.transform.position : __instance.transform.position;
             TOTGUI.posLabelText = $"X: {Math.Round(localPos.x, 1)}\nY: {Math.Round(localPos.y, 1)}\nZ: {Math.Round(localPos.z, 1)}\n";
             TOTGUI.itemListText = "";
+            TOTGUI.terminalObjListText = "";
             TOTGUI.enemyListText = "";
 
-            foreach (GrabbableObject obj in grabbableObjectList)
+            foreach (GrabbableObject obj in UnityEngine.Object.FindObjectsOfType<GrabbableObject>())
             {
                 if (Vector3.Distance(obj.transform.position, localPos) < 25.0f)
                 {
-                    TOTGUI.itemListText += $"{obj.itemProperties.itemName} ({obj.NetworkObjectId})\n";
+                    TOTGUI.itemListText += $"{obj.itemProperties.itemName} ({obj.NetworkObjectId}){(obj.scrapValue > 0 ? $" - ${obj.scrapValue}" : "")}\n";
+                }
+            }
+
+            foreach (TerminalAccessibleObject terminalObj in UnityEngine.Object.FindObjectsOfType<TerminalAccessibleObject>())
+            {
+                string objType = "";
+                if (Vector3.Distance(terminalObj.transform.position, localPos) < 10.0f)
+                {
+                    if (terminalObj.isBigDoor)
+                        objType = "Door";
+                    else if (terminalObj.GetComponentInChildren<Turret>())
+                        objType = "Turret";
+                    else if (terminalObj.GetComponentInChildren<Landmine>())
+                    {
+                        if (terminalObj.GetComponentInChildren<Landmine>().hasExploded)
+                            continue;
+                        objType = "Landmine";
+                    }
+                    else
+                        objType = "Spikes";
+                    TOTGUI.terminalObjListText += $"{(terminalObj.inCooldown || (terminalObj.isBigDoor && terminalObj.isDoorOpen) ? $"<color={(terminalObj.isBigDoor && terminalObj.isDoorOpen ? "lime" : "red")}>" : "")}{terminalObj.objectCode.ToUpper()}{(terminalObj.inCooldown || (terminalObj.isBigDoor && terminalObj.isDoorOpen) ? "</color>" : "")} - {objType}\n";
                 }
             }
 
@@ -65,11 +85,11 @@ namespace ToxicOmega_Tools.Patches
                 }
             }
 
-            foreach (EnemyAI enemy in enemyList)
+            foreach (EnemyAI enemy in UnityEngine.Object.FindObjectsOfType<EnemyAI>())
             {
                 if (Vector3.Distance(enemy.transform.position, localPos) < 25.0f)
                 {
-                    TOTGUI.enemyListText += $"{enemy.enemyType.enemyName} ({enemy.NetworkObjectId})\n";
+                    TOTGUI.enemyListText += $"{(enemy.isEnemyDead ? "<color=red>" : "")}{enemy.enemyType.enemyName}{(enemy.isEnemyDead ? "</color>" : "")} ({enemy.NetworkObjectId})\n";
                 }
             }
         }

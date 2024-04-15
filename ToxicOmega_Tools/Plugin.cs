@@ -909,6 +909,7 @@ namespace ToxicOmega_Tools
                                 {
                                     Vector3 inBoxPredictable = currentRound.GetRandomNavMeshPositionInRadius(obj.prefabToSpawn.transform.position);
                                     GameObject mine = Instantiate(obj.prefabToSpawn, GetPositionFromCommand(targetString, 4), Quaternion.identity);
+                                    mine.GetComponentInChildren<TerminalAccessibleObject>().SetCodeTo(UnityEngine.Random.Range(0, RoundManager.Instance.possibleCodesForBigDoors.Length - 1));
                                     mine.GetComponent<NetworkObject>().Spawn(true);
                                 }
                                 break;
@@ -932,6 +933,7 @@ namespace ToxicOmega_Tools
                                 {
                                     Vector3 pos = GetPositionFromCommand(targetString, 4);
                                     GameObject turret = Instantiate(obj.prefabToSpawn, pos, Quaternion.identity);
+                                    turret.GetComponentInChildren<TerminalAccessibleObject>().SetCodeTo(UnityEngine.Random.Range(0, RoundManager.Instance.possibleCodesForBigDoors.Length - 1));
                                     turret.transform.eulerAngles = new Vector3(0.0f, currentRound.YRotationThatFacesTheFarthestFromPosition(pos + Vector3.up * 0.2f), 0.0f);
                                     turret.GetComponent<NetworkObject>().Spawn(true);
                                 }

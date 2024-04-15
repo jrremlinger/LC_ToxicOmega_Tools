@@ -294,8 +294,8 @@ namespace ToxicOmega_Tools.Patches
                                     Vector3 newPos = Plugin.GetPositionFromCommand(command[2], 3, Plugin.GetGrabbableObject(networkId).itemProperties.itemName);
                                     if (newPos != Vector3.zero)
                                     {
-                                    Plugin.mls.LogInfo("RPC SENDING: \"TPPlayerClientRpc\".");
-                                    TOTNetworking.TPItemClientRpc(new TOT_TPItemData { itemId = networkId, pos = newPos });
+                                        Plugin.mls.LogInfo("RPC SENDING: \"TPPlayerClientRpc\".");
+                                        TOTNetworking.TPItemClientRpc(new TOT_TPItemData { itemId = networkId, pos = newPos });
                                     }
                                     break;
                                 }
@@ -305,11 +305,11 @@ namespace ToxicOmega_Tools.Patches
                                     Vector3 newPos = Plugin.GetPositionFromCommand(command[2], 3, enemyTarget.enemyType.enemyName);
                                     if (newPos != Vector3.zero)
                                     {
-                                    enemyTarget.agent.enabled = false;
-                                    enemyTarget.transform.position = newPos;
-                                    enemyTarget.agent.enabled = true;
-                                    enemyTarget.serverPosition = newPos;
-                                    enemyTarget.SetEnemyOutside(newPos.y > -50);
+                                        enemyTarget.agent.enabled = false;
+                                        enemyTarget.transform.position = newPos;
+                                        enemyTarget.agent.enabled = true;
+                                        enemyTarget.serverPosition = newPos;
+                                        enemyTarget.SetEnemyOutside(newPos.y > -50);
                                     }
                                     break;
                                 }
@@ -422,7 +422,13 @@ namespace ToxicOmega_Tools.Patches
                                     else if (obj.GetComponentInChildren<Turret>())
                                         objectList += "(Turret), ";
                                     else if (obj.GetComponentInChildren<Landmine>())
+                                    {
+                                        if (obj.GetComponentInChildren<Landmine>().hasExploded)
+                                            continue;
                                         objectList += "(Landmine), ";
+                                    }
+                                    else
+                                        objectList += "(Spikes), ";
                                 }
                             }
                             objectList = objectList.TrimEnd(',', ' ') + ".";
