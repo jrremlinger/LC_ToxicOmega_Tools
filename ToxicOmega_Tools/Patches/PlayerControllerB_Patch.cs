@@ -59,7 +59,7 @@ namespace ToxicOmega_Tools.Patches
 
             foreach (PlayerControllerB player in StartOfRound.Instance.allPlayerScripts)
             {
-                if (Vector3.Distance(player.transform.position, localPos) < 25.0f)
+                if (Vector3.Distance(player.transform.position, localPos) < 25.0f && player.isPlayerControlled && !player.isPlayerDead)
                 {
                     TOTGUI.enemyListText += $"{player.playerUsername} (#{player.playerClientId}{(Plugin.CheckPlayerIsHost(player) ? " - HOST" : "")})\n";
                 }
