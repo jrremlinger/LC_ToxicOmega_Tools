@@ -292,19 +292,25 @@ namespace ToxicOmega_Tools.Patches
                                 if (foundId && Plugin.GetGrabbableObject(networkId) != null)
                                 {
                                     Vector3 newPos = Plugin.GetPositionFromCommand(command[2], 3, Plugin.GetGrabbableObject(networkId).itemProperties.itemName);
+                                    if (newPos != Vector3.zero)
+                                    {
                                     Plugin.mls.LogInfo("RPC SENDING: \"TPPlayerClientRpc\".");
                                     TOTNetworking.TPItemClientRpc(new TOT_TPItemData { itemId = networkId, pos = newPos });
+                                    }
                                     break;
                                 }
                                 else if (foundId && Plugin.GetEnemyAI(networkId) != null)
                                 {
                                     enemyTarget = Plugin.GetEnemyAI(networkId);
                                     Vector3 newPos = Plugin.GetPositionFromCommand(command[2], 3, enemyTarget.enemyType.enemyName);
+                                    if (newPos != Vector3.zero)
+                                    {
                                     enemyTarget.agent.enabled = false;
                                     enemyTarget.transform.position = newPos;
                                     enemyTarget.agent.enabled = true;
                                     enemyTarget.serverPosition = newPos;
                                     enemyTarget.SetEnemyOutside(newPos.y > -50);
+                                    }
                                     break;
                                 }
                             }
