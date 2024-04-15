@@ -117,7 +117,7 @@ namespace ToxicOmega_Tools.Patches
                     if (command.Length > 1) 
                         int.TryParse(command[1], out itemListPage);
                     itemListPage = Math.Max(itemListPage, 1);
-                    FindPage(allItemsList, itemListPage, 10, "Item");
+                    FindPage(allItemsList, itemListPage, 6, "Item");
                     break;
                 case "gi":
                 case "give":    // Spawns one or more items at a player, custom item value can be set
@@ -163,7 +163,7 @@ namespace ToxicOmega_Tools.Patches
                     if (command.Length > 1)
                         int.TryParse(command[1], out enemyListPage);
                     enemyListPage = Math.Max(enemyListPage, 1);
-                    FindPage(allEnemiesList, enemyListPage, 10, "Enemy");
+                    FindPage(allEnemiesList, enemyListPage, 6, "Enemy");
                     break;
                 case "sp":
                 case "spawn":
@@ -240,19 +240,19 @@ namespace ToxicOmega_Tools.Patches
                     {
                         List<PlayerControllerB> activePlayers = StartOfRound.Instance.allPlayerScripts.ToList();
                         listName = "Player";
-                        FindPage(activePlayers, listPage, 10, listName);
+                        FindPage(activePlayers, listPage, 6, listName);
                     }
                     else if ("items".StartsWith(command[1]))
                     {
                         List<GrabbableObject> activeItems = UnityEngine.Object.FindObjectsOfType<GrabbableObject>().ToList();
                         listName = "Active Item";
-                        FindPage(activeItems, listPage, 10, listName);
+                        FindPage(activeItems, listPage, 6, listName);
                     }
                     else if ("enemy".StartsWith(command[1]) || "enemies".StartsWith(command[1]))
                     {
                         List<EnemyAI> activeEnemies = UnityEngine.Object.FindObjectsOfType<EnemyAI>().ToList();
                         listName = "Active Enemy";
-                        FindPage(activeEnemies, listPage, 10, listName);
+                        FindPage(activeEnemies, listPage, 6, listName);
                     }
                     else
                     {
