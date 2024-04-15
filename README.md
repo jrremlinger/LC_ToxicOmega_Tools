@@ -120,7 +120,7 @@ Example: "li e" will list every enemy currently spawned in the current moon.
 <details>
   <summary><h3>GUI/HUD</h3></summary>
 
-Toggles a HUD that displays the players coordinates as well as nearby items and enemies. The Network ID of the items/enemies will be listed as well.
+Toggles a HUD that displays the players coordinates as well as nearby items, traps, and enemies. The Network ID of the items/enemies will be listed as well.
 
 Example: "hud" will enable the hud if it is currently hidden.
 </details>
