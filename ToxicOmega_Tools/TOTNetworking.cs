@@ -20,8 +20,11 @@ namespace ToxicOmega_Tools.Patches
                 GrabbableObject foundItem = playerTarget.ItemSlots[playerTarget.currentItemSlot];
 
                 if (foundItem != null && foundItem.itemProperties.requiresBattery)
+                {
+                    foundItem.insertedBattery.empty = false;
                     foundItem.insertedBattery.charge = 1f;
             }
+        }
         }
 
         [ClientRpc]
@@ -110,7 +113,6 @@ namespace ToxicOmega_Tools.Patches
 
     }
 
-
     public struct TOT_DamagePlayerData
     {
         [OdinSerialize]
@@ -152,8 +154,5 @@ namespace ToxicOmega_Tools.Patches
         [OdinSerialize]
         public Vector3 pos { get; set; }
     }
-
-
-
 
 }

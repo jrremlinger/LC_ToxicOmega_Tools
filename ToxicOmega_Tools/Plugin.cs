@@ -18,7 +18,7 @@ namespace ToxicOmega_Tools
     {
         private const string modGUID = "com.toxicomega.toxicomega_tools";
         private const string modName = "ToxicOmega Tools";
-        private const string modVersion = "1.0.0";
+        private const string modVersion = "1.1.7";
 
         private readonly Harmony harmony = new Harmony(modGUID);
 
@@ -738,6 +738,14 @@ namespace ToxicOmega_Tools
                 }
             }
 
+            // Makes mechs drop player and stuns them
+            RadMechAI[] mechs = FindObjectsByType<RadMechAI>(FindObjectsSortMode.None);
+            for (int i = 0; i < mechs.Length; i++)
+            {
+                if (mechs[i].inSpecialAnimationWithPlayer == player)
+                    mechs[i].GetComponentInChildren<EnemyAI>().SetEnemyStunned(true, 7.5f, player);
+            }
+
             // Clears blood off of screen
             if (StartOfRound.Instance.localPlayerController.playerClientId == player.playerClientId)
                 HUDManager.Instance.HUDAnimator.SetBool("biohazardDamage", false);
@@ -843,13 +851,17 @@ namespace ToxicOmega_Tools
 
                     int setValue = (int)(double)(value == -1 ? UnityEngine.Random.Range(allItemsList[itemId].minValue, allItemsList[itemId].maxValue) * RoundManager.Instance.scrapValueMultiplier : value);
 
-                    GameObject item = Instantiate(allItemsList[itemId].spawnPrefab, GetPositionFromCommand(targetString, 0), Quaternion.identity);
+                    Vector3 position = GetPositionFromCommand(targetString, 0);
+                    GameObject item = Instantiate(allItemsList[itemId].spawnPrefab, position, Quaternion.identity);
                     item.GetComponent<GrabbableObject>().transform.rotation = Quaternion.Euler(item.GetComponent<GrabbableObject>().itemProperties.restingRotation);
                     item.GetComponent<GrabbableObject>().fallTime = 0f;
                     item.GetComponent<NetworkObject>().Spawn();
 
                     mls.LogInfo("RPC SENDING: \"SyncScrapClientRpc\".");
                     TOTNetworking.SyncScrapClientRpc(new TOT_SyncScrapData { itemId = item.GetComponent<GrabbableObject>().NetworkObjectId, scrapValue = setValue });
+
+                    mls.LogInfo("RPC SENDING: \"SyncScrapClientRpc\".");
+                    TOTNetworking.TPItemClientRpc(new TOT_TPItemData { itemId = item.GetComponent<GrabbableObject>().NetworkObjectId, pos = position });
 
                     // RPC to set Shotgun shells loaded to be two for all players
                     if (itemId == 59)
