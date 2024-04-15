@@ -581,7 +581,7 @@ namespace ToxicOmega_Tools.Patches
                         foreach (UnlockableItem suit in allSuits)
                         {
                             if (suit.unlockableType == 0)
-                                suitList += $"{suit.unlockableName} ({allSuits.IndexOf(suit)}), ";
+                                suitList += $"{suit.unlockableName}, ";
                         }
                         suitList = suitList.TrimEnd(',', ' ') + ".";
                         HUDManager.Instance.DisplayTip("Suit List", suitList);
