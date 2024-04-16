@@ -77,6 +77,13 @@ namespace ToxicOmega_Tools.Patches
         }
 
         [ClientRpc]
+        public static void TerminalCodeClientRpc(TOT_TerminalCodeData data)
+        {
+            Plugin.mls.LogInfo("RPC RECEIVED: \"TerminalCodeClientRpc\".");
+            Plugin.GetTerminalAccessibleObject(data.networkId).SetCodeTo(data.code);
+        }
+
+        [ClientRpc]
         public static void TerminalCreditsClientRpc(int val)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"TerminalCreditsClientRpc\".");
@@ -87,15 +94,27 @@ namespace ToxicOmega_Tools.Patches
         }
 
         [ClientRpc]
-        public static void TPItemClientRpc(TOT_TPItemData data)
+        public static void TPGameObjectClientRpc(TOT_TPGameObjectData data)
         {
-            Plugin.mls.LogInfo("RPC RECEIVED: \"TPItemClientRpc\".");
-            GrabbableObject foundItem = Plugin.GetGrabbableObject(data.itemId);
-            foundItem.transform.position = data.pos;
-            foundItem.startFallingPosition = data.pos;
-            if (foundItem.transform.parent != null)
-                foundItem.startFallingPosition = foundItem.transform.parent.InverseTransformPoint(foundItem.startFallingPosition);
-            foundItem.FallToGround();
+            Plugin.mls.LogInfo("RPC RECEIVED: \"TPGameObjectClientRpc\".");
+            if (Plugin.GetEnemyAI(data.networkId) != null)
+            {
+                EnemyAI enemy = Plugin.GetEnemyAI(data.networkId);
+                enemy.agent.enabled = false;
+                enemy.transform.position = data.position;
+                enemy.agent.enabled = true;
+                enemy.serverPosition = data.position;
+                enemy.SetEnemyOutside(data.position.y > -50);
+            }
+            else if (Plugin.GetGrabbableObject(data.networkId) != null)
+            {
+                GrabbableObject foundItem = Plugin.GetGrabbableObject(data.networkId);
+                foundItem.transform.position = data.position;
+                foundItem.startFallingPosition = data.position;
+                if (foundItem.transform.parent != null)
+                    foundItem.startFallingPosition = foundItem.transform.parent.InverseTransformPoint(foundItem.startFallingPosition);
+                foundItem.FallToGround();
+            }
         }
 
         [ClientRpc]
@@ -103,10 +122,10 @@ namespace ToxicOmega_Tools.Patches
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"TPPlayerClientRpc\".");
             Plugin.mls.LogInfo($"Found: {Plugin.GetPlayerController(data.playerClientId).playerUsername}, Sending Inside: {data.isInside}");
-            Plugin.GetPlayerController(data.playerClientId).transform.position = data.pos;
-            if (data.pos.y >= -50)
+            Plugin.GetPlayerController(data.playerClientId).transform.position = data.position;
+            if (data.position.y >= -50)
                 data.isInside = false;
-            else if (data.pos.y <= -100)
+            else if (data.position.y <= -100)
                 data.isInside = true;
             Plugin.PlayerTeleportEffects(data.playerClientId, data.isInside);
         }
@@ -137,12 +156,20 @@ namespace ToxicOmega_Tools.Patches
         public int suitId { get; set; }
     }
 
-    public struct TOT_TPItemData
+    public struct TOT_TerminalCodeData
     {
         [OdinSerialize]
-        public ulong itemId { get; set; }
+        public ulong networkId { get; set; }
         [OdinSerialize]
-        public Vector3 pos { get; set; }
+        public int code { get; set; }
+    }
+
+    public struct TOT_TPGameObjectData
+    {
+        [OdinSerialize]
+        public ulong networkId { get; set; }
+        [OdinSerialize]
+        public Vector3 position { get; set; }
     }
     
     public struct TOT_TPPlayerData
@@ -152,7 +179,7 @@ namespace ToxicOmega_Tools.Patches
         [OdinSerialize]
         public ulong playerClientId { get; set; }
         [OdinSerialize]
-        public Vector3 pos { get; set; }
+        public Vector3 position { get; set; }
     }
 
 }

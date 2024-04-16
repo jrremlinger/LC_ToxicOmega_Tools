@@ -280,7 +280,7 @@ namespace ToxicOmega_Tools.Patches
                                         new TOT_TPPlayerData {
                                             isInside = false,
                                             playerClientId = localPlayerController.playerClientId,
-                                            pos = destination });
+                                            position = destination });
                                 }
                                 else
                                     Plugin.LogMessage($"Could not teleport {localPlayerController.playerUsername}!\nPlayer is dead!", true);
@@ -291,30 +291,18 @@ namespace ToxicOmega_Tools.Patches
                             // Look for item/enemy by ID and break the switch function if one is found
                             if (command.Length > 2)
                             {
+                                Vector3 newPos = Vector3.zero;
                                 foundId = ulong.TryParse(command[1], out networkId);
-
+                                
                                 if (foundId && Plugin.GetGrabbableObject(networkId) != null)
-                                {
-                                    Vector3 newPos = Plugin.GetPositionFromCommand(command[2], 3, Plugin.GetGrabbableObject(networkId).itemProperties.itemName);
-                                    if (newPos != Vector3.zero)
-                                    {
-                                        Plugin.mls.LogInfo("RPC SENDING: \"TPPlayerClientRpc\".");
-                                        TOTNetworking.TPItemClientRpc(new TOT_TPItemData { itemId = networkId, pos = newPos });
-                                    }
-                                    break;
-                                }
+                                    newPos = Plugin.GetPositionFromCommand(command[2], 3, Plugin.GetGrabbableObject(networkId).itemProperties.itemName);
                                 else if (foundId && Plugin.GetEnemyAI(networkId) != null)
+                                    newPos = Plugin.GetPositionFromCommand(command[2], 3, Plugin.GetEnemyAI(networkId).enemyType.enemyName);
+
+                                if (foundId && newPos != Vector3.zero)
                                 {
-                                    enemyTarget = Plugin.GetEnemyAI(networkId);
-                                    Vector3 newPos = Plugin.GetPositionFromCommand(command[2], 3, enemyTarget.enemyType.enemyName);
-                                    if (newPos != Vector3.zero)
-                                    {
-                                        enemyTarget.agent.enabled = false;
-                                        enemyTarget.transform.position = newPos;
-                                        enemyTarget.agent.enabled = true;
-                                        enemyTarget.serverPosition = newPos;
-                                        enemyTarget.SetEnemyOutside(newPos.y > -50);
-                                    }
+                                    Plugin.mls.LogInfo("RPC SENDING: \"TPGameObjectClientRpc\".");
+                                    TOTNetworking.TPGameObjectClientRpc(new TOT_TPGameObjectData { networkId = networkId, position = newPos });
                                     break;
                                 }
                             }
@@ -331,7 +319,7 @@ namespace ToxicOmega_Tools.Patches
                                         new TOT_TPPlayerData { 
                                             isInside = sendPlayerInside, 
                                             playerClientId = playerTarget.playerClientId, 
-                                            pos = Plugin.GetPositionFromCommand(command.Length > 2 ? command[2] : command[1], 3, playerTarget.playerUsername) });
+                                            position = Plugin.GetPositionFromCommand(command.Length > 2 ? command[2] : command[1], 3, playerTarget.playerUsername) });
                                 }
                             }
                             else if (playerTarget != null && playerTarget.isPlayerDead)
@@ -447,11 +435,6 @@ namespace ToxicOmega_Tools.Patches
                                 if (obj != null && obj.objectCode == command[1])
                                 {
                                     obj.CallFunctionFromTerminal();
-
-                                    if (obj.GetComponentInChildren<Turret>())
-                                        obj.GetComponentInChildren<Turret>().ToggleTurretEnabled(false);
-                                    else if (obj.GetComponentInChildren<Landmine>())
-                                        obj.GetComponentInChildren<Landmine>().ToggleMine(false);
                                 }
                             }
 

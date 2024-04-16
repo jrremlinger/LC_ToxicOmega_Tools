@@ -65,6 +65,7 @@ namespace ToxicOmega_Tools
             return FindObjectsOfType<GrabbableObject>().FirstOrDefault(item => item.NetworkObjectId.Equals(networkObjectId));
         }
 
+        public static TerminalAccessibleObject GetTerminalAccessibleObject(ulong networkObjectId)
         public static PlayerControllerB GetPlayerController(ulong clientId)
         {
             StartOfRound round = StartOfRound.Instance;
@@ -860,8 +861,8 @@ namespace ToxicOmega_Tools
                     mls.LogInfo("RPC SENDING: \"SyncScrapClientRpc\".");
                     TOTNetworking.SyncScrapClientRpc(new TOT_SyncScrapData { itemId = item.GetComponent<GrabbableObject>().NetworkObjectId, scrapValue = setValue });
 
-                    mls.LogInfo("RPC SENDING: \"SyncScrapClientRpc\".");
-                    TOTNetworking.TPItemClientRpc(new TOT_TPItemData { itemId = item.GetComponent<GrabbableObject>().NetworkObjectId, pos = position });
+                    mls.LogInfo("RPC SENDING: \"TPGameObjectClientRpc\".");
+                    TOTNetworking.TPGameObjectClientRpc(new TOT_TPGameObjectData { networkId = item.GetComponent<GrabbableObject>().NetworkObjectId, position = position });
 
                     // RPC to set Shotgun shells loaded to be two for all players
                     if (itemId == 59)
