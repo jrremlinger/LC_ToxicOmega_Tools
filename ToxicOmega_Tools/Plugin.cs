@@ -66,6 +66,10 @@ namespace ToxicOmega_Tools
         }
 
         public static TerminalAccessibleObject GetTerminalAccessibleObject(ulong networkObjectId)
+        {
+            return FindObjectsOfType<TerminalAccessibleObject>().FirstOrDefault(item => item.NetworkObjectId.Equals(networkObjectId));
+        }
+
         public static PlayerControllerB GetPlayerController(ulong clientId)
         {
             StartOfRound round = StartOfRound.Instance;
@@ -930,8 +934,11 @@ namespace ToxicOmega_Tools
                                 {
                                     Vector3 inBoxPredictable = currentRound.GetRandomNavMeshPositionInRadius(obj.prefabToSpawn.transform.position);
                                     GameObject mine = Instantiate(obj.prefabToSpawn, GetPositionFromCommand(targetString, 4), Quaternion.identity);
-                                    mine.GetComponentInChildren<TerminalAccessibleObject>().SetCodeTo(UnityEngine.Random.Range(0, RoundManager.Instance.possibleCodesForBigDoors.Length - 1));
                                     mine.GetComponent<NetworkObject>().Spawn(true);
+
+                                    int randomCode = UnityEngine.Random.Range(0, RoundManager.Instance.possibleCodesForBigDoors.Length - 1);
+                                    mls.LogInfo("RPC SENDING: \"TerminalCodeClientRpc\".");
+                                    TOTNetworking.TerminalCodeClientRpc(new TOT_TerminalCodeData { networkId = mine.GetComponentInChildren<TerminalAccessibleObject>().NetworkObjectId, code = randomCode });
                                 }
                                 break;  // Break after finding first matching prefab
                             }
@@ -954,9 +961,12 @@ namespace ToxicOmega_Tools
                                 {
                                     Vector3 pos = GetPositionFromCommand(targetString, 4);
                                     GameObject turret = Instantiate(obj.prefabToSpawn, pos, Quaternion.identity);
-                                    turret.GetComponentInChildren<TerminalAccessibleObject>().SetCodeTo(UnityEngine.Random.Range(0, RoundManager.Instance.possibleCodesForBigDoors.Length - 1));
                                     turret.transform.eulerAngles = new Vector3(0.0f, currentRound.YRotationThatFacesTheFarthestFromPosition(pos + Vector3.up * 0.2f), 0.0f);
                                     turret.GetComponent<NetworkObject>().Spawn(true);
+
+                                    int randomCode = UnityEngine.Random.Range(0, RoundManager.Instance.possibleCodesForBigDoors.Length - 1);
+                                    mls.LogInfo("RPC SENDING: \"TerminalCodeClientRpc\".");
+                                    TOTNetworking.TerminalCodeClientRpc(new TOT_TerminalCodeData { networkId = turret.GetComponentInChildren<TerminalAccessibleObject>().NetworkObjectId, code = randomCode });
                                 }
                                 break;  // Break after finding first matching prefab
                             }
@@ -979,7 +989,6 @@ namespace ToxicOmega_Tools
                                 {
                                     Vector3 pos = GetPositionFromCommand(targetString, 4);
                                     GameObject spikes = Instantiate(obj.prefabToSpawn, pos, Quaternion.identity);
-                                    spikes.GetComponentInChildren<TerminalAccessibleObject>().SetCodeTo(UnityEngine.Random.Range(0, RoundManager.Instance.possibleCodesForBigDoors.Length - 1)); 
 
                                     if (targetString == "" || targetString == "$")
                                     {
@@ -996,6 +1005,10 @@ namespace ToxicOmega_Tools
 
                                     spikes.GetComponentInChildren<SpikeRoofTrap>().Start();
                                     spikes.GetComponent<NetworkObject>().Spawn(true);
+
+                                    int randomCode = UnityEngine.Random.Range(0, RoundManager.Instance.possibleCodesForBigDoors.Length - 1);
+                                    mls.LogInfo("RPC SENDING: \"TerminalCodeClientRpc\".");
+                                    TOTNetworking.TerminalCodeClientRpc(new TOT_TerminalCodeData { networkId = spikes.GetComponentInChildren<TerminalAccessibleObject>().NetworkObjectId, code = randomCode });
                                 }
                                 break;  // Break after finding first matching prefab
                             }

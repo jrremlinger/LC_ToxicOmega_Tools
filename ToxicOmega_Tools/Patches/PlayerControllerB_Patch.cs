@@ -42,7 +42,7 @@ namespace ToxicOmega_Tools.Patches
         static void Update(PlayerControllerB __instance)
         {
             Vector3 localPos = (__instance.isPlayerDead && __instance.spectatedPlayerScript != null) ? __instance.spectatedPlayerScript.transform.position : __instance.transform.position;
-            TOTGUI.posLabelText = $"X: {Math.Round(localPos.x, 1)}\nY: {Math.Round(localPos.y, 1)}\nZ: {Math.Round(localPos.z, 1)}\n";
+            TOTGUI.posLabelText = $"GodMode: {(Plugin.Instance.enableGod ? "Enabled" : "Disabled")}\nX: {Math.Round(localPos.x, 1)}\nY: {Math.Round(localPos.y, 1)}\nZ: {Math.Round(localPos.z, 1)}\n";
             TOTGUI.itemListText = "";
             TOTGUI.terminalObjListText = "";
             TOTGUI.enemyListText = "";
@@ -58,24 +58,32 @@ namespace ToxicOmega_Tools.Patches
             foreach (TerminalAccessibleObject terminalObj in UnityEngine.Object.FindObjectsOfType<TerminalAccessibleObject>())
             {
                 string objType = "";
+                bool isActive = true;
                 if (Vector3.Distance(terminalObj.transform.position, localPos) < 10.0f)
                 {
                     if (terminalObj.isBigDoor)
                         objType = "Door";
                     else if (terminalObj.GetComponentInChildren<Turret>())
+                    {
                         objType = "Turret";
+                        isActive = terminalObj.GetComponent<Turret>().turretActive;
+                    }
                     else if (terminalObj.GetComponentInChildren<Landmine>())
                     {
                         if (terminalObj.GetComponentInChildren<Landmine>().hasExploded)
                             continue;
                         objType = "Landmine";
+                        isActive = terminalObj.GetComponent<Landmine>().mineActivated;
                     }
                     else if (terminalObj.transform.parent.gameObject.GetComponentInChildren<SpikeRoofTrap>())
+                    {
                         objType = "Spikes";
+                        isActive = terminalObj.transform.parent.gameObject.GetComponentInChildren<SpikeRoofTrap>().trapActive;
+                    }
                     else
                         objType += "Unknown";
 
-                    TOTGUI.terminalObjListText += $"{(terminalObj.inCooldown || (terminalObj.isBigDoor && terminalObj.isDoorOpen) ? $"<color={(terminalObj.isBigDoor && terminalObj.isDoorOpen ? "lime" : "red")}>" : "")}{terminalObj.objectCode.ToUpper()}{(terminalObj.inCooldown || (terminalObj.isBigDoor && terminalObj.isDoorOpen) ? "</color>" : "")} - {objType}\n";
+                    TOTGUI.terminalObjListText += $"{(!isActive || (terminalObj.isBigDoor && terminalObj.isDoorOpen) ? $"<color={(terminalObj.isBigDoor && terminalObj.isDoorOpen ? "lime" : "red")}>" : "")}{terminalObj.objectCode.ToUpper()}{(!isActive || (terminalObj.isBigDoor && terminalObj.isDoorOpen) ? "</color>" : "")} - {objType}\n";
                 }
             }
 
