@@ -886,15 +886,35 @@ namespace ToxicOmega_Tools
                 return;
 
             string logLocation;
+            string logTrapType = "";
 
             if (targetString == "" || targetString == "$")
                 logLocation = "Random";
             else if (targetString.StartsWith("@"))
                 logLocation = $"WP @{targetString.Substring(1)}";
             else
-                logLocation = GetPlayerFromString(targetString).playerUsername;
+            {
+                bool foundId = ulong.TryParse(targetString, out ulong networkId);
 
-            LogMessage($"Spawned Trap\nName: {(trapId == 1 ? "Turret" : "Mine")}, Amount: {amount}, Location: {logLocation}.");
+                if (foundId && GetGrabbableObject(networkId) != null)
+                {
+                    logLocation = GetGrabbableObject(networkId).itemProperties.itemName;
+                }
+                else if (foundId && GetEnemyAI(networkId) != null)
+                {
+                    logLocation = GetEnemyAI(networkId).enemyType.enemyName;
+                }
+                else logLocation = GetPlayerFromString(targetString).playerUsername;
+            }
+
+            if (trapId == 0)
+                logTrapType = "Mine";
+            else if (trapId == 1)
+                logTrapType = "Turret";
+            else if (trapId == 2)
+                logTrapType = "Spikes";
+
+            LogMessage($"Spawned Trap\nName: {logTrapType}, Amount: {amount}, Location: {logLocation}.");
 
             switch (trapId)
             {
@@ -903,7 +923,7 @@ namespace ToxicOmega_Tools
                     {
                         try
                         {
-                            if (obj.prefabToSpawn.GetComponentInChildren<Landmine>() != null)
+                            if (obj.prefabToSpawn.GetComponentInChildren<Landmine>() != null)   // Find prefab to copy
                             {
                                 for (int i = 0; i < amount; i++)
                                 {
@@ -912,12 +932,12 @@ namespace ToxicOmega_Tools
                                     mine.GetComponentInChildren<TerminalAccessibleObject>().SetCodeTo(UnityEngine.Random.Range(0, RoundManager.Instance.possibleCodesForBigDoors.Length - 1));
                                     mine.GetComponent<NetworkObject>().Spawn(true);
                                 }
-                                break;
+                                break;  // Break after finding first matching prefab
                             }
                         }
                         catch (Exception ex)
                         {
-                            LogMessage($"Unable to Spawn Trap: {(trapId == 1 ? "Turret" : "Mine")}!", true);
+                            LogMessage($"Unable to Spawn Trap: {logTrapType}!", true);
                             mls.LogError(ex);
                         }
                     }
@@ -927,7 +947,7 @@ namespace ToxicOmega_Tools
                     {
                         try
                         {
-                            if (obj.prefabToSpawn.GetComponentInChildren<Turret>() != null)
+                            if (obj.prefabToSpawn.GetComponentInChildren<Turret>() != null) // Find prefab to copy
                             {
                                 for (int i = 0; i < amount; i++)
                                 {
@@ -937,12 +957,51 @@ namespace ToxicOmega_Tools
                                     turret.transform.eulerAngles = new Vector3(0.0f, currentRound.YRotationThatFacesTheFarthestFromPosition(pos + Vector3.up * 0.2f), 0.0f);
                                     turret.GetComponent<NetworkObject>().Spawn(true);
                                 }
-                                break;
+                                break;  // Break after finding first matching prefab
                             }
                         }
                         catch (Exception ex)
                         {
-                            LogMessage($"Unable to Spawn Trap: {(trapId == 1 ? "Turret" : "Mine")}!", true);
+                            LogMessage($"Unable to Spawn Trap: {logTrapType}!", true);
+                            mls.LogError(ex);
+                        }
+                    }
+                    break;
+                case 2:
+                    foreach (SpawnableMapObject obj in currentRound.currentLevel.spawnableMapObjects)   // Find prefab to copy
+                    {
+                        try
+                        {
+                            if (obj.prefabToSpawn.GetComponentInChildren<SpikeRoofTrap>() != null)
+                            {
+                                for (int i = 0; i < amount; i++)
+                                {
+                                    Vector3 pos = GetPositionFromCommand(targetString, 4);
+                                    GameObject spikes = Instantiate(obj.prefabToSpawn, pos, Quaternion.identity);
+                                    spikes.GetComponentInChildren<TerminalAccessibleObject>().SetCodeTo(UnityEngine.Random.Range(0, RoundManager.Instance.possibleCodesForBigDoors.Length - 1)); 
+
+                                    if (targetString == "" || targetString == "$")
+                                    {
+                                        RaycastHit hitInfo;
+                                        if (Physics.Raycast(spikes.transform.position, -spikes.transform.forward, out hitInfo, 100f, StartOfRound.Instance.collidersAndRoomMaskAndDefault, QueryTriggerInteraction.Ignore))
+                                        {
+                                            spikes.transform.position = hitInfo.point;
+                                            {
+                                                spikes.transform.forward = hitInfo.normal;
+                                                spikes.transform.eulerAngles = new Vector3(0.0f, spikes.transform.eulerAngles.y, 0.0f);
+                                            }
+                                        }
+                                    }
+
+                                    spikes.GetComponentInChildren<SpikeRoofTrap>().Start();
+                                    spikes.GetComponent<NetworkObject>().Spawn(true);
+                                }
+                                break;  // Break after finding first matching prefab
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            LogMessage($"Unable to Spawn Trap: {logTrapType}!", true);
                             mls.LogError(ex);
                         }
                     }

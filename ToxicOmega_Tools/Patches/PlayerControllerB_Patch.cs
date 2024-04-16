@@ -7,7 +7,6 @@ using System.Linq;
 using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
-using Unity.Netcode;
 using UnityEngine;
 
 namespace ToxicOmega_Tools.Patches
@@ -71,8 +70,9 @@ namespace ToxicOmega_Tools.Patches
                             continue;
                         objType = "Landmine";
                     }
-                    else
+                    else if (terminalObj.transform.parent.gameObject.GetComponentInChildren<SpikeRoofTrap>())
                         objType = "Spikes";
+
                     TOTGUI.terminalObjListText += $"{(terminalObj.inCooldown || (terminalObj.isBigDoor && terminalObj.isDoorOpen) ? $"<color={(terminalObj.isBigDoor && terminalObj.isDoorOpen ? "lime" : "red")}>" : "")}{terminalObj.objectCode.ToUpper()}{(terminalObj.inCooldown || (terminalObj.isBigDoor && terminalObj.isDoorOpen) ? "</color>" : "")} - {objType}\n";
                 }
             }

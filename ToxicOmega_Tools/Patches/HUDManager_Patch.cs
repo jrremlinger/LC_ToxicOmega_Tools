@@ -202,14 +202,18 @@ namespace ToxicOmega_Tools.Patches
 
                     if (command.Length < 2)
                     {
-                        HUDManager.Instance.DisplayTip("Trap List", $"ID #0: Mine\nID #1: Turret");
+                        HUDManager.Instance.DisplayTip("Trap List", $"Mine, Turret, Spikes");
                         break;
                     }
 
-                    if ("landmine".StartsWith(command[1]) || "mine".StartsWith(command[1]) || command[1] == "0")
+                    if ("landmine".StartsWith(command[1]) || "mine".StartsWith(command[1]))
                         trapId = 0;
-                    else if ("turret".StartsWith(command[1]) || command[1] == "1")
+                    else if ("turret".StartsWith(command[1]))
                         trapId = 1;
+                    else if ("spikes".StartsWith(command[1]) || "roofspikes".StartsWith(command[1]) || "ceilingspikes".StartsWith(command[1]))
+                    {
+                        trapId = 2;
+                    }
                     else
                     {
                         Plugin.LogMessage($"Unable to find a trap with name {command[1]}!", true);
@@ -427,7 +431,7 @@ namespace ToxicOmega_Tools.Patches
                                             continue;
                                         objectList += "(Landmine), ";
                                     }
-                                    else
+                                    else if (obj.transform.parent.gameObject.GetComponentInChildren<SpikeRoofTrap>())
                                         objectList += "(Spikes), ";
                                 }
                             }
