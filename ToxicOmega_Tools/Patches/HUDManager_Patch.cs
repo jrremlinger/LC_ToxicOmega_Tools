@@ -202,7 +202,7 @@ namespace ToxicOmega_Tools.Patches
 
                     if (command.Length < 2)
                     {
-                        HUDManager.Instance.DisplayTip("Trap List", $"Mine, Turret, Spikes");
+                        HUDManager.Instance.DisplayTip("Trap List", "Mine, Turret, Spikes");
                         break;
                     }
 
@@ -433,6 +433,8 @@ namespace ToxicOmega_Tools.Patches
                                     }
                                     else if (obj.transform.parent.gameObject.GetComponentInChildren<SpikeRoofTrap>())
                                         objectList += "(Spikes), ";
+                                    else
+                                        objectList += "(Unknown), ";
                                 }
                             }
                             objectList = objectList.TrimEnd(',', ' ') + ".";

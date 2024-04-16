@@ -72,6 +72,8 @@ namespace ToxicOmega_Tools.Patches
                     }
                     else if (terminalObj.transform.parent.gameObject.GetComponentInChildren<SpikeRoofTrap>())
                         objType = "Spikes";
+                    else
+                        objType += "Unknown";
 
                     TOTGUI.terminalObjListText += $"{(terminalObj.inCooldown || (terminalObj.isBigDoor && terminalObj.isDoorOpen) ? $"<color={(terminalObj.isBigDoor && terminalObj.isDoorOpen ? "lime" : "red")}>" : "")}{terminalObj.objectCode.ToUpper()}{(terminalObj.inCooldown || (terminalObj.isBigDoor && terminalObj.isDoorOpen) ? "</color>" : "")} - {objType}\n";
                 }
