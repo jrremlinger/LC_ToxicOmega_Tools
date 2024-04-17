@@ -92,10 +92,10 @@ Example: "sp 0 1" will spawn one enemy of ID zero naturally. Make sure you check
 <details>
   <summary><h3>Tr/Trap (Trap Type) Optional: (Amount) (Target)</h3></summary>
 
-Spawns trap based on given name or ID number. If no arguments are given it will instead list available traps with their ID #'s.
+Spawns trap based on given name. If no arguments are given it will instead list all available traps.
 
 Arguments:
-* Type: Name or ID of the trap you want to spawn. Will auto-complete name if the beginning is given.
+* Type: Name of the trap you want to spawn. Will auto-complete name if the beginning is given.
 * Amount (Default: 1): How many copies of the trap should be spawned.
 * Target (Default: Natural): Where to spawn the trap, supports all targeting methods listed at the beginning of this readme.
 
@@ -120,7 +120,7 @@ Example: "li e" will list every enemy currently spawned in the current moon.
 <details>
   <summary><h3>GUI/HUD</h3></summary>
 
-Toggles a HUD that displays the players coordinates as well as nearby items, traps, and enemies. The Network ID of the items/enemies will be listed as well.
+Toggles a HUD that displays useful info such as nearby items, traps, and enemies. The Network ID of the items/enemies will be listed as well.
 
 Example: "hud" will enable the hud if it is currently hidden.
 </details>
@@ -142,14 +142,15 @@ Example: "tp #0 $" will teleport the player with ID to a random location inside 
 ---
 
 <details>
-  <summary><h3>WP/Waypoint/Waypoints Optional: Add/Clear/Door</h3></summary>
+  <summary><h3>WP/Waypoint/Waypoints Optional: Add/Clear/Door/Entrance</h3></summary>
 
 Lists or creates a waypoint to use as a destination. Waypoints are cleared when leaving a moon.
 
 Arguments (The text added after is the only argument accepted. If not provided it will list all waypoints):
 * Add: Will create a waypoint at your current position.
 * Clear: Will delete all waypoints.
-* Door: Will create a waypoint inside the factory at the main entrance.
+* Door: Will create a waypoint outside the factory at the front door.
+* Entrance: Will create a waypoint inside the factory at the main entrance.
 
 Example: "wp add" will create a waypoint at your current location.
 </details>
