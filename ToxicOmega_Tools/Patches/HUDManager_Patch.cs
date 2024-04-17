@@ -360,10 +360,29 @@ namespace ToxicOmega_Tools.Patches
                         Plugin.Instance.waypoints.Clear();
                         Plugin.LogMessage($"Waypoints cleared.");
                     }
-                    else if ("door".StartsWith(command[1]) || "entrance".StartsWith(command[1]))
+                    else if ("door".StartsWith(command[1]))
                     {
-                        Plugin.Instance.waypoints.Add(new Waypoint { isInside = true, position = RoundManager.FindMainEntrancePosition(true) });
+                        Vector3 doorPosition = RoundManager.FindMainEntrancePosition(true, true);
+
+                        if (doorPosition != Vector3.zero)
+                        {
+                            Plugin.Instance.waypoints.Add(new Waypoint { isInside = true, position = doorPosition });
                         Plugin.LogMessage($"Waypoint @{Plugin.Instance.waypoints.Count - 1} created at Main Entrance.");
+                    }
+                        else
+                            Plugin.LogMessage("Unable to find Main Entrance!", true);
+                    }
+                    else if ("entrance".StartsWith(command[1]))
+                    {
+                        Vector3 entrancePosition = RoundManager.FindMainEntrancePosition(true);
+
+                        if (entrancePosition != Vector3.zero)
+                        {
+                            Plugin.Instance.waypoints.Add(new Waypoint { isInside = true, position = entrancePosition });
+                            Plugin.LogMessage($"Waypoint @{Plugin.Instance.waypoints.Count - 1} created inside Main Entrance.");
+                        }
+                        else
+                            Plugin.LogMessage("Unable to find Main Entrance!", true);
                     }
                     break;
                 case "he":
