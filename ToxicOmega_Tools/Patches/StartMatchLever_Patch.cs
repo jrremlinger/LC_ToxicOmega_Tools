@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace ToxicOmega_Tools.Patches
 {
@@ -15,6 +16,11 @@ namespace ToxicOmega_Tools.Patches
         private static void LoadNewMoon()
         {
             Plugin.Instance.waypoints.Clear();
+
+            foreach (GameObject obj in UnityEngine.Object.FindObjectsOfType<GameObject>().Where(obj => obj.name == "Landmine(Clone)" || obj.name == "TurretContainer(Clone)" || obj.name == "SpikeRoofTrapHazard(Clone)"))
+            {
+                UnityEngine.Object.Destroy(obj);
+            }
         }
     }
 }
