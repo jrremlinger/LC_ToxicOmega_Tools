@@ -367,8 +367,8 @@ namespace ToxicOmega_Tools.Patches
                         if (doorPosition != Vector3.zero)
                         {
                             Plugin.Instance.waypoints.Add(new Waypoint { isInside = true, position = doorPosition });
-                        Plugin.LogMessage($"Waypoint @{Plugin.Instance.waypoints.Count - 1} created at Main Entrance.");
-                    }
+                            Plugin.LogMessage($"Waypoint @{Plugin.Instance.waypoints.Count - 1} created at Main Entrance.");
+                        }
                         else
                             Plugin.LogMessage("Unable to find Main Entrance!", true);
                     }
@@ -427,21 +427,20 @@ namespace ToxicOmega_Tools.Patches
                             {
                                 if (obj.objectCode != null)
                                 {
-                                    objectList += $"{obj.objectCode}";
                                     if (obj.isBigDoor)
-                                        objectList += "(Door), ";
+                                        objectList += $"{obj.objectCode}(Door), ";
                                     else if (obj.GetComponentInChildren<Turret>())
-                                        objectList += "(Turret), ";
+                                        objectList += $"{obj.objectCode}(Turret), ";
                                     else if (obj.GetComponentInChildren<Landmine>())
                                     {
                                         if (obj.GetComponentInChildren<Landmine>().hasExploded)
                                             continue;
-                                        objectList += "(Landmine), ";
+                                        objectList += $"{obj.objectCode}(Landmine), ";
                                     }
                                     else if (obj.transform.parent.gameObject.GetComponentInChildren<SpikeRoofTrap>())
-                                        objectList += "(Spikes), ";
+                                        objectList += $"{obj.objectCode}(Spikes), ";
                                     else
-                                        objectList += "(Unknown), ";
+                                        objectList += $"{obj.objectCode}(Unknown), ";
                                 }
                             }
                             objectList = objectList.TrimEnd(',', ' ') + ".";
