@@ -12,7 +12,7 @@ namespace ToxicOmega_Tools.Patches
     {
         [HarmonyPatch(nameof(StartMatchLever.StartGame))]
         [HarmonyPostfix]
-        private static void resetWaypoints()
+        private static void LoadNewMoon()
         {
             Plugin.Instance.waypoints.Clear();
         }

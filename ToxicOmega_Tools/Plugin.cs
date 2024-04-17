@@ -24,14 +24,13 @@ namespace ToxicOmega_Tools
 
         internal static Plugin Instance;
         internal static ManualLogSource mls;
+        internal GUI menu;
 
         internal List<SpawnableEnemyWithRarity> customInsideList = new List<SpawnableEnemyWithRarity>();
         internal List<SpawnableEnemyWithRarity> customOutsideList = new List<SpawnableEnemyWithRarity>();
         internal List<Waypoint> waypoints = new List<Waypoint>();
         internal System.Random shipTeleporterSeed;
         internal bool enableGod = false;
-
-        internal GUI menu;
 
         void Awake()
         {

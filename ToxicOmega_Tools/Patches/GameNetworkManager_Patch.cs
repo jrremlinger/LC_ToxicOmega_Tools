@@ -12,7 +12,7 @@ namespace ToxicOmega_Tools.Patches
     {
         [HarmonyPatch(nameof(GameNetworkManager.Disconnect))]
         [HarmonyPostfix]
-        private static void onDisconnect()
+        private static void Disconnect()
         {
             Plugin.Instance.enableGod = false;
             Plugin.Instance.waypoints.Clear();
