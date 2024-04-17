@@ -122,7 +122,27 @@ namespace ToxicOmega_Tools.Patches
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"TPPlayerClientRpc\".");
             Plugin.mls.LogInfo($"Found: {Plugin.GetPlayerController(data.playerClientId).playerUsername}, Sending Inside: {data.isInside}");
-            Plugin.GetPlayerController(data.playerClientId).transform.position = data.position;
+
+            PlayerControllerB player = Plugin.GetPlayerController(data.playerClientId);
+
+            if (player.isPlayerDead)
+            {
+                DeadBodyInfo deadBody = StartOfRound.Instance.allPlayerScripts[data.playerClientId].deadBody;
+                if (deadBody != null)
+                {
+                    deadBody.attachedTo = null;
+                    deadBody.attachedLimb = null;
+                    deadBody.secondaryAttachedLimb = null;
+                    deadBody.secondaryAttachedTo = null;
+                    if (deadBody.grabBodyObject != null && deadBody.grabBodyObject.isHeld && deadBody.grabBodyObject.playerHeldBy != null)
+                        deadBody.grabBodyObject.playerHeldBy.DropAllHeldItems();
+                    deadBody.transform.SetParent(null, true);
+                    deadBody.SetRagdollPositionSafely(data.position, true);
+                }
+                return;
+            }
+
+            player.transform.position = data.position;
             if (data.position.y >= -50)
                 data.isInside = false;
             else if (data.position.y <= -100)

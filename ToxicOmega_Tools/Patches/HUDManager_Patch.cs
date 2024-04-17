@@ -310,7 +310,7 @@ namespace ToxicOmega_Tools.Patches
                             // Player teleport handler
                             playerTarget = command.Length > 2 ? Plugin.GetPlayerFromString(command[1]) : localPlayerController;
 
-                            if (playerTarget != null && !playerTarget.isPlayerDead)
+                            if (playerTarget != null)
                             {
                                 if (Plugin.GetPositionFromCommand(command.Length > 2 ? command[2] : command[1], 3, playerTarget.playerUsername) != Vector3.zero)
                                 {
@@ -322,8 +322,6 @@ namespace ToxicOmega_Tools.Patches
                                             position = Plugin.GetPositionFromCommand(command.Length > 2 ? command[2] : command[1], 3, playerTarget.playerUsername) });
                                 }
                             }
-                            else if (playerTarget != null && playerTarget.isPlayerDead)
-                                Plugin.LogMessage($"Could not teleport {playerTarget.playerUsername}!\nPlayer is dead!", true);
                             break;
                     }
                     break;

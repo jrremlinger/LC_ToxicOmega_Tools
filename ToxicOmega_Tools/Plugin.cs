@@ -540,21 +540,17 @@ namespace ToxicOmega_Tools
             if (isPlayerTarget)
             {
                 PlayerControllerB playerTarget = GetPlayerFromString(input);
+                position = playerTarget.transform.position;
 
                 if (playerTarget == null)
                     return Vector3.zero;
                 else if (playerTarget.isPlayerDead)
                 {
-                    if (localPlayerController.playerClientId == playerTarget.playerClientId && playerTarget.spectatedPlayerScript != null)
-                        return playerTarget.spectatedPlayerScript.transform.position;
+                    if (localPlayerController.playerClientId == playerTarget.playerClientId && playerTarget.spectatedPlayerScript != null && input == "")
+                        position = playerTarget.spectatedPlayerScript.transform.position;
                     else
-                    {
-                        LogMessage($"Could not target {playerTarget.playerUsername}!\nPlayer is dead!", true);
-                        return Vector3.zero;
-                    }
+                        position = StartOfRound.Instance.allPlayerScripts[playerTarget.playerClientId].deadBody.transform.position;
                 }
-
-                position = playerTarget.transform.position;
 
                 if (isTP)
                 {
