@@ -564,7 +564,7 @@ namespace ToxicOmega_Tools.Patches
                             Networking.HurtPlayerClientRpc(new TOT_DamagePlayerData { playerClientId = playerTarget.playerClientId, damage = 999999 });
                             Plugin.LogMessage($"Killing {targetName}!");
                         }
-                        else if (playerTarget.isPlayerDead)
+                        else if (playerTarget != null && playerTarget.isPlayerDead)
                             Plugin.LogMessage($"Unable to kill {playerTarget.playerUsername}, player already dead!", true);
                     }
                     break;
