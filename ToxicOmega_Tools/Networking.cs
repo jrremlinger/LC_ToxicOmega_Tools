@@ -7,7 +7,7 @@ using UnityEngine;
 namespace ToxicOmega_Tools.Patches
 {
     [StaticNetcode]
-    internal class TOTNetworking
+    internal class Networking
     {
         [ClientRpc]
         public static void ChargePlayerClientRpc(ulong playerId)

@@ -31,7 +31,7 @@ namespace ToxicOmega_Tools
         internal System.Random shipTeleporterSeed;
         internal bool enableGod = false;
 
-        internal TOTGUI menu;
+        internal GUI menu;
 
         void Awake()
         {
@@ -46,8 +46,8 @@ namespace ToxicOmega_Tools
             var gameObject = new GameObject("TOTGUI");
             DontDestroyOnLoad(gameObject);
             gameObject.hideFlags = HideFlags.HideAndDontSave;
-            gameObject.AddComponent<TOTGUI>();
-            menu = (TOTGUI)gameObject.GetComponent("TOTGUI");
+            gameObject.AddComponent<GUI>();
+            menu = (GUI)gameObject.GetComponent("TOTGUI");
         }
 
         public static bool CheckPlayerIsHost(PlayerControllerB player)
@@ -863,16 +863,16 @@ namespace ToxicOmega_Tools
                     item.GetComponent<NetworkObject>().Spawn();
 
                     mls.LogInfo("RPC SENDING: \"SyncScrapClientRpc\".");
-                    TOTNetworking.SyncScrapClientRpc(new TOT_SyncScrapData { itemId = item.GetComponent<GrabbableObject>().NetworkObjectId, scrapValue = setValue });
+                    Networking.SyncScrapClientRpc(new TOT_SyncScrapData { itemId = item.GetComponent<GrabbableObject>().NetworkObjectId, scrapValue = setValue });
 
                     mls.LogInfo("RPC SENDING: \"TPGameObjectClientRpc\".");
-                    TOTNetworking.TPGameObjectClientRpc(new TOT_TPGameObjectData { networkId = item.GetComponent<GrabbableObject>().NetworkObjectId, position = position });
+                    Networking.TPGameObjectClientRpc(new TOT_TPGameObjectData { networkId = item.GetComponent<GrabbableObject>().NetworkObjectId, position = position });
 
                     // RPC to set Shotgun shells loaded to be two for all players
                     if (itemId == 59)
                     {
                         mls.LogInfo("RPC SENDING: \"SyncAmmoClientRpc\".");
-                        TOTNetworking.SyncAmmoClientRpc(item.GetComponent<GrabbableObject>().NetworkObjectId);
+                        Networking.SyncAmmoClientRpc(item.GetComponent<GrabbableObject>().NetworkObjectId);
                     }
                 }
                 catch (Exception ex)
@@ -938,7 +938,7 @@ namespace ToxicOmega_Tools
 
                                     int randomCode = UnityEngine.Random.Range(0, RoundManager.Instance.possibleCodesForBigDoors.Length - 1);
                                     mls.LogInfo("RPC SENDING: \"TerminalCodeClientRpc\".");
-                                    TOTNetworking.TerminalCodeClientRpc(new TOT_TerminalCodeData { networkId = mine.GetComponentInChildren<TerminalAccessibleObject>().NetworkObjectId, code = randomCode });
+                                    Networking.TerminalCodeClientRpc(new TOT_TerminalCodeData { networkId = mine.GetComponentInChildren<TerminalAccessibleObject>().NetworkObjectId, code = randomCode });
                                 }
                                 break;  // Break after finding first matching prefab
                             }
@@ -966,7 +966,7 @@ namespace ToxicOmega_Tools
 
                                     int randomCode = UnityEngine.Random.Range(0, RoundManager.Instance.possibleCodesForBigDoors.Length - 1);
                                     mls.LogInfo("RPC SENDING: \"TerminalCodeClientRpc\".");
-                                    TOTNetworking.TerminalCodeClientRpc(new TOT_TerminalCodeData { networkId = turret.GetComponentInChildren<TerminalAccessibleObject>().NetworkObjectId, code = randomCode });
+                                    Networking.TerminalCodeClientRpc(new TOT_TerminalCodeData { networkId = turret.GetComponentInChildren<TerminalAccessibleObject>().NetworkObjectId, code = randomCode });
                                 }
                                 break;  // Break after finding first matching prefab
                             }
@@ -1008,7 +1008,7 @@ namespace ToxicOmega_Tools
 
                                     int randomCode = UnityEngine.Random.Range(0, RoundManager.Instance.possibleCodesForBigDoors.Length - 1);
                                     mls.LogInfo("RPC SENDING: \"TerminalCodeClientRpc\".");
-                                    TOTNetworking.TerminalCodeClientRpc(new TOT_TerminalCodeData { networkId = spikes.GetComponentInChildren<TerminalAccessibleObject>().NetworkObjectId, code = randomCode });
+                                    Networking.TerminalCodeClientRpc(new TOT_TerminalCodeData { networkId = spikes.GetComponentInChildren<TerminalAccessibleObject>().NetworkObjectId, code = randomCode });
                                 }
                                 break;  // Break after finding first matching prefab
                             }

@@ -42,16 +42,16 @@ namespace ToxicOmega_Tools.Patches
         static void Update(PlayerControllerB __instance)
         {
             Vector3 localPos = (__instance.isPlayerDead && __instance.spectatedPlayerScript != null) ? __instance.spectatedPlayerScript.transform.position : __instance.transform.position;
-            TOTGUI.posLabelText = $"GodMode: {(Plugin.Instance.enableGod ? "Enabled" : "Disabled")}\nX: {Math.Round(localPos.x, 1)}\nY: {Math.Round(localPos.y, 1)}\nZ: {Math.Round(localPos.z, 1)}\n";
-            TOTGUI.itemListText = "";
-            TOTGUI.terminalObjListText = "";
-            TOTGUI.enemyListText = "";
+            GUI.posLabelText = $"GodMode: {(Plugin.Instance.enableGod ? "Enabled" : "Disabled")}\nX: {Math.Round(localPos.x, 1)}\nY: {Math.Round(localPos.y, 1)}\nZ: {Math.Round(localPos.z, 1)}\n";
+            GUI.itemListText = "";
+            GUI.terminalObjListText = "";
+            GUI.enemyListText = "";
 
             foreach (GrabbableObject obj in UnityEngine.Object.FindObjectsOfType<GrabbableObject>())
             {
                 if (Vector3.Distance(obj.transform.position, localPos) < 25.0f)
                 {
-                    TOTGUI.itemListText += $"{obj.itemProperties.itemName} ({obj.NetworkObjectId}){(obj.scrapValue > 0 ? $" - ${obj.scrapValue}" : "")}\n";
+                    GUI.itemListText += $"{obj.itemProperties.itemName} ({obj.NetworkObjectId}){(obj.scrapValue > 0 ? $" - ${obj.scrapValue}" : "")}\n";
                 }
             }
 
@@ -83,7 +83,7 @@ namespace ToxicOmega_Tools.Patches
                     else
                         objType += "Unknown";
 
-                    TOTGUI.terminalObjListText += $"{(!isActive || (terminalObj.isBigDoor && terminalObj.isDoorOpen) ? $"<color={(terminalObj.isBigDoor && terminalObj.isDoorOpen ? "lime" : "red")}>" : "")}{terminalObj.objectCode.ToUpper()}{(!isActive || (terminalObj.isBigDoor && terminalObj.isDoorOpen) ? "</color>" : "")} - {objType}\n";
+                    GUI.terminalObjListText += $"{(!isActive || (terminalObj.isBigDoor && terminalObj.isDoorOpen) ? $"<color={(terminalObj.isBigDoor && terminalObj.isDoorOpen ? "lime" : "red")}>" : "")}{terminalObj.objectCode.ToUpper()}{(!isActive || (terminalObj.isBigDoor && terminalObj.isDoorOpen) ? "</color>" : "")} - {objType}\n";
                 }
             }
 
@@ -91,7 +91,7 @@ namespace ToxicOmega_Tools.Patches
             {
                 if (Vector3.Distance(player.transform.position, localPos) < 25.0f && player.isPlayerControlled && !player.isPlayerDead)
                 {
-                    TOTGUI.enemyListText += $"{player.playerUsername} (#{player.playerClientId}{(Plugin.CheckPlayerIsHost(player) ? " - HOST" : "")})\n";
+                    GUI.enemyListText += $"{player.playerUsername} (#{player.playerClientId}{(Plugin.CheckPlayerIsHost(player) ? " - HOST" : "")})\n";
                 }
             }
 
@@ -99,7 +99,7 @@ namespace ToxicOmega_Tools.Patches
             {
                 if (Vector3.Distance(enemy.transform.position, localPos) < 25.0f)
                 {
-                    TOTGUI.enemyListText += $"{(enemy.isEnemyDead ? "<color=red>" : "")}{enemy.enemyType.enemyName}{(enemy.isEnemyDead ? "</color>" : "")} ({enemy.NetworkObjectId})\n";
+                    GUI.enemyListText += $"{(enemy.isEnemyDead ? "<color=red>" : "")}{enemy.enemyType.enemyName}{(enemy.isEnemyDead ? "</color>" : "")} ({enemy.NetworkObjectId})\n";
                 }
             }
         }
