@@ -743,7 +743,11 @@ namespace ToxicOmega_Tools
             for (int i = 0; i < mechs.Length; i++)
             {
                 if (mechs[i].inSpecialAnimationWithPlayer == player)
+                {
+                    mechs[i].CancelSpecialAnimations();
+                    mechs[i].CancelTorchPlayerAnimation();
                     mechs[i].GetComponentInChildren<EnemyAI>().SetEnemyStunned(true, 7.5f, player);
+            }
             }
 
             // Clears blood off of screen
