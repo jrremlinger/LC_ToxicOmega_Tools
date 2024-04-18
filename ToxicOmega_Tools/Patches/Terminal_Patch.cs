@@ -45,11 +45,41 @@ namespace ToxicOmega_Tools.Patches
                     }
                 }
             }
+
+            SetupSpawnablesList();
         }
 
         private static bool ListHasEnemy(List<SpawnableEnemyWithRarity> list, string enemyName)
         {
             return list.Any(e => e.enemyType.enemyName == enemyName);
+        }
+
+        private static void SetupSpawnablesList()
+        {
+            List<Item> itemList = StartOfRound.Instance.allItemsList.itemsList;
+            Plugin.allSpawnablesList = new List<SearchableGameObject>();
+
+            foreach (Item obj in itemList)
+            {
+                Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = obj.itemName, Id = itemList.IndexOf(obj), IsEnemy = false });
+            }
+
+            foreach (SpawnableEnemyWithRarity obj in Plugin.customInsideList)
+            {
+                Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = obj.enemyType.enemyName, Id = Plugin.customInsideList.IndexOf(obj), IsEnemy = true, IsOutsideEnemy = false });
+            }
+
+            foreach (SpawnableEnemyWithRarity obj in Plugin.customOutsideList)
+            {
+                Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = obj.enemyType.enemyName, Id = Plugin.customInsideList.IndexOf(obj), IsEnemy = true, IsOutsideEnemy = true });
+            }
+
+            Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = "Mine", Id = 0, IsEnemy = false, IsTrap = true });
+            Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = "LandMine", Id = 0, IsEnemy = false, IsTrap = true });
+            Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = "Turret", Id = 1, IsEnemy = false, IsTrap = true });
+            Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = "Spikes", Id = 2, IsEnemy = false, IsTrap = true });
+            Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = "RoofSpikes", Id = 2, IsEnemy = false, IsTrap = true });
+            Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = "CeilingSpikes", Id = 2, IsEnemy = false, IsTrap = true });
         }
     }
 }

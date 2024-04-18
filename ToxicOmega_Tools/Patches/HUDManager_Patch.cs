@@ -278,9 +278,9 @@ namespace ToxicOmega_Tools.Patches
                                     Vector3 destination = Plugin.GetPositionFromCommand("!", 3, localPlayerController.playerUsername);
                                     Networking.TPPlayerClientRpc(
                                         new TOT_TPPlayerData {
-                                            isInside = false,
-                                            playerClientId = localPlayerController.playerClientId,
-                                            position = destination });
+                                            IsInside = false,
+                                            PlayerClientId = localPlayerController.playerClientId,
+                                            Position = destination });
                                 }
                                 else
                                     Plugin.LogMessage($"Could not teleport {localPlayerController.playerUsername}!\nPlayer is dead!", true);
@@ -302,7 +302,7 @@ namespace ToxicOmega_Tools.Patches
                                 if (foundId && newPos != Vector3.zero)
                                 {
                                     Plugin.mls.LogInfo("RPC SENDING: \"TPGameObjectClientRpc\".");
-                                    Networking.TPGameObjectClientRpc(new TOT_TPGameObjectData { networkId = networkId, position = newPos });
+                                    Networking.TPGameObjectClientRpc(new TOT_TPGameObjectData { NetworkId = networkId, Position = newPos });
                                     break;
                                 }
                             }
@@ -317,9 +317,9 @@ namespace ToxicOmega_Tools.Patches
                                     Plugin.mls.LogInfo("RPC SENDING: \"TPPlayerClientRpc\".");
                                     Networking.TPPlayerClientRpc(
                                         new TOT_TPPlayerData { 
-                                            isInside = sendPlayerInside, 
-                                            playerClientId = playerTarget.playerClientId, 
-                                            position = Plugin.GetPositionFromCommand(command.Length > 2 ? command[2] : command[1], 3, playerTarget.playerUsername) });
+                                            IsInside = sendPlayerInside, 
+                                            PlayerClientId = playerTarget.playerClientId, 
+                                            Position = Plugin.GetPositionFromCommand(command.Length > 2 ? command[2] : command[1], 3, playerTarget.playerUsername) });
                                 }
                             }
                             break;
@@ -335,7 +335,7 @@ namespace ToxicOmega_Tools.Patches
                             string pageText = "";
 
                             for (int i = 0; i < Plugin.waypoints.Count; i++)
-                                pageText += $"@{i}{Plugin.waypoints[i].position}, ";
+                                pageText += $"@{i}{Plugin.waypoints[i].Position}, ";
 
                             pageText = pageText.TrimEnd(',', ' ') + ".";
                             HUDManager.Instance.DisplayTip("Waypoint List", pageText);
@@ -349,7 +349,7 @@ namespace ToxicOmega_Tools.Patches
                         {
                             bool wpInside = localPlayerController.isInsideFactory;
                             Vector3 wpPosition = localPlayerController.transform.position;
-                            Plugin.waypoints.Add(new Waypoint { isInside = wpInside, position = wpPosition });
+                            Plugin.waypoints.Add(new Waypoint { IsInside = wpInside, Position = wpPosition });
                             Plugin.LogMessage($"Waypoint @{Plugin.waypoints.Count - 1} created at {wpPosition}.");
                         }
                     }
@@ -364,7 +364,7 @@ namespace ToxicOmega_Tools.Patches
 
                         if (doorPosition != Vector3.zero)
                         {
-                            Plugin.waypoints.Add(new Waypoint { isInside = true, position = doorPosition });
+                            Plugin.waypoints.Add(new Waypoint { IsInside = true, Position = doorPosition });
                             Plugin.LogMessage($"Waypoint @{Plugin.waypoints.Count - 1} created at Main Entrance.");
                         }
                         else
@@ -376,7 +376,7 @@ namespace ToxicOmega_Tools.Patches
 
                         if (entrancePosition != Vector3.zero)
                         {
-                            Plugin.waypoints.Add(new Waypoint { isInside = true, position = entrancePosition });
+                            Plugin.waypoints.Add(new Waypoint { IsInside = true, Position = entrancePosition });
                             Plugin.LogMessage($"Waypoint @{Plugin.waypoints.Count - 1} created inside Main Entrance.");
                         }
                         else
@@ -577,7 +577,7 @@ namespace ToxicOmega_Tools.Patches
                         {
                             targetName = playerTarget.playerUsername;
                             Plugin.mls.LogInfo("RPC SENDING: \"HurtPlayerClientRpc\".");
-                            Networking.HurtPlayerClientRpc(new TOT_DamagePlayerData { playerClientId = playerTarget.playerClientId, damage = 999999 });
+                            Networking.HurtPlayerClientRpc(new TOT_DamagePlayerData { PlayerClientId = playerTarget.playerClientId, Damage = 999999 });
                             Plugin.LogMessage($"Killing {targetName}!");
                         }
                         else if (playerTarget != null && playerTarget.isPlayerDead)
@@ -614,7 +614,7 @@ namespace ToxicOmega_Tools.Patches
                         playerTarget = command.Length > 2 ? Plugin.GetPlayerFromString(command[2]) : localPlayerController;
                         if (playerTarget == null) { break; }
                         Plugin.mls.LogInfo("RPC SENDING: \"SyncScrapClientRpc\".");
-                        Networking.SyncSuitClientRpc(new TOT_SyncSuitData { playerId = playerTarget.playerClientId, suitId = selectedSuit });
+                        Networking.SyncSuitClientRpc(new TOT_SyncSuitData { PlayerId = playerTarget.playerClientId, SuitId = selectedSuit });
                         Plugin.LogMessage($"Setting {playerTarget.playerUsername} to {allSuits[selectedSuit].unlockableName}.");
                     }
                     break;

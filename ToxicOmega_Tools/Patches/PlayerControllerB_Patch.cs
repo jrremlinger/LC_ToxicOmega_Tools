@@ -31,8 +31,7 @@ namespace ToxicOmega_Tools.Patches
         [HarmonyPrefix]
         static bool OverrideDeath(PlayerControllerB __instance)
         {
-            PlayerControllerB localPlayer = GameNetworkManager.Instance.localPlayerController;
-            if (!Plugin.CheckPlayerIsHost(localPlayer))
+            if (!Plugin.CheckPlayerIsHost(__instance))
                 return true;
             return !Plugin.enableGod;
         }

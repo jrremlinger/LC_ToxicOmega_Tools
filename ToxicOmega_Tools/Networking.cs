@@ -52,7 +52,7 @@ namespace ToxicOmega_Tools.Patches
         public static void HurtPlayerClientRpc(TOT_DamagePlayerData data)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"HurtPlayerClientRpc\".");
-            Plugin.GetPlayerController(data.playerClientId).DamagePlayer(data.damage);
+            Plugin.GetPlayerController(data.PlayerClientId).DamagePlayer(data.Damage);
         }
 
         [ClientRpc]
@@ -66,21 +66,21 @@ namespace ToxicOmega_Tools.Patches
         public static void SyncScrapClientRpc(TOT_SyncScrapData data)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"SyncScrapClientRpc\".");
-            Plugin.GetGrabbableObject(data.itemId).SetScrapValue(data.scrapValue);
+            Plugin.GetGrabbableObject(data.ItemId).SetScrapValue(data.ScrapValue);
         }
 
         [ClientRpc]
         public static void SyncSuitClientRpc(TOT_SyncSuitData data)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"SyncSuitClientRpc\".");
-            UnlockableSuit.SwitchSuitForPlayer(Plugin.GetPlayerController(data.playerId), data.suitId);
+            UnlockableSuit.SwitchSuitForPlayer(Plugin.GetPlayerController(data.PlayerId), data.SuitId);
         }
 
         [ClientRpc]
         public static void TerminalCodeClientRpc(TOT_TerminalCodeData data)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"TerminalCodeClientRpc\".");
-            Plugin.GetTerminalAccessibleObject(data.networkId).SetCodeTo(data.code);
+            Plugin.GetTerminalAccessibleObject(data.NetworkId).SetCodeTo(data.Code);
         }
 
         [ClientRpc]
@@ -97,20 +97,20 @@ namespace ToxicOmega_Tools.Patches
         public static void TPGameObjectClientRpc(TOT_TPGameObjectData data)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"TPGameObjectClientRpc\".");
-            if (Plugin.GetEnemyAI(data.networkId) != null)
+            if (Plugin.GetEnemyAI(data.NetworkId) != null)
             {
-                EnemyAI enemy = Plugin.GetEnemyAI(data.networkId);
+                EnemyAI enemy = Plugin.GetEnemyAI(data.NetworkId);
                 enemy.agent.enabled = false;
-                enemy.transform.position = data.position;
+                enemy.transform.position = data.Position;
                 enemy.agent.enabled = true;
-                enemy.serverPosition = data.position;
-                enemy.SetEnemyOutside(data.position.y > -50);
+                enemy.serverPosition = data.Position;
+                enemy.SetEnemyOutside(data.Position.y > -50);
             }
-            else if (Plugin.GetGrabbableObject(data.networkId) != null)
+            else if (Plugin.GetGrabbableObject(data.NetworkId) != null)
             {
-                GrabbableObject foundItem = Plugin.GetGrabbableObject(data.networkId);
-                foundItem.transform.position = data.position;
-                foundItem.startFallingPosition = data.position;
+                GrabbableObject foundItem = Plugin.GetGrabbableObject(data.NetworkId);
+                foundItem.transform.position = data.Position;
+                foundItem.startFallingPosition = data.Position;
                 if (foundItem.transform.parent != null)
                     foundItem.startFallingPosition = foundItem.transform.parent.InverseTransformPoint(foundItem.startFallingPosition);
                 foundItem.FallToGround();
@@ -121,13 +121,13 @@ namespace ToxicOmega_Tools.Patches
         public static void TPPlayerClientRpc(TOT_TPPlayerData data)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"TPPlayerClientRpc\".");
-            Plugin.mls.LogInfo($"Found: {Plugin.GetPlayerController(data.playerClientId).playerUsername}, Sending Inside: {data.isInside}");
+            Plugin.mls.LogInfo($"Found: {Plugin.GetPlayerController(data.PlayerClientId).playerUsername}, Sending Inside: {data.IsInside}");
 
-            PlayerControllerB player = Plugin.GetPlayerController(data.playerClientId);
+            PlayerControllerB player = Plugin.GetPlayerController(data.PlayerClientId);
 
             if (player.isPlayerDead)
             {
-                DeadBodyInfo deadBody = StartOfRound.Instance.allPlayerScripts[data.playerClientId].deadBody;
+                DeadBodyInfo deadBody = StartOfRound.Instance.allPlayerScripts[data.PlayerClientId].deadBody;
                 if (deadBody != null)
                 {
                     deadBody.attachedTo = null;
@@ -137,17 +137,17 @@ namespace ToxicOmega_Tools.Patches
                     if (deadBody.grabBodyObject != null && deadBody.grabBodyObject.isHeld && deadBody.grabBodyObject.playerHeldBy != null)
                         deadBody.grabBodyObject.playerHeldBy.DropAllHeldItems();
                     deadBody.transform.SetParent(null, true);
-                    deadBody.SetRagdollPositionSafely(data.position, true);
+                    deadBody.SetRagdollPositionSafely(data.Position, true);
                 }
                 return;
             }
 
-            player.transform.position = data.position;
-            if (data.position.y >= -50)
-                data.isInside = false;
-            else if (data.position.y <= -100)
-                data.isInside = true;
-            Plugin.PlayerTeleportEffects(data.playerClientId, data.isInside);
+            player.transform.position = data.Position;
+            if (data.Position.y >= -50)
+                data.IsInside = false;
+            else if (data.Position.y <= -100)
+                data.IsInside = true;
+            Plugin.PlayerTeleportEffects(data.PlayerClientId, data.IsInside);
         }
 
     }
@@ -155,51 +155,51 @@ namespace ToxicOmega_Tools.Patches
     public struct TOT_DamagePlayerData
     {
         [OdinSerialize]
-        public ulong playerClientId { get; set; }
+        public ulong PlayerClientId { get; set; }
         [OdinSerialize]
-        public int damage { get; set; }
+        public int Damage { get; set; }
     }
 
     public struct TOT_SyncScrapData
     {
         [OdinSerialize]
-        public ulong itemId { get; set; }
+        public ulong ItemId { get; set; }
         [OdinSerialize]
-        public int scrapValue { get; set; }
+        public int ScrapValue { get; set; }
     }
     
     public struct TOT_SyncSuitData
     {
         [OdinSerialize]
-        public ulong playerId { get; set; }
+        public ulong PlayerId { get; set; }
         [OdinSerialize]
-        public int suitId { get; set; }
+        public int SuitId { get; set; }
     }
 
     public struct TOT_TerminalCodeData
     {
         [OdinSerialize]
-        public ulong networkId { get; set; }
+        public ulong NetworkId { get; set; }
         [OdinSerialize]
-        public int code { get; set; }
+        public int Code { get; set; }
     }
 
     public struct TOT_TPGameObjectData
     {
         [OdinSerialize]
-        public ulong networkId { get; set; }
+        public ulong NetworkId { get; set; }
         [OdinSerialize]
-        public Vector3 position { get; set; }
+        public Vector3 Position { get; set; }
     }
     
     public struct TOT_TPPlayerData
     {
         [OdinSerialize]
-        public bool isInside { get; set; }
+        public bool IsInside { get; set; }
         [OdinSerialize]
-        public ulong playerClientId { get; set; }
+        public ulong PlayerClientId { get; set; }
         [OdinSerialize]
-        public Vector3 position { get; set; }
+        public Vector3 Position { get; set; }
     }
 
 }

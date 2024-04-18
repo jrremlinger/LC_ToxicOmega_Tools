@@ -27,6 +27,7 @@ namespace ToxicOmega_Tools
         internal static GUI menu;
         internal static List<SpawnableEnemyWithRarity> customInsideList = new List<SpawnableEnemyWithRarity>();
         internal static List<SpawnableEnemyWithRarity> customOutsideList = new List<SpawnableEnemyWithRarity>();
+        internal static List<SearchableGameObject> allSpawnablesList = new List<SearchableGameObject>();
         internal static List<Waypoint> waypoints = new List<Waypoint>();
         internal static System.Random shipTeleporterSeed;
         internal static bool enableGod = false;
@@ -110,7 +111,7 @@ namespace ToxicOmega_Tools
             else
             {
                 Item foundItem = allItemsList.FirstOrDefault(item => item.itemName.ToLower().StartsWith(searchString.Replace("_", " ")));
-                
+
                 if (foundItem != null)
                     return allItemsList.IndexOf(foundItem);
             }
@@ -151,7 +152,7 @@ namespace ToxicOmega_Tools
             else
             {
                 PlayerControllerB foundPlayer = allPlayerScripts.FirstOrDefault(player => player.playerUsername.ToLower().StartsWith(searchString.ToLower()));
-                
+
                 if (foundPlayer != null)
                     return foundPlayer;
                 else
@@ -211,8 +212,8 @@ namespace ToxicOmega_Tools
                             if (wpIndex < waypoints.Count)
                             {
                                 Waypoint wp = waypoints[wpIndex];
-                                HUDManager_Patch.sendPlayerInside = wp.isInside;
-                                position = wp.position;
+                                HUDManager_Patch.sendPlayerInside = wp.IsInside;
+                                position = wp.Position;
                             }
                             else
                             {
@@ -279,7 +280,7 @@ namespace ToxicOmega_Tools
                             if (wpIndex < waypoints.Count)
                             {
                                 Waypoint wp = waypoints[wpIndex];
-                                position = wp.position;
+                                position = wp.Position;
                             }
                             else
                             {
@@ -344,7 +345,7 @@ namespace ToxicOmega_Tools
                             if (wpIndex < waypoints.Count)
                             {
                                 Waypoint wp = waypoints[wpIndex];
-                                position = wp.position;
+                                position = wp.Position;
                             }
                             else
                             {
@@ -427,8 +428,8 @@ namespace ToxicOmega_Tools
                             if (wpIndex < waypoints.Count)
                             {
                                 Waypoint wp = waypoints[wpIndex];
-                                HUDManager_Patch.sendPlayerInside = wp.isInside;
-                                position = wp.position;
+                                HUDManager_Patch.sendPlayerInside = wp.IsInside;
+                                position = wp.Position;
                                 LogMessage($"Teleported {targetName} to Waypoint @{wpIndex}.");
                             }
                             else
@@ -499,7 +500,7 @@ namespace ToxicOmega_Tools
                             if (wpIndex < waypoints.Count)
                             {
                                 Waypoint wp = waypoints[wpIndex];
-                                position = wp.position;
+                                position = wp.Position;
                             }
                             else
                             {
@@ -563,7 +564,7 @@ namespace ToxicOmega_Tools
 
         public static void LogMessage(string message, bool isError = false)
         {
-            string headerText = string.Empty;
+            string headerText;
 
             if (isError)
             {
@@ -584,8 +585,7 @@ namespace ToxicOmega_Tools
             PlayerControllerB playerController = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(playerClientId));
 
             // Redirects enemies in animation with player, unsure if actually working
-            if (playerController.redirectToEnemy != null)
-                playerController.redirectToEnemy.ShipTeleportEnemy();
+            playerController.redirectToEnemy?.ShipTeleportEnemy();
 
             SavePlayer(playerController);
 
@@ -601,8 +601,8 @@ namespace ToxicOmega_Tools
             playerController.beamUpParticle.Play();
             playerController.beamOutBuildupParticle.Play();
         }
-        
-        public static void RevivePlayer (ulong playerClientId)
+
+        public static void RevivePlayer(ulong playerClientId)
         {
             PlayerControllerB localPlayerController = StartOfRound.Instance.localPlayerController;
             PlayerControllerB playerController = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(playerClientId));
@@ -692,9 +692,9 @@ namespace ToxicOmega_Tools
             playerController.playerBodyAnimator.SetBool("Limp", false);
             playerController.health = 100;
             HUDManager.Instance.UpdateHealthUI(100, false);
-            playerController.spectatedPlayerScript = (PlayerControllerB) null;
+            playerController.spectatedPlayerScript = (PlayerControllerB)null;
             HUDManager.Instance.audioListenerLowPass.enabled = false;
-            Debug.Log((object) "Reviving players H");
+            Debug.Log((object)"Reviving players H");
             round.SetSpectateCameraToGameOverMode(false, playerController);
             round.livingPlayers += 1;
             round.allPlayersDead = false;
@@ -706,7 +706,7 @@ namespace ToxicOmega_Tools
                 HUDManager.Instance.HideHUD(false);
             }
         }
-        
+
         public static void SavePlayer(PlayerControllerB player)
         {
             // Knocks any Centipedes off players head
@@ -716,7 +716,7 @@ namespace ToxicOmega_Tools
                 if (centipedes[i].clingingToPlayer == player)
                     centipedes[i].HitEnemy(0, player, true);
             }
-            
+
             // Makes forest giant drop player and stuns them
             ForestGiantAI[] giants = FindObjectsByType<ForestGiantAI>(FindObjectsSortMode.None);
             for (int i = 0; i < giants.Length; i++)
@@ -847,9 +847,7 @@ namespace ToxicOmega_Tools
                     // The Shotgun (and maybe other items I haven't noticed) have their max and min values backwards causing an index error without this
                     if (allItemsList[itemId].minValue > allItemsList[itemId].maxValue)
                     {
-                        int temp = allItemsList[itemId].minValue;
-                        allItemsList[itemId].minValue = allItemsList[itemId].maxValue;
-                        allItemsList[itemId].maxValue = temp;
+                        (allItemsList[itemId].maxValue, allItemsList[itemId].minValue) = (allItemsList[itemId].minValue, allItemsList[itemId].maxValue);
                     }
 
                     int setValue = (int)(double)(value == -1 ? UnityEngine.Random.Range(allItemsList[itemId].minValue, allItemsList[itemId].maxValue) * RoundManager.Instance.scrapValueMultiplier : value);
@@ -861,10 +859,10 @@ namespace ToxicOmega_Tools
                     item.GetComponent<NetworkObject>().Spawn();
 
                     mls.LogInfo("RPC SENDING: \"SyncScrapClientRpc\".");
-                    Networking.SyncScrapClientRpc(new TOT_SyncScrapData { itemId = item.GetComponent<GrabbableObject>().NetworkObjectId, scrapValue = setValue });
+                    Networking.SyncScrapClientRpc(new TOT_SyncScrapData { ItemId = item.GetComponent<GrabbableObject>().NetworkObjectId, ScrapValue = setValue });
 
                     mls.LogInfo("RPC SENDING: \"TPGameObjectClientRpc\".");
-                    Networking.TPGameObjectClientRpc(new TOT_TPGameObjectData { networkId = item.GetComponent<GrabbableObject>().NetworkObjectId, position = position });
+                    Networking.TPGameObjectClientRpc(new TOT_TPGameObjectData { NetworkId = item.GetComponent<GrabbableObject>().NetworkObjectId, Position = position });
 
                     // RPC to set Shotgun shells loaded to be two for all players
                     if (itemId == 59)
@@ -936,7 +934,7 @@ namespace ToxicOmega_Tools
 
                                     int randomCode = UnityEngine.Random.Range(0, RoundManager.Instance.possibleCodesForBigDoors.Length - 1);
                                     mls.LogInfo("RPC SENDING: \"TerminalCodeClientRpc\".");
-                                    Networking.TerminalCodeClientRpc(new TOT_TerminalCodeData { networkId = mine.GetComponentInChildren<TerminalAccessibleObject>().NetworkObjectId, code = randomCode });
+                                    Networking.TerminalCodeClientRpc(new TOT_TerminalCodeData { NetworkId = mine.GetComponentInChildren<TerminalAccessibleObject>().NetworkObjectId, Code = randomCode });
                                 }
                                 break;  // Break after finding first matching prefab
                             }
@@ -964,7 +962,7 @@ namespace ToxicOmega_Tools
 
                                     int randomCode = UnityEngine.Random.Range(0, RoundManager.Instance.possibleCodesForBigDoors.Length - 1);
                                     mls.LogInfo("RPC SENDING: \"TerminalCodeClientRpc\".");
-                                    Networking.TerminalCodeClientRpc(new TOT_TerminalCodeData { networkId = turret.GetComponentInChildren<TerminalAccessibleObject>().NetworkObjectId, code = randomCode });
+                                    Networking.TerminalCodeClientRpc(new TOT_TerminalCodeData { NetworkId = turret.GetComponentInChildren<TerminalAccessibleObject>().NetworkObjectId, Code = randomCode });
                                 }
                                 break;  // Break after finding first matching prefab
                             }
@@ -990,8 +988,7 @@ namespace ToxicOmega_Tools
 
                                     if (targetString == "" || targetString == "$")
                                     {
-                                        RaycastHit hitInfo;
-                                        if (Physics.Raycast(spikes.transform.position, -spikes.transform.forward, out hitInfo, 100f, StartOfRound.Instance.collidersAndRoomMaskAndDefault, QueryTriggerInteraction.Ignore))
+                                        if (Physics.Raycast(spikes.transform.position, -spikes.transform.forward, out RaycastHit hitInfo, 100f, StartOfRound.Instance.collidersAndRoomMaskAndDefault, QueryTriggerInteraction.Ignore))
                                         {
                                             spikes.transform.position = hitInfo.point;
                                             {
@@ -1006,7 +1003,7 @@ namespace ToxicOmega_Tools
 
                                     int randomCode = UnityEngine.Random.Range(0, RoundManager.Instance.possibleCodesForBigDoors.Length - 1);
                                     mls.LogInfo("RPC SENDING: \"TerminalCodeClientRpc\".");
-                                    Networking.TerminalCodeClientRpc(new TOT_TerminalCodeData { networkId = spikes.GetComponentInChildren<TerminalAccessibleObject>().NetworkObjectId, code = randomCode });
+                                    Networking.TerminalCodeClientRpc(new TOT_TerminalCodeData { NetworkId = spikes.GetComponentInChildren<TerminalAccessibleObject>().NetworkObjectId, Code = randomCode });
                                 }
                                 break;  // Break after finding first matching prefab
                             }
@@ -1022,9 +1019,18 @@ namespace ToxicOmega_Tools
         }
     }
 
+    public struct SearchableGameObject
+    {
+        public string Name {  get; set; }
+        public int Id { get; set; }
+        public bool IsEnemy { get; set; }
+        public bool IsOutsideEnemy { get; set; }
+        public bool IsTrap {  get; set; }
+    }
+
     public struct Waypoint
     {
-        public bool isInside { get; set; }
-        public Vector3 position { get; set; }
+        public bool IsInside { get; set; }
+        public Vector3 Position { get; set; }
     }
 }
