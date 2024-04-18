@@ -24,13 +24,12 @@ namespace ToxicOmega_Tools
 
         internal static Plugin Instance;
         internal static ManualLogSource mls;
-        internal GUI menu;
-
-        internal List<SpawnableEnemyWithRarity> customInsideList = new List<SpawnableEnemyWithRarity>();
-        internal List<SpawnableEnemyWithRarity> customOutsideList = new List<SpawnableEnemyWithRarity>();
-        internal List<Waypoint> waypoints = new List<Waypoint>();
-        internal System.Random shipTeleporterSeed;
-        internal bool enableGod = false;
+        internal static GUI menu;
+        internal static List<SpawnableEnemyWithRarity> customInsideList = new List<SpawnableEnemyWithRarity>();
+        internal static List<SpawnableEnemyWithRarity> customOutsideList = new List<SpawnableEnemyWithRarity>();
+        internal static List<Waypoint> waypoints = new List<Waypoint>();
+        internal static System.Random shipTeleporterSeed;
+        internal static bool enableGod = false;
 
         void Awake()
         {
@@ -42,11 +41,11 @@ namespace ToxicOmega_Tools
             harmony.PatchAll();
 
             // Patch the GUI
-            var gameObject = new GameObject("TOTGUI");
+            var gameObject = new GameObject("GUI");
             DontDestroyOnLoad(gameObject);
             gameObject.hideFlags = HideFlags.HideAndDontSave;
             gameObject.AddComponent<GUI>();
-            menu = (GUI)gameObject.GetComponent("TOTGUI");
+            menu = (GUI)gameObject.GetComponent("GUI");
         }
 
         public static bool CheckPlayerIsHost(PlayerControllerB player)
@@ -79,8 +78,8 @@ namespace ToxicOmega_Tools
         public static int GetEnemyFromString(string searchString)
         {
             List<SpawnableEnemyWithRarity> allEnemiesList = new List<SpawnableEnemyWithRarity>();
-            allEnemiesList.AddRange(Instance.customOutsideList);
-            allEnemiesList.AddRange(Instance.customInsideList);
+            allEnemiesList.AddRange(customOutsideList);
+            allEnemiesList.AddRange(customInsideList);
 
             if (int.TryParse(searchString, out int enemyId))
             {
@@ -209,9 +208,9 @@ namespace ToxicOmega_Tools
                     {
                         if (int.TryParse(input.Substring(1), out int wpIndex))
                         {
-                            if (wpIndex < Instance.waypoints.Count)
+                            if (wpIndex < waypoints.Count)
                             {
-                                Waypoint wp = Instance.waypoints[wpIndex];
+                                Waypoint wp = waypoints[wpIndex];
                                 HUDManager_Patch.sendPlayerInside = wp.isInside;
                                 position = wp.position;
                             }
@@ -277,9 +276,9 @@ namespace ToxicOmega_Tools
                     {
                         if (int.TryParse(input.Substring(1), out int wpIndex))
                         {
-                            if (wpIndex < Instance.waypoints.Count)
+                            if (wpIndex < waypoints.Count)
                             {
-                                Waypoint wp = Instance.waypoints[wpIndex];
+                                Waypoint wp = waypoints[wpIndex];
                                 position = wp.position;
                             }
                             else
@@ -342,9 +341,9 @@ namespace ToxicOmega_Tools
                     {
                         if (int.TryParse(input.Substring(1), out int wpIndex))
                         {
-                            if (wpIndex < Instance.waypoints.Count)
+                            if (wpIndex < waypoints.Count)
                             {
-                                Waypoint wp = Instance.waypoints[wpIndex];
+                                Waypoint wp = waypoints[wpIndex];
                                 position = wp.position;
                             }
                             else
@@ -387,7 +386,7 @@ namespace ToxicOmega_Tools
                         {
                             HUDManager_Patch.sendPlayerInside = true;
 
-                            if (Instance.shipTeleporterSeed == null)
+                            if (shipTeleporterSeed == null)
                             {
                                 mls.LogInfo("Teleport Seed: Random");
                                 Vector3 position2 = currentRound.insideAINodes[UnityEngine.Random.Range(0, currentRound.insideAINodes.Length)].transform.position;
@@ -396,8 +395,8 @@ namespace ToxicOmega_Tools
                             else
                             {
                                 mls.LogInfo("Teleport Seed: Inverse-Teleporter");
-                                Vector3 position2 = currentRound.insideAINodes[Instance.shipTeleporterSeed.Next(0, currentRound.insideAINodes.Length)].transform.position;
-                                position = currentRound.GetRandomNavMeshPositionInBoxPredictable(position2, randomSeed: Instance.shipTeleporterSeed);
+                                Vector3 position2 = currentRound.insideAINodes[shipTeleporterSeed.Next(0, currentRound.insideAINodes.Length)].transform.position;
+                                position = currentRound.GetRandomNavMeshPositionInBoxPredictable(position2, randomSeed: shipTeleporterSeed);
                             }
 
                             LogMessage($"Teleported {targetName} to random location within factory.");
@@ -425,9 +424,9 @@ namespace ToxicOmega_Tools
                     {
                         if (int.TryParse(input.Substring(1), out int wpIndex))
                         {
-                            if (wpIndex < Instance.waypoints.Count)
+                            if (wpIndex < waypoints.Count)
                             {
-                                Waypoint wp = Instance.waypoints[wpIndex];
+                                Waypoint wp = waypoints[wpIndex];
                                 HUDManager_Patch.sendPlayerInside = wp.isInside;
                                 position = wp.position;
                                 LogMessage($"Teleported {targetName} to Waypoint @{wpIndex}.");
@@ -497,9 +496,9 @@ namespace ToxicOmega_Tools
                     {
                         if (int.TryParse(input.Substring(1), out int wpIndex))
                         {
-                            if (wpIndex < Instance.waypoints.Count)
+                            if (wpIndex < waypoints.Count)
                             {
-                                Waypoint wp = Instance.waypoints[wpIndex];
+                                Waypoint wp = waypoints[wpIndex];
                                 position = wp.position;
                             }
                             else
@@ -747,7 +746,7 @@ namespace ToxicOmega_Tools
                     mechs[i].CancelSpecialAnimations();
                     mechs[i].CancelTorchPlayerAnimation();
                     mechs[i].GetComponentInChildren<EnemyAI>().SetEnemyStunned(true, 7.5f, player);
-            }
+                }
             }
 
             // Clears blood off of screen
@@ -759,10 +758,10 @@ namespace ToxicOmega_Tools
         {
             bool inside = false;
             List<SpawnableEnemyWithRarity> allEnemiesList = new List<SpawnableEnemyWithRarity>();
-            allEnemiesList.AddRange(Instance.customOutsideList);
-            allEnemiesList.AddRange(Instance.customInsideList);
+            allEnemiesList.AddRange(customOutsideList);
+            allEnemiesList.AddRange(customInsideList);
 
-            if (enemyId > Instance.customOutsideList.Count)
+            if (enemyId > customOutsideList.Count)
                 inside = true;
 
             if (GetPositionFromCommand(targetString, inside ? 2 : 1) == Vector3.zero)

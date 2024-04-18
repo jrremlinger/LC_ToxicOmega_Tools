@@ -15,7 +15,7 @@ namespace ToxicOmega_Tools.Patches
         [HarmonyPostfix]
         private static void LoadNewMoon()
         {
-            Plugin.Instance.waypoints.Clear();
+            Plugin.waypoints.Clear();
 
             foreach (GameObject obj in UnityEngine.Object.FindObjectsOfType<GameObject>().Where(obj => obj.name == "Landmine(Clone)" || obj.name == "TurretContainer(Clone)" || obj.name == "SpikeRoofTrapHazard(Clone)"))
             {

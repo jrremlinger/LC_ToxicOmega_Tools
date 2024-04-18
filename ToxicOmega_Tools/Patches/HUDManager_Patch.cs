@@ -61,8 +61,8 @@ namespace ToxicOmega_Tools.Patches
             __instance.tipsPanelCoroutine = null;   // Clears vanilla tip coroutine to prevent Plugin.LogMessage() from being blocked
 
             allEnemiesList = new List<SpawnableEnemyWithRarity>();
-            allEnemiesList.AddRange(Plugin.Instance.customOutsideList);
-            allEnemiesList.AddRange(Plugin.Instance.customInsideList);
+            allEnemiesList.AddRange(Plugin.customOutsideList);
+            allEnemiesList.AddRange(Plugin.customInsideList);
 
             bool flag = true;   // Chat will not be sent if flag = true; If no command prefix is recognized it will be set to false
             string chatMessage = __instance.chatTextField.text;
@@ -330,12 +330,12 @@ namespace ToxicOmega_Tools.Patches
                 case "waypoints":
                     if (command.Length == 1)
                     {
-                        if (Plugin.Instance.waypoints.Count > 0)
+                        if (Plugin.waypoints.Count > 0)
                         {
                             string pageText = "";
 
-                            for (int i = 0; i < Plugin.Instance.waypoints.Count; i++)
-                                pageText += $"@{i}{Plugin.Instance.waypoints[i].position}, ";
+                            for (int i = 0; i < Plugin.waypoints.Count; i++)
+                                pageText += $"@{i}{Plugin.waypoints[i].position}, ";
 
                             pageText = pageText.TrimEnd(',', ' ') + ".";
                             HUDManager.Instance.DisplayTip("Waypoint List", pageText);
@@ -349,13 +349,13 @@ namespace ToxicOmega_Tools.Patches
                         {
                             bool wpInside = localPlayerController.isInsideFactory;
                             Vector3 wpPosition = localPlayerController.transform.position;
-                            Plugin.Instance.waypoints.Add(new Waypoint { isInside = wpInside, position = wpPosition });
-                            Plugin.LogMessage($"Waypoint @{Plugin.Instance.waypoints.Count - 1} created at {wpPosition}.");
+                            Plugin.waypoints.Add(new Waypoint { isInside = wpInside, position = wpPosition });
+                            Plugin.LogMessage($"Waypoint @{Plugin.waypoints.Count - 1} created at {wpPosition}.");
                         }
                     }
                     else if ("clear".StartsWith(command[1]))
                     {
-                        Plugin.Instance.waypoints.Clear();
+                        Plugin.waypoints.Clear();
                         Plugin.LogMessage($"Waypoints cleared.");
                     }
                     else if ("door".StartsWith(command[1]))
@@ -364,8 +364,8 @@ namespace ToxicOmega_Tools.Patches
 
                         if (doorPosition != Vector3.zero)
                         {
-                            Plugin.Instance.waypoints.Add(new Waypoint { isInside = true, position = doorPosition });
-                            Plugin.LogMessage($"Waypoint @{Plugin.Instance.waypoints.Count - 1} created at Main Entrance.");
+                            Plugin.waypoints.Add(new Waypoint { isInside = true, position = doorPosition });
+                            Plugin.LogMessage($"Waypoint @{Plugin.waypoints.Count - 1} created at Main Entrance.");
                         }
                         else
                             Plugin.LogMessage("Unable to find Main Entrance!", true);
@@ -376,8 +376,8 @@ namespace ToxicOmega_Tools.Patches
 
                         if (entrancePosition != Vector3.zero)
                         {
-                            Plugin.Instance.waypoints.Add(new Waypoint { isInside = true, position = entrancePosition });
-                            Plugin.LogMessage($"Waypoint @{Plugin.Instance.waypoints.Count - 1} created inside Main Entrance.");
+                            Plugin.waypoints.Add(new Waypoint { isInside = true, position = entrancePosition });
+                            Plugin.LogMessage($"Waypoint @{Plugin.waypoints.Count - 1} created inside Main Entrance.");
                         }
                         else
                             Plugin.LogMessage("Unable to find Main Entrance!", true);
@@ -408,8 +408,8 @@ namespace ToxicOmega_Tools.Patches
                 case "gm":
                 case "god":
                 case "godmode":
-                    Plugin.Instance.enableGod = !Plugin.Instance.enableGod;
-                    Plugin.LogMessage($"GodMode toggled {(Plugin.Instance.enableGod ? "on!" : "off.")}");
+                    Plugin.enableGod = !Plugin.enableGod;
+                    Plugin.LogMessage($"GodMode toggled {(Plugin.enableGod ? "on!" : "off.")}");
                     break;
                 case "co":
                 case "code":

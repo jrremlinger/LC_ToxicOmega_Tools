@@ -14,8 +14,8 @@ namespace ToxicOmega_Tools.Patches
         [HarmonyPostfix]
         private static void Disconnect()
         {
-            Plugin.Instance.enableGod = false;
-            Plugin.Instance.waypoints.Clear();
+            Plugin.enableGod = false;
+            Plugin.waypoints.Clear();
             GUI.visible = false;
         }
     }

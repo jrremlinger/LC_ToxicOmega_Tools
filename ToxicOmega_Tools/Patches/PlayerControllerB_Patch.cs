@@ -34,7 +34,7 @@ namespace ToxicOmega_Tools.Patches
             PlayerControllerB localPlayer = GameNetworkManager.Instance.localPlayerController;
             if (!Plugin.CheckPlayerIsHost(localPlayer))
                 return true;
-            return !Plugin.Instance.enableGod;
+            return !Plugin.enableGod;
         }
 
         [HarmonyPatch(nameof(PlayerControllerB.Update))]
@@ -42,7 +42,7 @@ namespace ToxicOmega_Tools.Patches
         static void Update(PlayerControllerB __instance)
         {
             Vector3 localPos = (__instance.isPlayerDead && __instance.spectatedPlayerScript != null) ? __instance.spectatedPlayerScript.transform.position : __instance.transform.position;
-            GUI.posLabelText = $"GodMode: {(Plugin.Instance.enableGod ? "Enabled" : "Disabled")}\nX: {Math.Round(localPos.x, 1)}\nY: {Math.Round(localPos.y, 1)}\nZ: {Math.Round(localPos.z, 1)}\n";
+            GUI.posLabelText = $"GodMode: {(Plugin.enableGod ? "Enabled" : "Disabled")}\nX: {Math.Round(localPos.x, 1)}\nY: {Math.Round(localPos.y, 1)}\nZ: {Math.Round(localPos.z, 1)}\n";
             GUI.itemListText = "";
             GUI.terminalObjListText = "";
             GUI.enemyListText = "";

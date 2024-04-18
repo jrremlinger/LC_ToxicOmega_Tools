@@ -16,32 +16,32 @@ namespace ToxicOmega_Tools.Patches
         [HarmonyPostfix]
         static void GetAllEnemies(ref SelectableLevel[] ___moonsCatalogueList)
         {
-            Plugin.Instance.customOutsideList = new List<SpawnableEnemyWithRarity>();
-            Plugin.Instance.customInsideList = new List<SpawnableEnemyWithRarity>();
+            Plugin.customOutsideList = new List<SpawnableEnemyWithRarity>();
+            Plugin.customInsideList = new List<SpawnableEnemyWithRarity>();
 
             foreach (SelectableLevel moon in ___moonsCatalogueList)
             {
                 foreach (SpawnableEnemyWithRarity daytimeEnemy in moon.DaytimeEnemies)
                 {
-                    if (!ListHasEnemy(Plugin.Instance.customOutsideList, daytimeEnemy.enemyType.enemyName))
+                    if (!ListHasEnemy(Plugin.customOutsideList, daytimeEnemy.enemyType.enemyName))
                     {
-                        Plugin.Instance.customOutsideList.Add(daytimeEnemy);
+                        Plugin.customOutsideList.Add(daytimeEnemy);
                     }
                 }
 
                 foreach (SpawnableEnemyWithRarity outsideEnemy in moon.OutsideEnemies)
                 {
-                    if (!ListHasEnemy(Plugin.Instance.customOutsideList, outsideEnemy.enemyType.enemyName))
+                    if (!ListHasEnemy(Plugin.customOutsideList, outsideEnemy.enemyType.enemyName))
                     {
-                        Plugin.Instance.customOutsideList.Add(outsideEnemy);
+                        Plugin.customOutsideList.Add(outsideEnemy);
                     }
                 }
 
                 foreach (SpawnableEnemyWithRarity insideEnemy in moon.Enemies)
                 {
-                    if (!ListHasEnemy(Plugin.Instance.customInsideList, insideEnemy.enemyType.enemyName))
+                    if (!ListHasEnemy(Plugin.customInsideList, insideEnemy.enemyType.enemyName))
                     {
-                        Plugin.Instance.customInsideList.Add(insideEnemy);
+                        Plugin.customInsideList.Add(insideEnemy);
                     }
                 }
             }
