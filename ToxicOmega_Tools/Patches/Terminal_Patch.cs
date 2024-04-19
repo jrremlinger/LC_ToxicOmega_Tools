@@ -61,12 +61,12 @@ namespace ToxicOmega_Tools.Patches
 
             foreach (Item obj in itemList)
             {
-                Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = obj.itemName, Id = itemList.IndexOf(obj), IsEnemy = false });
+                Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = obj.itemName, Id = itemList.IndexOf(obj) });
             }
 
             foreach (SpawnableEnemyWithRarity obj in Plugin.customInsideList)
             {
-                Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = obj.enemyType.enemyName, Id = Plugin.customInsideList.IndexOf(obj), IsEnemy = true, IsOutsideEnemy = false });
+                Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = obj.enemyType.enemyName, Id = Plugin.customInsideList.IndexOf(obj), IsEnemy = true });
             }
 
             foreach (SpawnableEnemyWithRarity obj in Plugin.customOutsideList)
@@ -74,12 +74,12 @@ namespace ToxicOmega_Tools.Patches
                 Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = obj.enemyType.enemyName, Id = Plugin.customInsideList.IndexOf(obj), IsEnemy = true, IsOutsideEnemy = true });
             }
 
-            Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = "Mine", Id = 0, IsEnemy = false, IsTrap = true });
-            Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = "LandMine", Id = 0, IsEnemy = false, IsTrap = true });
-            Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = "Turret", Id = 1, IsEnemy = false, IsTrap = true });
-            Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = "Spikes", Id = 2, IsEnemy = false, IsTrap = true });
-            Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = "RoofSpikes", Id = 2, IsEnemy = false, IsTrap = true });
-            Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = "CeilingSpikes", Id = 2, IsEnemy = false, IsTrap = true });
+            Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = "Mine", Id = 0, IsTrap = true });
+            Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = "LandMine", Id = 0, IsTrap = true });
+            Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = "Turret", Id = 1, IsTrap = true });
+            Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = "Spikes", Id = 2, IsTrap = true });
+            Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = "RoofSpikes", Id = 2, IsTrap = true });
+            Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = "CeilingSpikes", Id = 2, IsTrap = true });
         }
     }
 }
