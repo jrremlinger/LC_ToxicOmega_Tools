@@ -135,7 +135,6 @@ namespace ToxicOmega_Tools
             Vector3 position = Vector3.zero;
             bool isPlayerTarget = false;
             bool isTP = false;
-            Vector3 position = Vector3.zero;
             Terminal terminal = FindObjectOfType<Terminal>();
             RoundManager currentRound = RoundManager.Instance;
             RandomScrapSpawn[] randomScrapLocations = FindObjectsOfType<RandomScrapSpawn>();
@@ -143,22 +142,22 @@ namespace ToxicOmega_Tools
 
             if (input == "" || input == "$")
             {
-            switch (positionType)
-            {
-                case 0:
+                switch (positionType)
+                {
+                    case 0:
                         if (input == "")
-                    {
+                        {
                             if (localPlayerController.isPlayerDead)
-                        {
+                            {
                                 if (localPlayerController.spectatedPlayerScript != null)
-                        {
+                                {
                                     position = localPlayerController.spectatedPlayerScript.transform.position;
-                        }
-                        else
-                        {
+                                }
+                                else
+                                {
                                     position = StartOfRound.Instance.allPlayerScripts[localPlayerController.playerClientId].deadBody.transform.position;
-                        }
-                    }
+                                }
+                            }
                             else
                             {
                                 position = localPlayerController.transform.position;
@@ -167,17 +166,17 @@ namespace ToxicOmega_Tools
                         else
                         {
                             if (randomScrapLocations.Length > 0)
-                    {
+                            {
                                 position = randomScrapLocations[UnityEngine.Random.Range(0, randomScrapLocations.Length)].transform.position;
-                    }
-                    else
-                    {
+                            }
+                            else
+                            {
                                 LogMessage($"No RandomScrapSpawn in this area!", true);
                                 return Vector3.zero;
+                            }
                         }
-                        }
-                    break;
-                case 1:
+                        break;
+                    case 1:
                         if (currentRound.outsideAINodes.Length > 0 && currentRound.outsideAINodes[0] != null)
                         {
                             position = currentRound.outsideAINodes[UnityEngine.Random.Range(0, currentRound.outsideAINodes.Length)].transform.position;
@@ -187,8 +186,8 @@ namespace ToxicOmega_Tools
                             LogMessage($"No outsideAINodes in this area!", true);
                             return Vector3.zero;
                         }
-                    break;
-                case 2:
+                        break;
+                    case 2:
                         if (currentRound.allEnemyVents.Length > 0 && currentRound.allEnemyVents[0] != null)
                         {
                             position = currentRound.allEnemyVents[UnityEngine.Random.Range(0, currentRound.allEnemyVents.Length)].floorNode.position;
@@ -198,8 +197,8 @@ namespace ToxicOmega_Tools
                             LogMessage($"No allEnemyVents in this area!", true);
                             return Vector3.zero;
                         }
-                    break;
-                case 3:
+                        break;
+                    case 3:
                         if (currentRound.insideAINodes.Length > 0 && currentRound.insideAINodes[0] != null)
                         {
                             HUDManager_Patch.sendPlayerInside = true;
@@ -224,8 +223,8 @@ namespace ToxicOmega_Tools
                             LogMessage($"No insideAINodes in this area!", true);
                             return Vector3.zero;
                         }
-                    break;
-                case 4:
+                        break;
+                    case 4:
                         if (currentRound.insideAINodes.Length > 0 && currentRound.insideAINodes[0] != null)
                         {
                             Vector3 position2 = currentRound.insideAINodes[UnityEngine.Random.Range(0, currentRound.insideAINodes.Length)].transform.position;
@@ -238,67 +237,67 @@ namespace ToxicOmega_Tools
                         }
                         break;
                 }
-                    }
-                    else if (input == "!")
-                    {
-                        if (terminal != null)
-                        {
-                            position = terminal.transform.position;
-                        }
-                        else
-                        {
+            }
+            else if (input == "!")
+            {
+                if (terminal != null)
+                {
+                    position = terminal.transform.position;
+                }
+                else
+                {
                     LogMessage("Terminal not found!", true);
-                            return Vector3.zero;
-                        }
-                    }
-                    else if (input.StartsWith("@") && input.Length > 1)
+                    return Vector3.zero;
+                }
+            }
+            else if (input.StartsWith("@") && input.Length > 1)
+            {
+                if (int.TryParse(input.Substring(1), out int wpIndex))
+                {
+                    if (wpIndex < waypoints.Count)
                     {
-                        if (int.TryParse(input.Substring(1), out int wpIndex))
-                        {
-                            if (wpIndex < waypoints.Count)
-                            {
-                                Waypoint wp = waypoints[wpIndex];
+                        Waypoint wp = waypoints[wpIndex];
                         HUDManager_Patch.sendPlayerInside = wp.IsInside;
-                                position = wp.Position;
-                            }
-                            else
-                            {
-                                LogMessage($"Waypoint @{input.Substring(1)} does not exist!", true);
-                                return Vector3.zero;
-                            }
-                        }
-                        else
-                        {
-                            LogMessage($"Waypoint @{input.Substring(1)} is invalid!", true);
-                            return Vector3.zero;
-                        }
+                        position = wp.Position;
                     }
                     else
                     {
-                        bool foundId = ulong.TryParse(input, out ulong networkId);
-                        if (foundId && GetGrabbableObject(networkId) != null)
-                        {
-                            GrabbableObject obj = GetGrabbableObject(networkId);
-                            HUDManager_Patch.sendPlayerInside = obj.isInFactory && !obj.isInShipRoom;
-                            position = obj.transform.position;
-                        }
-                        else if (foundId && GetEnemyAI(networkId) != null)
-                        {
-                            EnemyAI enemy = GetEnemyAI(networkId);
-                            HUDManager_Patch.sendPlayerInside = !enemy.isOutside;
-                            position = enemy.transform.position;
-                        }
-                        else
-                        {
-                            isPlayerTarget = true;
-                        }
+                        LogMessage($"Waypoint @{input.Substring(1)} does not exist!", true);
+                        return Vector3.zero;
                     }
-
+                }
+                else
+                {
+                    LogMessage($"Waypoint @{input.Substring(1)} is invalid!", true);
+                    return Vector3.zero;
+                }
+            }
+            else
+            {
+                bool foundId = ulong.TryParse(input, out ulong networkId);
+                if (foundId && GetGrabbableObject(networkId) != null)
+                {
+                    GrabbableObject obj = GetGrabbableObject(networkId);
+                    HUDManager_Patch.sendPlayerInside = obj.isInFactory && !obj.isInShipRoom;
+                    position = obj.transform.position;
+                }
+                else if (foundId && GetEnemyAI(networkId) != null)
+                {
+                    EnemyAI enemy = GetEnemyAI(networkId);
+                    HUDManager_Patch.sendPlayerInside = !enemy.isOutside;
+                    position = enemy.transform.position;
+                }
+                else
+                {
+                    isPlayerTarget = true;
+                }
+            }
+            
             if (isPlayerTarget)
             {
                 PlayerControllerB playerTarget = GetPlayerFromString(input);
 
-                if (playerTarget == null) 
+                if (playerTarget == null)
                     return Vector3.zero;
 
                 position = playerTarget.transform.position;
@@ -521,7 +520,6 @@ namespace ToxicOmega_Tools
             string logLocation;
             string type = "Unknown";
             string logValue = "";
-            bool isItem = !obj.IsEnemy && !obj.IsTrap;
 
             if (obj.IsItem)
             {
@@ -622,16 +620,11 @@ namespace ToxicOmega_Tools
                     myItem.GetComponent<GrabbableObject>().fallTime = 0f;
                     myItem.GetComponent<NetworkObject>().Spawn();
 
-                    mls.LogInfo("RPC SENDING: \"SyncScrapClientRpc\".");
-                    Networking.SyncScrapClientRpc(myItem.GetComponent<GrabbableObject>().NetworkObjectId, setValue);
-
-                    mls.LogInfo("RPC SENDING: \"TPGameObjectClientRpc\".");
-                    Networking.TPGameObjectClientRpc(myItem.GetComponent<GrabbableObject>().NetworkObjectId, position);
+                    Networking.SyncScrapValueClientRpc(myItem.GetComponent<GrabbableObject>().NetworkObjectId, setValue);
 
                     // RPC to set Shotgun shells loaded to be two for all players
                     if (item.Id == 59)
                     {
-                        mls.LogInfo("RPC SENDING: \"SyncAmmoClientRpc\".");
                         Networking.SyncAmmoClientRpc(myItem.GetComponent<GrabbableObject>().NetworkObjectId);
                     }
                 }
@@ -668,7 +661,6 @@ namespace ToxicOmega_Tools
                                     mine.GetComponent<NetworkObject>().Spawn(true);
 
                                     int randomCode = UnityEngine.Random.Range(0, RoundManager.Instance.possibleCodesForBigDoors.Length - 1);
-                                    mls.LogInfo("RPC SENDING: \"TerminalCodeClientRpc\".");
                                     Networking.TerminalCodeClientRpc(mine.GetComponentInChildren<TerminalAccessibleObject>().NetworkObjectId, randomCode);
                                 }
                                 break;  // Break after finding first matching prefab
@@ -696,7 +688,6 @@ namespace ToxicOmega_Tools
                                     turret.GetComponent<NetworkObject>().Spawn(true);
 
                                     int randomCode = UnityEngine.Random.Range(0, RoundManager.Instance.possibleCodesForBigDoors.Length - 1);
-                                    mls.LogInfo("RPC SENDING: \"TerminalCodeClientRpc\".");
                                     Networking.TerminalCodeClientRpc(turret.GetComponentInChildren<TerminalAccessibleObject>().NetworkObjectId, randomCode);
                                 }
                                 break;  // Break after finding first matching prefab
@@ -737,7 +728,6 @@ namespace ToxicOmega_Tools
                                     spikes.GetComponent<NetworkObject>().Spawn(true);
 
                                     int randomCode = UnityEngine.Random.Range(0, RoundManager.Instance.possibleCodesForBigDoors.Length - 1);
-                                    mls.LogInfo("RPC SENDING: \"TerminalCodeClientRpc\".");
                                     Networking.TerminalCodeClientRpc(spikes.GetComponentInChildren<TerminalAccessibleObject>().NetworkObjectId, randomCode);
                                 }
                                 break;  // Break after finding first matching prefab

@@ -30,20 +30,20 @@ namespace ToxicOmega_Tools.Patches
         public static void HealPlayerClientRpc(ulong playerId)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"HealPlayerClientRpc\".");
-            PlayerControllerB playerTarget = Plugin.GetPlayerController(playerId);
+            PlayerControllerB player = Plugin.GetPlayerController(playerId);
 
-            playerTarget.sprintMeter = 100f;
-            playerTarget.health = 100;
-            playerTarget.DamagePlayer(-1);
+            player.sprintMeter = 100f;
+            player.health = 100;
+            player.DamagePlayer(-1);
 
-            if (playerTarget != null && playerTarget.isPlayerDead)
-                Plugin.RevivePlayer(playerTarget.playerClientId);
+            if (player != null && player.isPlayerDead)
+                Plugin.RevivePlayer(player.playerClientId);
 
-            if (playerTarget != null)
+            if (player != null)
             {
-                Plugin.SavePlayer(playerTarget);
-                playerTarget.isExhausted = false;
-                playerTarget.bleedingHeavily = false;
+                Plugin.SavePlayer(player);
+                player.isExhausted = false;
+                player.bleedingHeavily = false;
             }
         }
 
@@ -62,9 +62,9 @@ namespace ToxicOmega_Tools.Patches
         }
 
         [ClientRpc]
-        public static void SyncScrapClientRpc(ulong itemId, int scrapValue)
+        public static void SyncScrapValueClientRpc(ulong itemId, int scrapValue)
         {
-            Plugin.mls.LogInfo("RPC RECEIVED: \"SyncScrapClientRpc\".");
+            Plugin.mls.LogInfo("RPC RECEIVED: \"SyncScrapValueClientRpc\".");
             Plugin.GetGrabbableObject(itemId).SetScrapValue(scrapValue);
         }
 

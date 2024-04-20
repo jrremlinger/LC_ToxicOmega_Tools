@@ -69,7 +69,7 @@ namespace ToxicOmega_Tools.Patches
 
             switch (command[0].Replace("/", "").ToLower())
             {
-                case string s when "help".StartsWith(s):
+                case "help":
                     List<string> commandList = new List<string>
                     {
                         "Item: Lists spawnable items",
@@ -121,7 +121,7 @@ namespace ToxicOmega_Tools.Patches
                         break;
 
                     if (command.Length > 2)
-                        targetString = command[2].ToLower();
+                        targetString = command[2];
 
                     if (command.Length > 3)
                     {
@@ -207,7 +207,6 @@ namespace ToxicOmega_Tools.Patches
                             {
                                 if (!localPlayerController.isPlayerDead)
                                 {
-                                    Plugin.mls.LogInfo("RPC SENDING: \"TPPlayerClientRpc\".");
                                     Vector3 destination = Plugin.GetPositionFromCommand("!", 3, localPlayerController.playerUsername);
                                     Networking.TPPlayerClientRpc(localPlayerController.playerClientId, destination, false);
                                 }
@@ -237,7 +236,6 @@ namespace ToxicOmega_Tools.Patches
 
                                 if (foundId && newPos != Vector3.zero)
                                 {
-                                    Plugin.mls.LogInfo("RPC SENDING: \"TPGameObjectClientRpc\".");
                                     Networking.TPGameObjectClientRpc(networkId, newPos);
                                     break;
                                 }
@@ -251,11 +249,8 @@ namespace ToxicOmega_Tools.Patches
                                 newPos = Plugin.GetPositionFromCommand(command.Length > 2 ? command[2] : command[1], 3, playerTarget.playerUsername);
 
                                 if (newPos != Vector3.zero)
-                                {
-                                    Plugin.mls.LogInfo("RPC SENDING: \"TPPlayerClientRpc\".");
                                     Networking.TPPlayerClientRpc(playerTarget.playerClientId, newPos, sendPlayerInside);
                                 }
-                            }
                             break;
                     }
                     break;
@@ -330,7 +325,7 @@ namespace ToxicOmega_Tools.Patches
                     }
                     else
                     {
-                        string targetUsername = string.Join(" ", command.Skip(1)).ToLower();
+                        string targetUsername = string.Join(" ", command.Skip(1));
                         playerTarget = Plugin.GetPlayerFromString(targetUsername);
                     }
 
@@ -345,7 +340,6 @@ namespace ToxicOmega_Tools.Patches
                             Plugin.LogMessage($"Healing {playerTarget.playerUsername}.");
                         }
 
-                        Plugin.mls.LogInfo("RPC SENDING: \"HealPlayerClientRpc\".");
                         Networking.HealPlayerClientRpc(playerTarget.playerClientId);
                     }
                     break;
@@ -432,7 +426,6 @@ namespace ToxicOmega_Tools.Patches
                         else
                         {
                             int.TryParse(command[1], out int creditsChange);
-                            Plugin.mls.LogInfo("RPC SENDING: \"TerminalCreditsClientRpc\".");
                             Networking.TerminalCreditsClientRpc(creditsChange);
                             Plugin.LogMessage($"Adjusted Credits by {creditsChange}.\nNew Total: {terminal.groupCredits}.");
                         }
@@ -449,7 +442,7 @@ namespace ToxicOmega_Tools.Patches
                     }
                     else
                     {
-                        playerTarget = Plugin.GetPlayerFromString(string.Join(" ", command.Skip(1)).ToLower());
+                        playerTarget = Plugin.GetPlayerFromString(string.Join(" ", command.Skip(1)));
                     }
 
                     if (playerTarget != null && !playerTarget.isPlayerDead)
@@ -460,7 +453,6 @@ namespace ToxicOmega_Tools.Patches
                         {
                             if (itemTarget.itemProperties.requiresBattery)
                             {
-                                Plugin.mls.LogInfo("RPC SENDING: \"ChargePlayerClientRpc\".");
                                 Networking.ChargePlayerClientRpc(playerTarget.playerClientId);
                                 Plugin.LogMessage($"Charging {playerTarget.playerUsername}'s item \"{itemTarget.itemProperties.itemName}\".");
                             }
@@ -530,7 +522,6 @@ namespace ToxicOmega_Tools.Patches
 
                         if (playerTarget != null && !playerTarget.isPlayerDead && playerTarget.isPlayerControlled)
                         {
-                            Plugin.mls.LogInfo("RPC SENDING: \"HurtPlayerClientRpc\".");
                             Networking.HurtPlayerClientRpc(playerTarget.playerClientId, 999999);
                             Plugin.LogMessage($"Killing {playerTarget.playerUsername}!");
                         }
@@ -570,9 +561,11 @@ namespace ToxicOmega_Tools.Patches
                             break;
                         }
 
-                        playerTarget = command.Length > 2 ? Plugin.GetPlayerFromString(command[2]) : localPlayerController;
-                        if (playerTarget == null) { break; }
-                        Plugin.mls.LogInfo("RPC SENDING: \"SyncScrapClientRpc\".");
+                        playerTarget = command.Length > 2 ? Plugin.GetPlayerFromString(string.Join(" ", command.Skip(1))) : localPlayerController;
+
+                        if (playerTarget == null)
+                            break;
+
                         Networking.SyncSuitClientRpc(playerTarget.playerClientId, selectedSuit);
                         Plugin.LogMessage($"Setting {playerTarget.playerUsername} to {allSuits[selectedSuit].unlockableName}.");
                     }
