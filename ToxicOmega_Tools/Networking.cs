@@ -27,6 +27,43 @@ namespace ToxicOmega_Tools.Patches
         }
 
         [ClientRpc]
+        public static void GiveItemClientRpc(ulong playerId, ulong itemId)
+        {
+            Plugin.mls.LogInfo("RPC RECEIVED: \"GiveItemClientRpc\".");
+            PlayerControllerB player = Plugin.GetPlayerController(playerId);
+            GrabbableObject item = Plugin.GetGrabbableObject(itemId);
+
+            player.currentlyGrabbingObject = item;
+            if (!GameNetworkManager.Instance.gameHasStarted && !item.itemProperties.canBeGrabbedBeforeGameStart && StartOfRound.Instance.testRoom == null)
+                return;
+            player.grabInvalidated = false;
+            if (item == null || player.inSpecialInteractAnimation || item.isHeld || item.isPocketed)
+                return;
+            NetworkObject networkObject = item.NetworkObject;
+            if (networkObject == null || !networkObject.IsSpawned)
+                return;
+            item.InteractItem();
+            if (!item.grabbable || player.FirstEmptyItemSlot() == -1)
+                return;
+            player.playerBodyAnimator.SetBool("GrabInvalidated", false);
+            player.playerBodyAnimator.SetBool("GrabValidated", false);
+            player.playerBodyAnimator.SetBool("cancelHolding", false);
+            player.playerBodyAnimator.ResetTrigger("Throw");
+            player.SetSpecialGrabAnimationBool(true);
+            player.isGrabbingObjectAnimation = true;
+            player.cursorIcon.enabled = false;
+            player.cursorTip.text = "";
+            player.twoHanded = item.itemProperties.twoHanded;
+            player.carryWeight += Mathf.Clamp(item.itemProperties.weight - 1f, 0.0f, 10f);
+            player.grabObjectAnimationTime = (double)item.itemProperties.grabAnimationTime <= 0.0 ? 0.4f : item.itemProperties.grabAnimationTime;
+            if (!player.isTestingPlayer)
+                player.GrabObjectServerRpc((NetworkObjectReference)networkObject);
+            if (player.grabObjectCoroutine != null)
+                player.StopCoroutine(player.grabObjectCoroutine);
+            player.grabObjectCoroutine = player.StartCoroutine(player.GrabObject());
+        }
+
+        [ClientRpc]
         public static void HealPlayerClientRpc(ulong playerId)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"HealPlayerClientRpc\".");

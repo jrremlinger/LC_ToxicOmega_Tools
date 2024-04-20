@@ -76,6 +76,7 @@ namespace ToxicOmega_Tools.Patches
                         "Enemy: Lists spawnable enemies",
                         "Trap: Lists spawnable traps",
                         "Spawn: Spawns items/enemies/traps",
+                        "Give: Add item to player inventory",
                         "List: Lists existing players/items/enemies",
                         "GUI: Toggles a GUI displaying nearby items/enemies",
                         "TP: Teleport players or gameobjects",
@@ -162,6 +163,33 @@ namespace ToxicOmega_Tools.Patches
                     {
                         Plugin.SpawnTrap(prefabFromString, spawnCountTest, targetString);
                     }
+                    break;
+                case string s when "give".StartsWith(s):
+                    if (command.Length < 2)
+                        break;
+
+                    Item itemType = StartOfRound.Instance.allItemsList.itemsList.FirstOrDefault(x => x.itemName.ToLower().StartsWith(command[1].Replace("_", " ")));
+
+                    if (itemType == null)
+                        break;
+
+                    if (itemType.minValue > itemType.maxValue)
+                        (itemType.maxValue, itemType.minValue) = (itemType.minValue, itemType.maxValue);
+
+                    playerTarget = command.Length > 2 ? Plugin.GetPlayerFromString(string.Join(" ", command.Skip(2))) : localPlayerController;
+
+                    if (playerTarget == null || playerTarget.isPlayerDead)
+                        break;
+
+                    GameObject spawnedItem = UnityEngine.Object.Instantiate(itemType.spawnPrefab, playerTarget.transform.position, Quaternion.identity);
+
+                    if (spawnedItem == null)
+                        break;
+
+                    spawnedItem.GetComponent<GrabbableObject>().fallTime = 0f;
+                    spawnedItem.GetComponent<NetworkObject>().Spawn();
+                    Networking.SyncScrapValueClientRpc(spawnedItem.GetComponent<GrabbableObject>().NetworkObjectId, (int)(double)(UnityEngine.Random.Range(itemType.minValue, itemType.maxValue) * RoundManager.Instance.scrapValueMultiplier));
+                    Networking.GiveItemClientRpc(playerTarget.playerClientId, spawnedItem.GetComponent<GrabbableObject>().NetworkObjectId);
                     break;
                 case string s when "trap".StartsWith(s):
                     HUDManager.Instance.DisplayTip("Trap List", "Mine, Turret, Spikes");
@@ -250,7 +278,7 @@ namespace ToxicOmega_Tools.Patches
 
                                 if (newPos != Vector3.zero)
                                     Networking.TPPlayerClientRpc(playerTarget.playerClientId, newPos, sendPlayerInside);
-                                }
+                            }
                             break;
                     }
                     break;
