@@ -87,7 +87,7 @@ namespace ToxicOmega_Tools.Patches
         public static void TerminalCreditsClientRpc(int val)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"TerminalCreditsClientRpc\".");
-            Terminal terminal = UnityEngine.Object.FindObjectOfType<Terminal>();
+            Terminal terminal = Object.FindObjectOfType<Terminal>();
 
             if (terminal != null)
                 terminal.groupCredits += val;
@@ -111,8 +111,10 @@ namespace ToxicOmega_Tools.Patches
                 GrabbableObject foundItem = Plugin.GetGrabbableObject(data.NetworkId);
                 foundItem.transform.position = data.Position;
                 foundItem.startFallingPosition = data.Position;
+
                 if (foundItem.transform.parent != null)
                     foundItem.startFallingPosition = foundItem.transform.parent.InverseTransformPoint(foundItem.startFallingPosition);
+
                 foundItem.FallToGround();
             }
         }
@@ -134,8 +136,10 @@ namespace ToxicOmega_Tools.Patches
                     deadBody.attachedLimb = null;
                     deadBody.secondaryAttachedLimb = null;
                     deadBody.secondaryAttachedTo = null;
+
                     if (deadBody.grabBodyObject != null && deadBody.grabBodyObject.isHeld && deadBody.grabBodyObject.playerHeldBy != null)
                         deadBody.grabBodyObject.playerHeldBy.DropAllHeldItems();
+
                     deadBody.transform.SetParent(null, true);
                     deadBody.SetRagdollPositionSafely(data.Position, true);
                 }
@@ -144,9 +148,14 @@ namespace ToxicOmega_Tools.Patches
 
             player.transform.position = data.Position;
             if (data.Position.y >= -50)
+            {
                 data.IsInside = false;
+            }
             else if (data.Position.y <= -100)
+            {
                 data.IsInside = true;
+            }
+
             Plugin.PlayerTeleportEffects(data.PlayerClientId, data.IsInside);
         }
 
@@ -167,7 +176,7 @@ namespace ToxicOmega_Tools.Patches
         [OdinSerialize]
         public int ScrapValue { get; set; }
     }
-    
+
     public struct TOT_SyncSuitData
     {
         [OdinSerialize]
@@ -191,7 +200,7 @@ namespace ToxicOmega_Tools.Patches
         [OdinSerialize]
         public Vector3 Position { get; set; }
     }
-    
+
     public struct TOT_TPPlayerData
     {
         [OdinSerialize]

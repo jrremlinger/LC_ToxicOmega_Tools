@@ -1,12 +1,6 @@
-﻿using AsmResolver.DotNet.Signatures.Types;
-using GameNetcodeStuff;
+﻿using GameNetcodeStuff;
 using HarmonyLib;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Remoting.Messaging;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace ToxicOmega_Tools.Patches
@@ -16,9 +10,8 @@ namespace ToxicOmega_Tools.Patches
     {
         [HarmonyPatch(nameof(PlayerControllerB.KillPlayer))]
         [HarmonyPostfix]
-        private static void DeadPlayerEnableHUD(PlayerControllerB __instance)
+        private static void DeadPlayerEnableHUD(PlayerControllerB __instance)   // Allows host to see UI while dead so they can still use commands
         {
-            // Allows host to see UI while dead so they can still use commands
             if (Plugin.CheckPlayerIsHost(__instance))
             {
                 HUDManager HUD = HUDManager.Instance;
@@ -33,6 +26,7 @@ namespace ToxicOmega_Tools.Patches
         {
             if (!Plugin.CheckPlayerIsHost(__instance))
                 return true;
+
             return !Plugin.enableGod;
         }
 
@@ -49,9 +43,7 @@ namespace ToxicOmega_Tools.Patches
             foreach (GrabbableObject obj in UnityEngine.Object.FindObjectsOfType<GrabbableObject>())
             {
                 if (Vector3.Distance(obj.transform.position, localPos) < 25.0f)
-                {
                     GUI.itemListText += $"{obj.itemProperties.itemName} ({obj.NetworkObjectId}){(obj.scrapValue > 0 ? $" - ${obj.scrapValue}" : "")}\n";
-                }
             }
 
             foreach (TerminalAccessibleObject terminalObj in UnityEngine.Object.FindObjectsOfType<TerminalAccessibleObject>())
@@ -61,7 +53,9 @@ namespace ToxicOmega_Tools.Patches
                 if (Vector3.Distance(terminalObj.transform.position, localPos) < 10.0f)
                 {
                     if (terminalObj.isBigDoor)
+                    {
                         objType = "Door";
+                    }
                     else if (terminalObj.GetComponentInChildren<Turret>())
                     {
                         objType = "Turret";
@@ -71,6 +65,7 @@ namespace ToxicOmega_Tools.Patches
                     {
                         if (terminalObj.GetComponentInChildren<Landmine>().hasExploded)
                             continue;
+
                         objType = "Landmine";
                         isActive = terminalObj.GetComponent<Landmine>().mineActivated;
                     }
@@ -80,7 +75,9 @@ namespace ToxicOmega_Tools.Patches
                         isActive = terminalObj.transform.parent.gameObject.GetComponentInChildren<SpikeRoofTrap>().trapActive;
                     }
                     else
+                    {
                         objType += "Unknown";
+                    }
 
                     GUI.terminalObjListText += $"{(!isActive || (terminalObj.isBigDoor && terminalObj.isDoorOpen) ? $"<color={(terminalObj.isBigDoor && terminalObj.isDoorOpen ? "lime" : "red")}>" : "")}{terminalObj.objectCode.ToUpper()}{(!isActive || (terminalObj.isBigDoor && terminalObj.isDoorOpen) ? "</color>" : "")} - {objType}\n";
                 }
@@ -89,17 +86,13 @@ namespace ToxicOmega_Tools.Patches
             foreach (PlayerControllerB player in StartOfRound.Instance.allPlayerScripts)
             {
                 if (Vector3.Distance(player.transform.position, localPos) < 25.0f && player.isPlayerControlled && !player.isPlayerDead)
-                {
                     GUI.enemyListText += $"{player.playerUsername} (#{player.playerClientId}{(Plugin.CheckPlayerIsHost(player) ? " - HOST" : "")})\n";
-                }
             }
 
             foreach (EnemyAI enemy in UnityEngine.Object.FindObjectsOfType<EnemyAI>())
             {
                 if (Vector3.Distance(enemy.transform.position, localPos) < 25.0f)
-                {
                     GUI.enemyListText += $"{(enemy.isEnemyDead ? "<color=red>" : "")}{enemy.enemyType.enemyName}{(enemy.isEnemyDead ? "</color>" : "")} ({enemy.NetworkObjectId})\n";
-                }
             }
         }
     }

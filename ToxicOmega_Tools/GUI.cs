@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ToxicOmega_Tools.Patches;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace ToxicOmega_Tools
 {
@@ -18,12 +12,13 @@ namespace ToxicOmega_Tools
 
         void OnGUI()
         {
-            if (!visible) { return; }
+            if (!visible) 
+                return;
 
-            UnityEngine.GUI.Label(new Rect((Screen.width / 2) - Screen.width / 4, (Screen.height / 2) - Screen.height / 4, Screen.width / 2, Screen.height / 2), itemListText);
-            UnityEngine.GUI.Label(new Rect((Screen.width / 2) - 50, (Screen.height / 2) - Screen.height / 4, Screen.width / 2, Screen.height / 2), terminalObjListText);
-            UnityEngine.GUI.Label(new Rect((Screen.width / 2) + Screen.width / 4, (Screen.height / 2) - Screen.height / 4, Screen.width / 2, Screen.height / 2), enemyListText);
-            UnityEngine.GUI.Label(new Rect((Screen.width / 2) - 75, (Screen.height / 2 + (Screen.height / 4)), 150, 150f), posLabelText);
+            UnityEngine.GUI.Label(new Rect((Screen.width / 2) - (Screen.width / 4), (Screen.height / 2) - (Screen.height / 4), Screen.width / 2, Screen.height / 2), itemListText);
+            UnityEngine.GUI.Label(new Rect((Screen.width / 2) - 50, (Screen.height / 2) - (Screen.height / 4), Screen.width / 2, Screen.height / 2), terminalObjListText);
+            UnityEngine.GUI.Label(new Rect((Screen.width / 2) + (Screen.width / 4), (Screen.height / 2) - (Screen.height / 4), Screen.width / 2, Screen.height / 2), enemyListText);
+            UnityEngine.GUI.Label(new Rect((Screen.width / 2) - 75, (Screen.height / 2) + (Screen.height / 4), 150, 150f), posLabelText);
         }
     }
 }

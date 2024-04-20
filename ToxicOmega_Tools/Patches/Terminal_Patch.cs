@@ -1,11 +1,6 @@
 ﻿using HarmonyLib;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
 
 namespace ToxicOmega_Tools.Patches
 {
@@ -18,34 +13,31 @@ namespace ToxicOmega_Tools.Patches
         {
             Plugin.customOutsideList = new List<SpawnableEnemyWithRarity>();
             Plugin.customInsideList = new List<SpawnableEnemyWithRarity>();
+            Plugin.allEnemiesList = new List<SpawnableEnemyWithRarity>();
 
             foreach (SelectableLevel moon in ___moonsCatalogueList)
             {
                 foreach (SpawnableEnemyWithRarity daytimeEnemy in moon.DaytimeEnemies)
                 {
                     if (!ListHasEnemy(Plugin.customOutsideList, daytimeEnemy.enemyType.enemyName))
-                    {
                         Plugin.customOutsideList.Add(daytimeEnemy);
-                    }
                 }
 
                 foreach (SpawnableEnemyWithRarity outsideEnemy in moon.OutsideEnemies)
                 {
                     if (!ListHasEnemy(Plugin.customOutsideList, outsideEnemy.enemyType.enemyName))
-                    {
                         Plugin.customOutsideList.Add(outsideEnemy);
-                    }
                 }
 
                 foreach (SpawnableEnemyWithRarity insideEnemy in moon.Enemies)
                 {
                     if (!ListHasEnemy(Plugin.customInsideList, insideEnemy.enemyType.enemyName))
-                    {
                         Plugin.customInsideList.Add(insideEnemy);
-                    }
                 }
             }
 
+            Plugin.allEnemiesList.AddRange(Plugin.customOutsideList);
+            Plugin.allEnemiesList.AddRange(Plugin.customInsideList);
             SetupSpawnablesList();
         }
 
@@ -71,7 +63,7 @@ namespace ToxicOmega_Tools.Patches
 
             foreach (SpawnableEnemyWithRarity obj in Plugin.customOutsideList)
             {
-                Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = obj.enemyType.enemyName, Id = Plugin.customInsideList.IndexOf(obj), IsEnemy = true, IsOutsideEnemy = true });
+                Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = obj.enemyType.enemyName, Id = Plugin.customOutsideList.IndexOf(obj), IsEnemy = true, IsOutsideEnemy = true });
             }
 
             Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = "Mine", Id = 0, IsTrap = true });

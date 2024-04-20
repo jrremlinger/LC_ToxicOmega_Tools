@@ -1,9 +1,5 @@
 ﻿using HarmonyLib;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace ToxicOmega_Tools.Patches
@@ -17,9 +13,10 @@ namespace ToxicOmega_Tools.Patches
         {
             Plugin.waypoints.Clear();
 
-            foreach (GameObject obj in UnityEngine.Object.FindObjectsOfType<GameObject>().Where(obj => obj.name == "Landmine(Clone)" || obj.name == "TurretContainer(Clone)" || obj.name == "SpikeRoofTrapHazard(Clone)"))
+            // Manually destroy instantiated traps as they persist between moons
+            foreach (GameObject obj in Object.FindObjectsOfType<GameObject>().Where(obj => obj.name == "Landmine(Clone)" || obj.name == "TurretContainer(Clone)" || obj.name == "SpikeRoofTrapHazard(Clone)"))
             {
-                UnityEngine.Object.Destroy(obj);
+                Object.Destroy(obj);
             }
         }
     }

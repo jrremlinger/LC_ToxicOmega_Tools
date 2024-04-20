@@ -1,13 +1,13 @@
-﻿using BepInEx.Logging;
-using BepInEx;
+﻿using BepInEx;
+using BepInEx.Logging;
+using GameNetcodeStuff;
 using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
-using GameNetcodeStuff;
-using Unity.Netcode;
-using System;
 using ToxicOmega_Tools.Patches;
+using Unity.Netcode;
+using UnityEngine;
 using static BepInEx.BepInDependency;
 
 namespace ToxicOmega_Tools
@@ -25,9 +25,10 @@ namespace ToxicOmega_Tools
         internal static Plugin Instance;
         internal static ManualLogSource mls;
         internal static GUI menu;
-        internal static List<SpawnableEnemyWithRarity> customInsideList = new List<SpawnableEnemyWithRarity>();
-        internal static List<SpawnableEnemyWithRarity> customOutsideList = new List<SpawnableEnemyWithRarity>();
-        internal static List<SearchableGameObject> allSpawnablesList = new List<SearchableGameObject>();
+        internal static List<SpawnableEnemyWithRarity> customInsideList;
+        internal static List<SpawnableEnemyWithRarity> customOutsideList;
+        internal static List<SpawnableEnemyWithRarity> allEnemiesList;
+        internal static List<SearchableGameObject> allSpawnablesList;
         internal static List<Waypoint> waypoints = new List<Waypoint>();
         internal static System.Random shipTeleporterSeed;
         internal static bool enableGod = false;
@@ -72,52 +73,9 @@ namespace ToxicOmega_Tools
         public static PlayerControllerB GetPlayerController(ulong clientId)
         {
             StartOfRound round = StartOfRound.Instance;
-            if (clientId >= (ulong)round.allPlayerScripts.Length) { return null; }
+            if (clientId >= (ulong)round.allPlayerScripts.Length)
+                return null;
             return round.allPlayerScripts[clientId];
-        }
-
-        public static int GetEnemyFromString(string searchString)
-        {
-            List<SpawnableEnemyWithRarity> allEnemiesList = new List<SpawnableEnemyWithRarity>();
-            allEnemiesList.AddRange(customOutsideList);
-            allEnemiesList.AddRange(customInsideList);
-
-            if (int.TryParse(searchString, out int enemyId))
-            {
-                if (enemyId >= 0 && enemyId < allEnemiesList.Count)
-                    return enemyId;
-            }
-            else
-            {
-                SpawnableEnemyWithRarity foundEnemy = allEnemiesList.FirstOrDefault(enemy => enemy.enemyType.enemyName.ToLower().StartsWith(searchString.Replace("_", " ")));
-
-                if (foundEnemy != null)
-                    return allEnemiesList.IndexOf(foundEnemy);
-            }
-
-            LogMessage($"Enemy \"{searchString}\" not found!", true);
-            return -1;
-        }
-
-        public static int GetItemFromString(string searchString)
-        {
-            List<Item> allItemsList = StartOfRound.Instance.allItemsList.itemsList;
-
-            if (int.TryParse(searchString, out int itemId))
-            {
-                if (itemId >= 0 && itemId < allItemsList.Count)
-                    return itemId;
-            }
-            else
-            {
-                Item foundItem = allItemsList.FirstOrDefault(item => item.itemName.ToLower().StartsWith(searchString.Replace("_", " ")));
-
-                if (foundItem != null)
-                    return allItemsList.IndexOf(foundItem);
-            }
-
-            LogMessage($"Item \"{searchString}\" not found!", true);
-            return -1;
         }
 
         public static PlayerControllerB GetPlayerFromString(string searchString)
@@ -154,7 +112,9 @@ namespace ToxicOmega_Tools
                 PlayerControllerB foundPlayer = allPlayerScripts.FirstOrDefault(player => player.playerUsername.ToLower().StartsWith(searchString.ToLower()));
 
                 if (foundPlayer != null)
+                {
                     return foundPlayer;
+                }
                 else
                 {
                     LogMessage($"Player {searchString} not found!", true);
@@ -186,7 +146,9 @@ namespace ToxicOmega_Tools
                     if (input == "$")
                     {
                         if (randomScrapLocations.Length > 0)
+                        {
                             position = randomScrapLocations[UnityEngine.Random.Range(0, randomScrapLocations.Length)].transform.position;
+                        }
                         else
                         {
                             LogMessage($"No RandomScrapSpawn in this area!", true);
@@ -228,7 +190,9 @@ namespace ToxicOmega_Tools
                         }
                     }
                     else if (input == "")
+                    {
                         position = (localPlayerController.isPlayerDead && localPlayerController.spectatedPlayerScript != null) ? localPlayerController.spectatedPlayerScript.transform.position : localPlayerController.transform.position;
+                    }
                     else
                     {
                         bool foundId = ulong.TryParse(input, out ulong networkId);
@@ -254,7 +218,9 @@ namespace ToxicOmega_Tools
                     if (input == "" || input == "$")
                     {
                         if (currentRound.outsideAINodes.Length > 0 && currentRound.outsideAINodes[0] != null)
+                        {
                             position = currentRound.outsideAINodes[UnityEngine.Random.Range(0, currentRound.outsideAINodes.Length)].transform.position;
+                        }
                         else
                         {
                             LogMessage($"No outsideAINodes in this area!", true);
@@ -319,7 +285,9 @@ namespace ToxicOmega_Tools
                     if (input == "" || input == "$")
                     {
                         if (currentRound.allEnemyVents.Length > 0 && currentRound.allEnemyVents[0] != null)
+                        {
                             position = currentRound.allEnemyVents[UnityEngine.Random.Range(0, currentRound.allEnemyVents.Length)].floorNode.position;
+                        }
                         else
                         {
                             LogMessage($"No allEnemyVents in this area!", true);
@@ -540,16 +508,22 @@ namespace ToxicOmega_Tools
             if (isPlayerTarget)
             {
                 PlayerControllerB playerTarget = GetPlayerFromString(input);
+
+                if (playerTarget == null) 
+                    return Vector3.zero;
+
                 position = playerTarget.transform.position;
 
-                if (playerTarget == null)
-                    return Vector3.zero;
-                else if (playerTarget.isPlayerDead)
+                if (playerTarget.isPlayerDead)
                 {
                     if (localPlayerController.playerClientId == playerTarget.playerClientId && playerTarget.spectatedPlayerScript != null && input == "")
+                    {
                         position = playerTarget.spectatedPlayerScript.transform.position;
+                    }
                     else
+                    {
                         position = StartOfRound.Instance.allPlayerScripts[playerTarget.playerClientId].deadBody.transform.position;
+                    }
                 }
 
                 if (isTP)
@@ -607,18 +581,17 @@ namespace ToxicOmega_Tools
             PlayerControllerB localPlayerController = StartOfRound.Instance.localPlayerController;
             PlayerControllerB playerController = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(playerClientId));
             StartOfRound round = StartOfRound.Instance;
-            Terminal terminal = UnityEngine.Object.FindObjectOfType<Terminal>();
+            Terminal terminal = FindObjectOfType<Terminal>();
 
-            Debug.Log((object)"Reviving players A");
+            Debug.Log("Reviving players A");
             playerController.ResetPlayerBloodObjects(playerController.isPlayerDead);
             if (playerController.isPlayerDead || playerController.isPlayerControlled)
             {
                 playerController.isClimbingLadder = false;
                 playerController.ResetZAndXRotation();
-                //playerController.roundController.enabled = true;
                 playerController.health = 100;
                 playerController.disableLookInput = false;
-                Debug.Log((object)"Reviving players B");
+                Debug.Log("Reviving players B");
                 if (playerController.isPlayerDead)
                 {
                     playerController.isPlayerDead = false;
@@ -628,32 +601,31 @@ namespace ToxicOmega_Tools
                     playerController.isInsideFactory = false;
                     playerController.wasInElevatorLastFrame = false;
                     round.SetPlayerObjectExtrapolate(false);
-                    //playerController.TeleportPlayer(round.GetPlayerSpawnPosition((int)playerClientID));
+                    playerController.TeleportPlayer(round.GetPlayerSpawnPosition((int)playerClientId));
                     playerController.TeleportPlayer(terminal.transform.position);
                     playerController.setPositionOfDeadPlayer = false;
                     playerController.DisablePlayerModel(round.allPlayerObjects[playerClientId], true, true);
                     playerController.helmetLight.enabled = false;
-                    Debug.Log((object)"Reviving players C");
+                    Debug.Log("Reviving players C");
                     playerController.Crouch(false);
                     playerController.criticallyInjured = false;
-                    if ((UnityEngine.Object)playerController.playerBodyAnimator != (UnityEngine.Object)null)
-                        playerController.playerBodyAnimator.SetBool("Limp", false);
+                    playerController.playerBodyAnimator?.SetBool("Limp", false);
                     playerController.bleedingHeavily = false;
                     playerController.activatingItem = false;
                     playerController.twoHanded = false;
                     playerController.inSpecialInteractAnimation = false;
                     playerController.disableSyncInAnimation = false;
-                    playerController.inAnimationWithEnemy = (EnemyAI)null;
+                    playerController.inAnimationWithEnemy = null;
                     playerController.holdingWalkieTalkie = false;
                     playerController.speakingToWalkieTalkie = false;
-                    Debug.Log((object)"Reviving players D");
+                    Debug.Log("Reviving players D");
                     playerController.isSinking = false;
                     playerController.isUnderwater = false;
                     playerController.sinkingValue = 0.0f;
                     playerController.statusEffectAudio.Stop();
                     playerController.DisableJetpackControlsLocally();
                     playerController.health = 100;
-                    Debug.Log((object)"Reviving players E");
+                    Debug.Log("Reviving players E");
                     playerController.mapRadarDotAnimator.SetBool("dead", false);
                     if (playerController.IsOwner)
                     {
@@ -664,47 +636,48 @@ namespace ToxicOmega_Tools
                         playerController.hinderedMultiplier = 1f;
                         playerController.isMovementHindered = 0;
                         playerController.sourcesCausingSinking = 0;
-                        Debug.Log((object)"Reviving players E2");
+                        Debug.Log("Reviving players E2");
                         playerController.reverbPreset = round.shipReverb;
                     }
                 }
-                Debug.Log((object)"Reviving players F");
+                Debug.Log("Reviving players F");
                 SoundManager.Instance.earsRingingTimer = 0.0f;
                 playerController.voiceMuffledByEnemy = false;
                 SoundManager.Instance.playerVoicePitchTargets[playerClientId] = 1f;
                 SoundManager.Instance.SetPlayerPitch(1f, (int)playerClientId);
-                if ((UnityEngine.Object)playerController.currentVoiceChatIngameSettings == (UnityEngine.Object)null)
+
+                if (playerController.currentVoiceChatIngameSettings == null)
                     round.RefreshPlayerVoicePlaybackObjects();
-                if ((UnityEngine.Object)playerController.currentVoiceChatIngameSettings != (UnityEngine.Object)null)
+
+                if (playerController.currentVoiceChatIngameSettings != null)
                 {
-                    if ((UnityEngine.Object)playerController.currentVoiceChatIngameSettings.voiceAudio == (UnityEngine.Object)null)
+                    if (playerController.currentVoiceChatIngameSettings.voiceAudio == null)
                         playerController.currentVoiceChatIngameSettings.InitializeComponents();
-                    if ((UnityEngine.Object)playerController.currentVoiceChatIngameSettings.voiceAudio == (UnityEngine.Object)null)
+
+                    if (playerController.currentVoiceChatIngameSettings.voiceAudio == null)
                         return;
+
                     playerController.currentVoiceChatIngameSettings.voiceAudio.GetComponent<OccludeAudio>().overridingLowPass = false;
                 }
-                Debug.Log((object)"Reviving players G");
+                Debug.Log("Reviving players G");
             }
 
-            //PlayerControllerB playerController = GameNetworkManager.Instance.localPlayerController;
             playerController.bleedingHeavily = false;
             playerController.criticallyInjured = false;
             playerController.playerBodyAnimator.SetBool("Limp", false);
             playerController.health = 100;
             HUDManager.Instance.UpdateHealthUI(100, false);
-            playerController.spectatedPlayerScript = (PlayerControllerB)null;
+            playerController.spectatedPlayerScript = null;
             HUDManager.Instance.audioListenerLowPass.enabled = false;
-            Debug.Log((object)"Reviving players H");
+            Debug.Log("Reviving players H");
             round.SetSpectateCameraToGameOverMode(false, playerController);
             round.livingPlayers += 1;
             round.allPlayersDead = false;
             round.UpdatePlayerVoiceEffects();
-            //round.ResetMiscValues();
+            round.ResetMiscValues();
 
             if (localPlayerController.playerClientId == playerController.playerClientId)
-            {
                 HUDManager.Instance.HideHUD(false);
-            }
         }
 
         public static void SavePlayer(PlayerControllerB player)
@@ -754,28 +727,39 @@ namespace ToxicOmega_Tools
                 HUDManager.Instance.HUDAnimator.SetBool("biohazardDamage", false);
         }
 
-        public static void SpawnEnemy(int enemyId, int amount, string targetString)
+        private static void SpawningMessage(SearchableGameObject obj, string targetString, int amount, int value = 0)
         {
-            bool inside = false;
-            List<SpawnableEnemyWithRarity> allEnemiesList = new List<SpawnableEnemyWithRarity>();
-            allEnemiesList.AddRange(customOutsideList);
-            allEnemiesList.AddRange(customInsideList);
-
-            if (enemyId > customOutsideList.Count)
-                inside = true;
-
-            if (GetPositionFromCommand(targetString, inside ? 2 : 1) == Vector3.zero)
-                return;
-
             string logLocation;
-            string logName = allEnemiesList[enemyId].enemyType.enemyName;
+            string type = "Unknown";
+            string logValue = "";
+            bool isItem = !obj.IsEnemy && !obj.IsTrap;
 
-            if (targetString == "" || targetString == "$")
+            if (isItem)
+            {
+                type = "Item";
+                logValue = value != -1 ? string.Concat(value) : "Random";
+            }
+            else if (obj.IsEnemy)
+            {
+                type = "Enemy";
+            }
+            else if (obj.IsTrap)
+            {
+                type = "Trap";
+            }
+
+            if (targetString == "$" || (targetString == "" && !isItem))
+            {
                 logLocation = "Random";
+            }
             else if (targetString == "!")
+            {
                 logLocation = "Terminal";
+            }
             else if (targetString.StartsWith("@"))
+            {
                 logLocation = $"WP @{targetString.Substring(1)}";
+            }
             else
             {
                 bool foundId = ulong.TryParse(targetString, out ulong networkId);
@@ -788,136 +772,98 @@ namespace ToxicOmega_Tools
                 {
                     logLocation = GetEnemyAI(networkId).enemyType.enemyName;
                 }
-                else logLocation = GetPlayerFromString(targetString).playerUsername;
+                else if (GetPlayerFromString(targetString) != null)
+                {
+                    logLocation = GetPlayerFromString(targetString).playerUsername;
+                }
+                else
+                {
+                    return;
+                }
             }
 
-            LogMessage($"Spawned Enemy\nName: {logName}, ID: {enemyId}, Amount: {amount}, Location: {logLocation}.");
+            LogMessage($"Spawned {type}\nName: {obj.Name}, Location: {logLocation}, Amount: {amount}{(isItem ? $", Value: {logValue}" : ".")}");
+        }
+
+        public static void SpawnEnemy(SearchableGameObject enemy, int amount, string targetString)
+        {
+            if (GetPositionFromCommand(targetString, enemy.IsOutsideEnemy ? 1 : 2) == Vector3.zero)
+                return;
+
+            SpawningMessage(enemy, targetString, amount);
 
             for (int i = 0; i < amount; i++)
             {
                 try
                 {
-                    Instantiate(allEnemiesList[enemyId].enemyType.enemyPrefab, GetPositionFromCommand(targetString, inside ? 2 : 1), Quaternion.Euler(Vector3.zero)).gameObject.GetComponentInChildren<NetworkObject>().Spawn(true);
+                    GameObject prefab = enemy.IsOutsideEnemy ? customOutsideList[enemy.Id].enemyType.enemyPrefab : customInsideList[enemy.Id].enemyType.enemyPrefab;
+                    Vector3 position = GetPositionFromCommand(targetString, enemy.IsOutsideEnemy ? 1 : 2);
+                    Instantiate(prefab, position, Quaternion.Euler(Vector3.zero)).gameObject.GetComponentInChildren<NetworkObject>().Spawn(true);
                 }
                 catch (Exception ex)
                 {
-                    LogMessage($"Unable to Spawn Enemy ID: {enemyId}", true);
+                    LogMessage($"Unable to Spawn Enemy: {enemy.Name}", true);
                     mls.LogError(ex);
                 }
             }
         }
 
-        public static void SpawnItem(int itemId, int amount, int value, string targetString)
+        public static void SpawnItem(SearchableGameObject item, int amount, int value, string targetString)
         {
             List<Item> allItemsList = StartOfRound.Instance.allItemsList.itemsList;
 
             if (GetPositionFromCommand(targetString, 0) == Vector3.zero)
                 return;
 
-            string logValue = value >= 0 ? $"{value}" : "Random";
-            string logLocation;
-
-            if (targetString == "$")
-                logLocation = "Random";
-            else if (targetString == "!")
-                logLocation = "Terminal";
-            else if (targetString.StartsWith("@"))
-                logLocation = $"WP @{targetString.Substring(1)}";
-            else
-            {
-                bool foundId = ulong.TryParse(targetString, out ulong networkId);
-
-                if (foundId && GetGrabbableObject(networkId) != null)
-                {
-                    logLocation = GetGrabbableObject(networkId).itemProperties.itemName;
-                }
-                else if (foundId && GetEnemyAI(networkId) != null)
-                {
-                    logLocation = GetEnemyAI(networkId).enemyType.enemyName;
-                }
-                else logLocation = GetPlayerFromString(targetString).playerUsername;
-            }
-
-            LogMessage($"Spawned Item\nName: {allItemsList[itemId].itemName}, ID: {itemId}, Amount: {amount}, Value: {logValue}, Location: {logLocation}.");
+            SpawningMessage(item, targetString, amount, value);
 
             for (int i = 0; i < amount; i++)
             {
                 try
                 {
                     // The Shotgun (and maybe other items I haven't noticed) have their max and min values backwards causing an index error without this
-                    if (allItemsList[itemId].minValue > allItemsList[itemId].maxValue)
-                    {
-                        (allItemsList[itemId].maxValue, allItemsList[itemId].minValue) = (allItemsList[itemId].minValue, allItemsList[itemId].maxValue);
-                    }
+                    if (allItemsList[item.Id].minValue > allItemsList[item.Id].maxValue)
+                        (allItemsList[item.Id].maxValue, allItemsList[item.Id].minValue) = (allItemsList[item.Id].minValue, allItemsList[item.Id].maxValue);
 
-                    int setValue = (int)(double)(value == -1 ? UnityEngine.Random.Range(allItemsList[itemId].minValue, allItemsList[itemId].maxValue) * RoundManager.Instance.scrapValueMultiplier : value);
+                    int setValue = (int)(double)(value == -1 ? UnityEngine.Random.Range(allItemsList[item.Id].minValue, allItemsList[item.Id].maxValue) * RoundManager.Instance.scrapValueMultiplier : value);
 
                     Vector3 position = GetPositionFromCommand(targetString, 0);
-                    GameObject item = Instantiate(allItemsList[itemId].spawnPrefab, position, Quaternion.identity);
-                    item.GetComponent<GrabbableObject>().transform.rotation = Quaternion.Euler(item.GetComponent<GrabbableObject>().itemProperties.restingRotation);
-                    item.GetComponent<GrabbableObject>().fallTime = 0f;
-                    item.GetComponent<NetworkObject>().Spawn();
+                    GameObject myItem = Instantiate(allItemsList[item.Id].spawnPrefab, position, Quaternion.identity);
+                    myItem.GetComponent<GrabbableObject>().transform.rotation = Quaternion.Euler(myItem.GetComponent<GrabbableObject>().itemProperties.restingRotation);
+                    myItem.GetComponent<GrabbableObject>().fallTime = 0f;
+                    myItem.GetComponent<NetworkObject>().Spawn();
 
                     mls.LogInfo("RPC SENDING: \"SyncScrapClientRpc\".");
-                    Networking.SyncScrapClientRpc(new TOT_SyncScrapData { ItemId = item.GetComponent<GrabbableObject>().NetworkObjectId, ScrapValue = setValue });
+                    Networking.SyncScrapClientRpc(new TOT_SyncScrapData { ItemId = myItem.GetComponent<GrabbableObject>().NetworkObjectId, ScrapValue = setValue });
 
                     mls.LogInfo("RPC SENDING: \"TPGameObjectClientRpc\".");
-                    Networking.TPGameObjectClientRpc(new TOT_TPGameObjectData { NetworkId = item.GetComponent<GrabbableObject>().NetworkObjectId, Position = position });
+                    Networking.TPGameObjectClientRpc(new TOT_TPGameObjectData { NetworkId = myItem.GetComponent<GrabbableObject>().NetworkObjectId, Position = position });
 
                     // RPC to set Shotgun shells loaded to be two for all players
-                    if (itemId == 59)
+                    if (item.Id == 59)
                     {
                         mls.LogInfo("RPC SENDING: \"SyncAmmoClientRpc\".");
-                        Networking.SyncAmmoClientRpc(item.GetComponent<GrabbableObject>().NetworkObjectId);
+                        Networking.SyncAmmoClientRpc(myItem.GetComponent<GrabbableObject>().NetworkObjectId);
                     }
                 }
                 catch (Exception ex)
                 {
-                    LogMessage($"Unable to Spawn Item ID: {itemId}", true);
+                    LogMessage($"Unable to Spawn Item: {item.Name}", true);
                     mls.LogError(ex);
                 }
             }
         }
 
-        public static void SpawnTrap(int trapId, int amount, string targetString)
+        public static void SpawnTrap(SearchableGameObject trap, int amount, string targetString)
         {
             RoundManager currentRound = RoundManager.Instance;
 
             if (GetPositionFromCommand(targetString, 4) == Vector3.zero)
                 return;
 
-            string logLocation;
-            string logTrapType = "";
+            SpawningMessage(trap, targetString, amount);
 
-            if (targetString == "" || targetString == "$")
-                logLocation = "Random";
-            else if (targetString.StartsWith("@"))
-                logLocation = $"WP @{targetString.Substring(1)}";
-            else
-            {
-                bool foundId = ulong.TryParse(targetString, out ulong networkId);
-
-                if (foundId && GetGrabbableObject(networkId) != null)
-                {
-                    logLocation = GetGrabbableObject(networkId).itemProperties.itemName;
-                }
-                else if (foundId && GetEnemyAI(networkId) != null)
-                {
-                    logLocation = GetEnemyAI(networkId).enemyType.enemyName;
-                }
-                else logLocation = GetPlayerFromString(targetString).playerUsername;
-            }
-
-            if (trapId == 0)
-                logTrapType = "Mine";
-            else if (trapId == 1)
-                logTrapType = "Turret";
-            else if (trapId == 2)
-                logTrapType = "Spikes";
-
-            LogMessage($"Spawned Trap\nName: {logTrapType}, Amount: {amount}, Location: {logLocation}.");
-
-            switch (trapId)
+            switch (trap.Id)
             {
                 case 0:
                     foreach (SpawnableMapObject obj in currentRound.currentLevel.spawnableMapObjects)
@@ -941,7 +887,7 @@ namespace ToxicOmega_Tools
                         }
                         catch (Exception ex)
                         {
-                            LogMessage($"Unable to Spawn Trap: {logTrapType}!", true);
+                            LogMessage($"Unable to Spawn Trap: {trap.Name}!", true);
                             mls.LogError(ex);
                         }
                     }
@@ -957,7 +903,7 @@ namespace ToxicOmega_Tools
                                 {
                                     Vector3 pos = GetPositionFromCommand(targetString, 4);
                                     GameObject turret = Instantiate(obj.prefabToSpawn, pos, Quaternion.identity);
-                                    turret.transform.eulerAngles = new Vector3(0.0f, currentRound.YRotationThatFacesTheFarthestFromPosition(pos + Vector3.up * 0.2f), 0.0f);
+                                    turret.transform.eulerAngles = new Vector3(0.0f, currentRound.YRotationThatFacesTheFarthestFromPosition(pos + (Vector3.up * 0.2f)), 0.0f);
                                     turret.GetComponent<NetworkObject>().Spawn(true);
 
                                     int randomCode = UnityEngine.Random.Range(0, RoundManager.Instance.possibleCodesForBigDoors.Length - 1);
@@ -969,7 +915,7 @@ namespace ToxicOmega_Tools
                         }
                         catch (Exception ex)
                         {
-                            LogMessage($"Unable to Spawn Trap: {logTrapType}!", true);
+                            LogMessage($"Unable to Spawn Trap: {trap.Name}!", true);
                             mls.LogError(ex);
                         }
                     }
@@ -1010,7 +956,7 @@ namespace ToxicOmega_Tools
                         }
                         catch (Exception ex)
                         {
-                            LogMessage($"Unable to Spawn Trap: {logTrapType}!", true);
+                            LogMessage($"Unable to Spawn Trap: {trap.Name}!", true);
                             mls.LogError(ex);
                         }
                     }
@@ -1021,11 +967,11 @@ namespace ToxicOmega_Tools
 
     public struct SearchableGameObject
     {
-        public string Name {  get; set; }
+        public string Name { get; set; }
         public int Id { get; set; }
         public bool IsEnemy { get; set; }
         public bool IsOutsideEnemy { get; set; }
-        public bool IsTrap {  get; set; }
+        public bool IsTrap { get; set; }
     }
 
     public struct Waypoint

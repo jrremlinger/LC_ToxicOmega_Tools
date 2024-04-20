@@ -1,9 +1,4 @@
 ﻿using HarmonyLib;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ToxicOmega_Tools.Patches
 {
@@ -12,7 +7,7 @@ namespace ToxicOmega_Tools.Patches
     {
         [HarmonyPatch(nameof(GameNetworkManager.Disconnect))]
         [HarmonyPostfix]
-        private static void Disconnect()
+        private static void Disconnect()    // Clear game-specific variables when disconnecting
         {
             Plugin.enableGod = false;
             Plugin.waypoints.Clear();
