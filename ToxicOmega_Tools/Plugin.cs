@@ -125,13 +125,14 @@ namespace ToxicOmega_Tools
 
         public static Vector3 GetPositionFromCommand(string input, int positionType, string targetName = null)
         {
-            // Position types if player name is not given:
+            // Position types:
             // 0: Random RandomScrapSpawn[]
             // 1: Random outsideAINodes[]
             // 2: Random allEnemyVents[]
             // 3: Teleport Destination
             // 4: Random insideAINodes[]
 
+            Vector3 position = Vector3.zero;
             bool isPlayerTarget = false;
             bool isTP = false;
             Vector3 position = Vector3.zero;
@@ -140,83 +141,43 @@ namespace ToxicOmega_Tools
             RandomScrapSpawn[] randomScrapLocations = FindObjectsOfType<RandomScrapSpawn>();
             PlayerControllerB localPlayerController = StartOfRound.Instance.localPlayerController;
 
+            if (input == "" || input == "$")
+            {
             switch (positionType)
             {
                 case 0:
-                    if (input == "$")
+                        if (input == "")
                     {
-                        if (randomScrapLocations.Length > 0)
+                            if (localPlayerController.isPlayerDead)
                         {
-                            position = randomScrapLocations[UnityEngine.Random.Range(0, randomScrapLocations.Length)].transform.position;
+                                if (localPlayerController.spectatedPlayerScript != null)
+                        {
+                                    position = localPlayerController.spectatedPlayerScript.transform.position;
                         }
                         else
                         {
-                            LogMessage($"No RandomScrapSpawn in this area!", true);
-                            return Vector3.zero;
+                                    position = StartOfRound.Instance.allPlayerScripts[localPlayerController.playerClientId].deadBody.transform.position;
                         }
                     }
-                    else if (input == "!")
-                    {
-                        if (terminal != null)
-                        {
-                            position = terminal.transform.position;
-                        }
-                        else
-                        {
-                            LogMessage("Terminal not found!", true);
-                            return Vector3.zero;
-                        }
-                    }
-                    else if (input.StartsWith("@") && input.Length > 1)
-                    {
-                        if (int.TryParse(input.Substring(1), out int wpIndex))
-                        {
-                            if (wpIndex < waypoints.Count)
-                            {
-                                Waypoint wp = waypoints[wpIndex];
-                                HUDManager_Patch.sendPlayerInside = wp.IsInside;
-                                position = wp.Position;
-                            }
                             else
                             {
-                                LogMessage($"Waypoint @{input.Substring(1)} does not exist!", true);
-                                return Vector3.zero;
+                                position = localPlayerController.transform.position;
                             }
                         }
                         else
                         {
-                            LogMessage($"Waypoint @{input.Substring(1)} is invalid!", true);
-                            return Vector3.zero;
-                        }
-                    }
-                    else if (input == "")
+                            if (randomScrapLocations.Length > 0)
                     {
-                        position = (localPlayerController.isPlayerDead && localPlayerController.spectatedPlayerScript != null) ? localPlayerController.spectatedPlayerScript.transform.position : localPlayerController.transform.position;
+                                position = randomScrapLocations[UnityEngine.Random.Range(0, randomScrapLocations.Length)].transform.position;
                     }
                     else
                     {
-                        bool foundId = ulong.TryParse(input, out ulong networkId);
-                        if (foundId && GetGrabbableObject(networkId) != null)
-                        {
-                            GrabbableObject obj = GetGrabbableObject(networkId);
-                            HUDManager_Patch.sendPlayerInside = obj.isInFactory && !obj.isInShipRoom;
-                            position = obj.transform.position;
+                                LogMessage($"No RandomScrapSpawn in this area!", true);
+                                return Vector3.zero;
                         }
-                        else if (foundId && GetEnemyAI(networkId) != null)
-                        {
-                            EnemyAI enemy = GetEnemyAI(networkId);
-                            HUDManager_Patch.sendPlayerInside = !enemy.isOutside;
-                            position = enemy.transform.position;
                         }
-                        else
-                        {
-                            isPlayerTarget = true;
-                        }
-                    }
                     break;
                 case 1:
-                    if (input == "" || input == "$")
-                    {
                         if (currentRound.outsideAINodes.Length > 0 && currentRound.outsideAINodes[0] != null)
                         {
                             position = currentRound.outsideAINodes[UnityEngine.Random.Range(0, currentRound.outsideAINodes.Length)].transform.position;
@@ -226,64 +187,8 @@ namespace ToxicOmega_Tools
                             LogMessage($"No outsideAINodes in this area!", true);
                             return Vector3.zero;
                         }
-                    }
-                    else if (input == "!")
-                    {
-                        if (terminal != null)
-                        {
-                            position = terminal.transform.position;
-                        }
-                        else
-                        {
-                            LogMessage("Terminal not found!", true);
-                            return Vector3.zero;
-                        }
-                    }
-                    else if (input.StartsWith("@") && input.Length > 1)
-                    {
-                        if (int.TryParse(input.Substring(1), out int wpIndex))
-                        {
-                            if (wpIndex < waypoints.Count)
-                            {
-                                Waypoint wp = waypoints[wpIndex];
-                                position = wp.Position;
-                            }
-                            else
-                            {
-                                LogMessage($"Waypoint @{input.Substring(1)} does not exist!", true);
-                                return Vector3.zero;
-                            }
-                        }
-                        else
-                        {
-                            LogMessage($"Waypoint @{input.Substring(1)} is invalid!", true);
-                            return Vector3.zero;
-                        }
-                    }
-                    else
-                    {
-                        bool foundId = ulong.TryParse(input, out ulong networkId);
-                        if (foundId && GetGrabbableObject(networkId) != null)
-                        {
-                            GrabbableObject obj = GetGrabbableObject(networkId);
-                            HUDManager_Patch.sendPlayerInside = obj.isInFactory && !obj.isInShipRoom;
-                            position = obj.transform.position;
-                        }
-                        else if (foundId && GetEnemyAI(networkId) != null)
-                        {
-                            EnemyAI enemy = GetEnemyAI(networkId);
-                            HUDManager_Patch.sendPlayerInside = !enemy.isOutside;
-                            position = enemy.transform.position;
-                        }
-                        else
-                        {
-                            isPlayerTarget = true;
-                        }
-                    }
                     break;
                 case 2:
-                    if (input == "" || input == "$")
-                    {
                         if (currentRound.allEnemyVents.Length > 0 && currentRound.allEnemyVents[0] != null)
                         {
                             position = currentRound.allEnemyVents[UnityEngine.Random.Range(0, currentRound.allEnemyVents.Length)].floorNode.position;
@@ -293,64 +198,8 @@ namespace ToxicOmega_Tools
                             LogMessage($"No allEnemyVents in this area!", true);
                             return Vector3.zero;
                         }
-                    }
-                    else if (input == "!")
-                    {
-                        if (terminal != null)
-                        {
-                            position = terminal.transform.position;
-                        }
-                        else
-                        {
-                            LogMessage("Terminal not found!", true);
-                            return Vector3.zero;
-                        }
-                    }
-                    else if (input.StartsWith("@") && input.Length > 1)
-                    {
-                        if (int.TryParse(input.Substring(1), out int wpIndex))
-                        {
-                            if (wpIndex < waypoints.Count)
-                            {
-                                Waypoint wp = waypoints[wpIndex];
-                                position = wp.Position;
-                            }
-                            else
-                            {
-                                LogMessage($"Waypoint @{input.Substring(1)} does not exist!", true);
-                                return Vector3.zero;
-                            }
-                        }
-                        else
-                        {
-                            LogMessage($"Waypoint @{input.Substring(1)} is invalid!", true);
-                            return Vector3.zero;
-                        }
-                    }
-                    else
-                    {
-                        bool foundId = ulong.TryParse(input, out ulong networkId);
-                        if (foundId && GetGrabbableObject(networkId) != null)
-                        {
-                            GrabbableObject obj = GetGrabbableObject(networkId);
-                            HUDManager_Patch.sendPlayerInside = obj.isInFactory && !obj.isInShipRoom;
-                            position = obj.transform.position;
-                        }
-                        else if (foundId && GetEnemyAI(networkId) != null)
-                        {
-                            EnemyAI enemy = GetEnemyAI(networkId);
-                            HUDManager_Patch.sendPlayerInside = !enemy.isOutside;
-                            position = enemy.transform.position;
-                        }
-                        else
-                        {
-                            isPlayerTarget = true;
-                        }
-                    }
                     break;
                 case 3:
-                    if (input == "$")
-                    {
                         if (currentRound.insideAINodes.Length > 0 && currentRound.insideAINodes[0] != null)
                         {
                             HUDManager_Patch.sendPlayerInside = true;
@@ -375,70 +224,8 @@ namespace ToxicOmega_Tools
                             LogMessage($"No insideAINodes in this area!", true);
                             return Vector3.zero;
                         }
-                    }
-                    else if (input == "!")
-                    {
-                        if (terminal != null)
-                        {
-                            position = terminal.transform.position;
-                            LogMessage($"Teleported {targetName} to terminal.");
-                        }
-                        else
-                        {
-                            LogMessage("Terminal not found!", true);
-                            return Vector3.zero;
-                        }
-                    }
-                    else if (input.StartsWith("@") && input.Length > 1)
-                    {
-                        if (int.TryParse(input.Substring(1), out int wpIndex))
-                        {
-                            if (wpIndex < waypoints.Count)
-                            {
-                                Waypoint wp = waypoints[wpIndex];
-                                HUDManager_Patch.sendPlayerInside = wp.IsInside;
-                                position = wp.Position;
-                                LogMessage($"Teleported {targetName} to Waypoint @{wpIndex}.");
-                            }
-                            else
-                            {
-                                LogMessage($"Waypoint @{input.Substring(1)} does not exist!", true);
-                                return Vector3.zero;
-                            }
-                        }
-                        else
-                        {
-                            LogMessage($"Waypoint @{input.Substring(1)} is invalid!", true);
-                            return Vector3.zero;
-                        }
-                    }
-                    else
-                    {
-                        bool foundId = ulong.TryParse(input, out ulong networkId);
-                        if (foundId && GetGrabbableObject(networkId) != null)
-                        {
-                            GrabbableObject obj = GetGrabbableObject(networkId);
-                            HUDManager_Patch.sendPlayerInside = obj.isInFactory && !obj.isInShipRoom;
-                            position = obj.transform.position;
-                            LogMessage($"Teleported {targetName} to {obj.itemProperties.itemName} ({networkId}).");
-                        }
-                        else if (foundId && GetEnemyAI(networkId) != null)
-                        {
-                            EnemyAI enemy = GetEnemyAI(networkId);
-                            HUDManager_Patch.sendPlayerInside = !enemy.isOutside;
-                            position = enemy.transform.position;
-                            LogMessage($"Teleported {targetName} to {enemy.enemyType.enemyName} ({networkId}).");
-                        }
-                        else
-                        {
-                            isTP = true;
-                            isPlayerTarget = true;
-                        }
-                    }
                     break;
                 case 4:
-                    if (input == "" || input == "$")
-                    {
                         if (currentRound.insideAINodes.Length > 0 && currentRound.insideAINodes[0] != null)
                         {
                             Vector3 position2 = currentRound.insideAINodes[UnityEngine.Random.Range(0, currentRound.insideAINodes.Length)].transform.position;
@@ -449,6 +236,8 @@ namespace ToxicOmega_Tools
                             LogMessage($"No insideAINodes in this area!", true);
                             return Vector3.zero;
                         }
+                        break;
+                }
                     }
                     else if (input == "!")
                     {
@@ -458,6 +247,7 @@ namespace ToxicOmega_Tools
                         }
                         else
                         {
+                    LogMessage("Terminal not found!", true);
                             return Vector3.zero;
                         }
                     }
@@ -468,6 +258,7 @@ namespace ToxicOmega_Tools
                             if (wpIndex < waypoints.Count)
                             {
                                 Waypoint wp = waypoints[wpIndex];
+                        HUDManager_Patch.sendPlayerInside = wp.IsInside;
                                 position = wp.Position;
                             }
                             else
@@ -502,8 +293,6 @@ namespace ToxicOmega_Tools
                             isPlayerTarget = true;
                         }
                     }
-                    break;
-            }
 
             if (isPlayerTarget)
             {
@@ -516,7 +305,7 @@ namespace ToxicOmega_Tools
 
                 if (playerTarget.isPlayerDead)
                 {
-                    if (localPlayerController.playerClientId == playerTarget.playerClientId && playerTarget.spectatedPlayerScript != null && input == "")
+                    if (localPlayerController.playerClientId == playerTarget.playerClientId && playerTarget.spectatedPlayerScript != null)
                     {
                         position = playerTarget.spectatedPlayerScript.transform.position;
                     }
