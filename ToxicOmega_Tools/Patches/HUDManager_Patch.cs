@@ -150,7 +150,7 @@ namespace ToxicOmega_Tools.Patches
                         break;
                     }
 
-                    if (!prefabFromString.IsEnemy && !prefabFromString.IsTrap)  // Spawn item
+                    if (prefabFromString.IsItem)  // Spawn item
                     {
                         Plugin.SpawnItem(prefabFromString, spawnCountTest, itemValueTest, targetString);
                     }
