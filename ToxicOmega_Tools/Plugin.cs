@@ -734,7 +734,7 @@ namespace ToxicOmega_Tools
             string logValue = "";
             bool isItem = !obj.IsEnemy && !obj.IsTrap;
 
-            if (isItem)
+            if (obj.IsItem)
             {
                 type = "Item";
                 logValue = value != -1 ? string.Concat(value) : "Random";
@@ -748,7 +748,7 @@ namespace ToxicOmega_Tools
                 type = "Trap";
             }
 
-            if (targetString == "$" || (targetString == "" && !isItem))
+            if (targetString == "$" || (targetString == "" && !obj.IsItem))
             {
                 logLocation = "Random";
             }
@@ -782,7 +782,7 @@ namespace ToxicOmega_Tools
                 }
             }
 
-            LogMessage($"Spawned {type}\nName: {obj.Name}, Location: {logLocation}, Amount: {amount}{(isItem ? $", Value: {logValue}" : ".")}");
+            LogMessage($"Spawned {type}\nName: {obj.Name}, Location: {logLocation}, Amount: {amount}{(obj.IsItem ? $", Value: {logValue}" : ".")}");
         }
 
         public static void SpawnEnemy(SearchableGameObject enemy, int amount, string targetString)
@@ -969,6 +969,7 @@ namespace ToxicOmega_Tools
     {
         public string Name { get; set; }
         public int Id { get; set; }
+        public bool IsItem { get; set; }
         public bool IsEnemy { get; set; }
         public bool IsOutsideEnemy { get; set; }
         public bool IsTrap { get; set; }

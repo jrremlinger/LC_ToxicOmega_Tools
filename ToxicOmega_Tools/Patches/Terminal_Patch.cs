@@ -53,7 +53,7 @@ namespace ToxicOmega_Tools.Patches
 
             foreach (Item obj in itemList)
             {
-                Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = obj.itemName, Id = itemList.IndexOf(obj) });
+                Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = obj.itemName, Id = itemList.IndexOf(obj), IsItem = true });
             }
 
             foreach (SpawnableEnemyWithRarity obj in Plugin.customInsideList)
