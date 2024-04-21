@@ -201,12 +201,20 @@ namespace ToxicOmega_Tools.Patches
                     string listName = "";
                     int listPage = 1;
 
+                    if (command.Length < 2)
+                    {
+                        GUI.isFullList = !GUI.isFullList;
+                        GUI.visible = false;
+                        Plugin.LogMessage($"{(GUI.isFullList ? "Enabling" : "Disabling")} full list GUI.");
+                        break;
+                    }
+
                     if (command.Length > 2)
                         int.TryParse(command[2], out listPage);
 
                     listPage = Math.Max(listPage, 1);
 
-                    if (command.Length < 2 || "players".StartsWith(command[1]))
+                    if ("players".StartsWith(command[1]))
                     {
                         List<PlayerControllerB> activePlayers = StartOfRound.Instance.allPlayerScripts.ToList();
                         listName = "Player";
@@ -564,6 +572,8 @@ namespace ToxicOmega_Tools.Patches
                     break;
                 case string s when "gui".StartsWith(s) || "hud".StartsWith(s):
                     GUI.visible = !GUI.visible;
+                    GUI.isFullList = false;
+                    Plugin.LogMessage($"{(GUI.visible ? "Enabling" : "Disabling")} GUI.");
                     break;
                 case string s when "suit".StartsWith(s):
                     List<UnlockableItem> allSuits = StartOfRound.Instance.unlockablesList.unlockables;
