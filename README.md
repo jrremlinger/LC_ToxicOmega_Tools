@@ -130,7 +130,7 @@ Example: "hud" will enable the hud if it is currently hidden.
 <details>
   <summary><h3>TP/Tele/Teleport Optional: (Target A) (Target B)</h3></summary>
 
-Teleports a given player to a given destination. Player being teleported cannot be dead. Will automatically sync lighting if your destination is inside or outside. If no arguments are provided, the host will be teleported to the ship's console.
+Teleports a given player to a given destination. Targeting a dead player will target their corpse. Will automatically sync lighting if your destination is inside or outside. If no arguments are provided, the host will be teleported to the ship's console.
 
 Arguments:
 * Target A: If this is the only argument given it supports all targeting methods. Otherwise, it will not accept "!", "$", or "@" since they are not able to be moved.
@@ -160,10 +160,10 @@ Example: "wp add" will create a waypoint at your current location.
 <details>
   <summary><h3>He/Heal/Save Optional: (Player Target)</h3></summary>
 
-Fully refills a player's health and stamina. Will save a player if they are currently in a kill animation with Snare Fleas, Forest Giants, or Masked Players. If the target player is dead, they will be revived at the ship's terminal.
+Fully refills a player's health and stamina. Will save a player if they are currently in a kill animation with an enemy. If the target player is dead, they will be revived at the ship's terminal.
 
 Arguments:
-* Player Target (Default: Self): Only supports player name/client ID (enemy ID not supported yet).
+* Player Target (Default: Self): Only supports player name/client ID.
 
 Example: "heal John" will heal a player whose name starts with (or is) John.
 </details>

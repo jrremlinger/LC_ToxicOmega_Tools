@@ -134,7 +134,6 @@ namespace ToxicOmega_Tools
 
             Vector3 position = Vector3.zero;
             bool isPlayerTarget = false;
-            bool isTP = false;
             Terminal terminal = FindObjectOfType<Terminal>();
             RoundManager currentRound = RoundManager.Instance;
             RandomScrapSpawn[] randomScrapLocations = FindObjectsOfType<RandomScrapSpawn>();
@@ -275,24 +274,25 @@ namespace ToxicOmega_Tools
             else
             {
                 bool foundId = ulong.TryParse(input, out ulong networkId);
-                if (foundId && GetGrabbableObject(networkId) != null)
-                {
-                    GrabbableObject obj = GetGrabbableObject(networkId);
-                    HUDManager_Patch.sendPlayerInside = obj.isInFactory && !obj.isInShipRoom;
-                    position = obj.transform.position;
-                }
-                else if (foundId && GetEnemyAI(networkId) != null)
+
+                if (foundId && GetEnemyAI(networkId) != null)
                 {
                     EnemyAI enemy = GetEnemyAI(networkId);
                     HUDManager_Patch.sendPlayerInside = !enemy.isOutside;
                     position = enemy.transform.position;
+                }
+                else if (foundId && GetGrabbableObject(networkId) != null)
+                {
+                    GrabbableObject grabbableObject = GetGrabbableObject(networkId);
+                    HUDManager_Patch.sendPlayerInside = grabbableObject.isInFactory && !grabbableObject.isInShipRoom;
+                    position = grabbableObject.transform.position;
                 }
                 else
                 {
                     isPlayerTarget = true;
                 }
             }
-            
+
             if (isPlayerTarget)
             {
                 PlayerControllerB playerTarget = GetPlayerFromString(input);
@@ -314,7 +314,7 @@ namespace ToxicOmega_Tools
                     }
                 }
 
-                if (isTP)
+                if (positionType == 3)
                 {
                     HUDManager_Patch.sendPlayerInside = playerTarget.isInsideFactory;
                     LogMessage($"Teleported {targetName} to {playerTarget.playerUsername}.");

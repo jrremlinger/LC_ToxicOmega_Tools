@@ -56,22 +56,22 @@ namespace ToxicOmega_Tools.Patches
                     {
                         objType = "Door";
                     }
-                    else if (terminalObj.GetComponentInChildren<Turret>())
-                    {
-                        objType = "Turret";
-                        isActive = terminalObj.GetComponent<Turret>().turretActive;
-                    }
                     else if (terminalObj.GetComponentInChildren<Landmine>())
                     {
                         if (terminalObj.GetComponentInChildren<Landmine>().hasExploded)
                             continue;
 
-                        objType = "Landmine";
+                        objType = $"Landmine";
                         isActive = terminalObj.GetComponent<Landmine>().mineActivated;
+                    }
+                    else if (terminalObj.GetComponentInChildren<Turret>())
+                    {
+                        objType = $"Turret";
+                        isActive = terminalObj.GetComponent<Turret>().turretActive;
                     }
                     else if (terminalObj.transform.parent.gameObject.GetComponentInChildren<SpikeRoofTrap>())
                     {
-                        objType = "Spikes";
+                        objType = $"Spikes";
                         isActive = terminalObj.transform.parent.gameObject.GetComponentInChildren<SpikeRoofTrap>().trapActive;
                     }
                     else

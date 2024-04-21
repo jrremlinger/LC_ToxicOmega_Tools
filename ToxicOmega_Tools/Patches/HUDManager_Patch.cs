@@ -115,8 +115,8 @@ namespace ToxicOmega_Tools.Patches
                     break;
                 case string s when "spawn".StartsWith(s):
                     string targetString = "";
-                    int spawnCountTest = 1;
-                    int itemValueTest = -1;
+                    int amount = 1;
+                    int itemValue = -1;
 
                     if (command.Length < 2)
                         break;
@@ -126,20 +126,20 @@ namespace ToxicOmega_Tools.Patches
 
                     if (command.Length > 3)
                     {
-                        int.TryParse(command[3], out spawnCountTest);
-                        spawnCountTest = Math.Max(spawnCountTest, 1);
+                        int.TryParse(command[3], out amount);
+                        amount = Math.Max(amount, 1);
                     }
 
                     if (command.Length > 4)
                     {
                         if (command[4] == "$")
                         {
-                            itemValueTest = -1;
+                            itemValue = -1;
                         }
                         else
                         {
-                            int.TryParse(command[4], out itemValueTest);
-                            itemValueTest = Math.Max(itemValueTest, 0);
+                            int.TryParse(command[4], out itemValue);
+                            itemValue = Math.Max(itemValue, 0);
                         }
                     }
 
@@ -153,15 +153,15 @@ namespace ToxicOmega_Tools.Patches
 
                     if (prefabFromString.IsItem)  // Spawn item
                     {
-                        Plugin.SpawnItem(prefabFromString, spawnCountTest, itemValueTest, targetString);
+                        Plugin.SpawnItem(prefabFromString, amount, itemValue, targetString);
                     }
                     else if (prefabFromString.IsEnemy)   // Spawn enemy
                     {
-                        Plugin.SpawnEnemy(prefabFromString, spawnCountTest, targetString);
+                        Plugin.SpawnEnemy(prefabFromString, amount, targetString);
                     }
                     else if (prefabFromString.IsTrap)   // Spawn trap
                     {
-                        Plugin.SpawnTrap(prefabFromString, spawnCountTest, targetString);
+                        Plugin.SpawnTrap(prefabFromString, amount, targetString);
                     }
                     break;
                 case string s when "give".StartsWith(s):
@@ -246,25 +246,25 @@ namespace ToxicOmega_Tools.Patches
                             break;
                         case 2:
                         case 3:
-                            Vector3 newPos = Vector3.zero;
+                            string tpTargetString = null;
 
                             // Look for item/enemy by ID and break the switch function if one is found
                             if (command.Length > 2)
                             {
                                 foundId = ulong.TryParse(command[1], out networkId);
 
-                                if (foundId && Plugin.GetGrabbableObject(networkId) != null)
+                                if (foundId && Plugin.GetEnemyAI(networkId) != null)
                                 {
-                                    newPos = Plugin.GetPositionFromCommand(command[2], 3, Plugin.GetGrabbableObject(networkId).itemProperties.itemName);
+                                    tpTargetString = Plugin.GetEnemyAI(networkId).enemyType.enemyName;
                                 }
-                                else if (foundId && Plugin.GetEnemyAI(networkId) != null)
+                                else if (foundId && Plugin.GetGrabbableObject(networkId) != null)
                                 {
-                                    newPos = Plugin.GetPositionFromCommand(command[2], 3, Plugin.GetEnemyAI(networkId).enemyType.enemyName);
+                                    tpTargetString = Plugin.GetGrabbableObject(networkId).itemProperties.itemName;
                                 }
 
-                                if (foundId && newPos != Vector3.zero)
+                                if (foundId && tpTargetString != null)
                                 {
-                                    Networking.TPGameObjectClientRpc(networkId, newPos);
+                                    Networking.TPGameObjectClientRpc(networkId, Plugin.GetPositionFromCommand(command[2], 3, tpTargetString));
                                     break;
                                 }
                             }
@@ -274,10 +274,10 @@ namespace ToxicOmega_Tools.Patches
 
                             if (playerTarget != null)
                             {
-                                newPos = Plugin.GetPositionFromCommand(command.Length > 2 ? command[2] : command[1], 3, playerTarget.playerUsername);
+                                Vector3 position = Plugin.GetPositionFromCommand(command.Length > 2 ? command[2] : command[1], 3, playerTarget.playerUsername);
 
-                                if (newPos != Vector3.zero)
-                                    Networking.TPPlayerClientRpc(playerTarget.playerClientId, newPos, sendPlayerInside);
+                                if (position != Vector3.zero)
+                                    Networking.TPPlayerClientRpc(playerTarget.playerClientId, position, sendPlayerInside);
                             }
                             break;
                     }
@@ -391,16 +391,16 @@ namespace ToxicOmega_Tools.Patches
                                     {
                                         objectList += $"{obj.objectCode}(Door), ";
                                     }
-                                    else if (obj.GetComponentInChildren<Turret>())
-                                    {
-                                        objectList += $"{obj.objectCode}(Turret), ";
-                                    }
                                     else if (obj.GetComponentInChildren<Landmine>())
                                     {
                                         if (obj.GetComponentInChildren<Landmine>().hasExploded)
                                             continue;
 
-                                        objectList += $"{obj.objectCode}(Landmine), ";
+                                        objectList += $"{obj.objectCode}(Mine), ";
+                                    }
+                                    else if (obj.GetComponentInChildren<Turret>())
+                                    {
+                                        objectList += $"{obj.objectCode}(Turret), ";
                                     }
                                     else if (obj.transform.parent.gameObject.GetComponentInChildren<SpikeRoofTrap>())
                                     {
@@ -516,13 +516,7 @@ namespace ToxicOmega_Tools.Patches
 
                     foundId = ulong.TryParse(command[1], out networkId);
 
-                    if (foundId && Plugin.GetGrabbableObject(networkId) != null)
-                    {
-                        itemTarget = Plugin.GetGrabbableObject(networkId);
-                        UnityEngine.Object.Destroy(itemTarget.gameObject);
-                        Plugin.LogMessage($"Killing {itemTarget.itemProperties.itemName} ({itemTarget.NetworkObjectId})!");
-                    }
-                    else if (foundId && Plugin.GetEnemyAI(networkId) != null)
+                    if (foundId && Plugin.GetEnemyAI(networkId) != null)
                     {
                         enemyTarget = Plugin.GetEnemyAI(networkId);
                         enemyTarget.HitEnemy(999999);
@@ -543,6 +537,12 @@ namespace ToxicOmega_Tools.Patches
                             UnityEngine.Object.Destroy(enemyTarget.gameObject);
                         }
                         Plugin.LogMessage($"Killing {enemyTarget.enemyType.enemyName} ({enemyTarget.NetworkObjectId})!");
+                    }
+                    else if (foundId && Plugin.GetGrabbableObject(networkId) != null)
+                    {
+                        itemTarget = Plugin.GetGrabbableObject(networkId);
+                        UnityEngine.Object.Destroy(itemTarget.gameObject);
+                        Plugin.LogMessage($"Killing {itemTarget.itemProperties.itemName} ({itemTarget.NetworkObjectId})!");
                     }
                     else
                     {
