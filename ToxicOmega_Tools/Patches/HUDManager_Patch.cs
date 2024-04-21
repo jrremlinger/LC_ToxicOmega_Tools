@@ -104,14 +104,14 @@ namespace ToxicOmega_Tools.Patches
                         int.TryParse(command[1], out itemListPage);
 
                     itemListPage = Math.Max(itemListPage, 1);
-                    FindPage(allItemsList, itemListPage, 6, "Item");
+                    FindPage(allItemsList, itemListPage, 10, "Item");
                     break;
                 case string s when "enemies".StartsWith(s):
                     if (command.Length > 1)
                         int.TryParse(command[1], out enemyListPage);
 
                     enemyListPage = Math.Max(enemyListPage, 1);
-                    FindPage(Plugin.allEnemiesList, enemyListPage, 6, "Enemy");
+                    FindPage(Plugin.allEnemiesList, enemyListPage, 10, "Enemy");
                     break;
                 case string s when "spawn".StartsWith(s):
                     string targetString = "";
@@ -171,7 +171,10 @@ namespace ToxicOmega_Tools.Patches
                     Item itemType = StartOfRound.Instance.allItemsList.itemsList.FirstOrDefault(x => x.itemName.ToLower().StartsWith(command[1].Replace("_", " ")));
 
                     if (itemType == null)
+                    {
+                        Plugin.LogMessage($"Unable to find GameObject with name \"{command[1]}\"", true);
                         break;
+                    }
 
                     if (itemType.minValue > itemType.maxValue)
                         (itemType.maxValue, itemType.minValue) = (itemType.minValue, itemType.maxValue);
@@ -207,7 +210,7 @@ namespace ToxicOmega_Tools.Patches
                     {
                         List<PlayerControllerB> activePlayers = StartOfRound.Instance.allPlayerScripts.ToList();
                         listName = "Player";
-                        FindPage(activePlayers, listPage, 6, listName);
+                        FindPage(activePlayers, listPage, 4, listName);
                     }
                     else if ("items".StartsWith(command[1]))
                     {
@@ -494,7 +497,7 @@ namespace ToxicOmega_Tools.Patches
                             Plugin.LogMessage($"{playerTarget.playerUsername} is not holding an item!", true);
                         }
                     }
-                    else if (playerTarget.isPlayerDead)
+                    else if (playerTarget != null && playerTarget.isPlayerDead)
                     {
                         Plugin.LogMessage($"Could not charge {playerTarget.playerUsername}'s item!\nPlayer is dead!", true);
                     }
@@ -546,7 +549,7 @@ namespace ToxicOmega_Tools.Patches
                     }
                     else
                     {
-                        playerTarget = Plugin.GetPlayerFromString(command[1]);
+                        playerTarget = Plugin.GetPlayerFromString(string.Join(" ", command.Skip(1)));
 
                         if (playerTarget != null && !playerTarget.isPlayerDead && playerTarget.isPlayerControlled)
                         {
@@ -589,7 +592,7 @@ namespace ToxicOmega_Tools.Patches
                             break;
                         }
 
-                        playerTarget = command.Length > 2 ? Plugin.GetPlayerFromString(string.Join(" ", command.Skip(1))) : localPlayerController;
+                        playerTarget = command.Length > 2 ? Plugin.GetPlayerFromString(string.Join(" ", command.Skip(2))) : localPlayerController;
 
                         if (playerTarget == null)
                             break;
