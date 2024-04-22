@@ -76,11 +76,11 @@ namespace ToxicOmega_Tools.Patches
                         "Enemy: Lists spawnable enemies",
                         "Trap: Lists spawnable traps",
                         "Spawn: Spawns items/enemies/traps",
-                        "Give: Add item to player inventory",
+                        "Give: Adds an item to a players inventory",
                         "List: Lists existing players/items/enemies",
                         "GUI: Toggles a GUI displaying nearby items/enemies",
                         "TP: Teleport players or gameobjects",
-                        "WP: Creates/lists waypoints",
+                        "WP: Creates waypoints",
                         "Heal: Heals/revives a player",
                         "Kill: Kills a player/item/enemy",
                         "GodMode: Toggles invincibility",
@@ -198,7 +198,6 @@ namespace ToxicOmega_Tools.Patches
                     HUDManager.Instance.DisplayTip("Trap List", "Mine, Turret, Spikes");
                     break;
                 case string s when "list".StartsWith(s):
-                    string listName = "";
                     int listPage = 1;
 
                     if (command.Length < 2)
@@ -216,21 +215,23 @@ namespace ToxicOmega_Tools.Patches
 
                     if ("players".StartsWith(command[1]))
                     {
-                        List<PlayerControllerB> activePlayers = StartOfRound.Instance.allPlayerScripts.ToList();
-                        listName = "Player";
-                        FindPage(activePlayers, listPage, 4, listName);
+                        FindPage(StartOfRound.Instance.allPlayerScripts.ToList(), listPage, 4, "Player");
                     }
                     else if ("items".StartsWith(command[1]))
                     {
-                        List<GrabbableObject> activeItems = UnityEngine.Object.FindObjectsOfType<GrabbableObject>().ToList();
-                        listName = "Active Item";
-                        FindPage(activeItems, listPage, 6, listName);
+                        FindPage(UnityEngine.Object.FindObjectsOfType<GrabbableObject>().ToList(), listPage, 6, "Active Items");
                     }
                     else if ("enemy".StartsWith(command[1]) || "enemies".StartsWith(command[1]))
                     {
-                        List<EnemyAI> activeEnemies = UnityEngine.Object.FindObjectsOfType<EnemyAI>().ToList();
-                        listName = "Active Enemy";
-                        FindPage(activeEnemies, listPage, 6, listName);
+                        FindPage(UnityEngine.Object.FindObjectsOfType<EnemyAI>().ToList(), listPage, 6, "Active Enemies");
+                    }
+                    else if ("codes".StartsWith(command[1]))
+                    {
+                        FindPage(UnityEngine.Object.FindObjectsOfType<TerminalAccessibleObject>().ToList(), listPage, 10, "Terminal Codes");
+                    }
+                    else if ("waypoints".StartsWith(command[1]))
+                    {
+                        FindPage(Plugin.waypoints, listPage, 8, "Waypoint");
                     }
                     else
                     {
@@ -298,15 +299,7 @@ namespace ToxicOmega_Tools.Patches
                     {
                         if (Plugin.waypoints.Count > 0)
                         {
-                            string pageText = "";
-
-                            for (int i = 0; i < Plugin.waypoints.Count; i++)
-                            {
-                                pageText += $"@{i}{Plugin.waypoints[i].Position}, ";
-                            }
-
-                            pageText = pageText.TrimEnd(',', ' ') + ".";
-                            HUDManager.Instance.DisplayTip("Waypoint List", pageText);
+                            FindPage(Plugin.waypoints, 1, 8, "Waypoint");
                         }
                         else
                         {
@@ -335,7 +328,7 @@ namespace ToxicOmega_Tools.Patches
                         if (doorPosition != Vector3.zero)
                         {
                             Plugin.waypoints.Add(new Waypoint { IsInside = true, Position = doorPosition });
-                            Plugin.LogMessage($"Waypoint @{Plugin.waypoints.Count - 1} created at Main Entrance.");
+                            Plugin.LogMessage($"Waypoint @{Plugin.waypoints.Count - 1} created at Front Door.");
                         }
                         else
                         {
@@ -387,44 +380,13 @@ namespace ToxicOmega_Tools.Patches
                     Plugin.LogMessage($"GodMode toggled {(Plugin.enableGod ? "on!" : "off.")}");
                     break;
                 case string s when "codes".StartsWith(s):
-                    TerminalAccessibleObject[] terminalObjects = UnityEngine.Object.FindObjectsOfType<TerminalAccessibleObject>();
+                    List<TerminalAccessibleObject> terminalObjects = UnityEngine.Object.FindObjectsOfType<TerminalAccessibleObject>().ToList();
 
-                    if (terminalObjects.Length > 0)
+                    if (terminalObjects.Count > 0)
                     {
                         if (command.Length < 2)
                         {
-                            string objectList = "";
-                            foreach (TerminalAccessibleObject obj in terminalObjects)
-                            {
-                                if (obj.objectCode != null)
-                                {
-                                    if (obj.isBigDoor)
-                                    {
-                                        objectList += $"{obj.objectCode}(Door), ";
-                                    }
-                                    else if (obj.GetComponentInChildren<Landmine>())
-                                    {
-                                        if (obj.GetComponentInChildren<Landmine>().hasExploded)
-                                            continue;
-
-                                        objectList += $"{obj.objectCode}(Mine), ";
-                                    }
-                                    else if (obj.GetComponentInChildren<Turret>())
-                                    {
-                                        objectList += $"{obj.objectCode}(Turret), ";
-                                    }
-                                    else if (obj.transform.parent.gameObject.GetComponentInChildren<SpikeRoofTrap>())
-                                    {
-                                        objectList += $"{obj.objectCode}(Spikes), ";
-                                    }
-                                    else
-                                    {
-                                        objectList += $"{obj.objectCode}(Unknown), ";
-                                    }
-                                }
-                            }
-                            objectList = objectList.TrimEnd(',', ' ') + ".";
-                            HUDManager.Instance.DisplayTip("Code List", objectList);
+                            FindPage(terminalObjects, 1, 10, "Terminal Codes");
                         }
                         else
                         {
@@ -433,7 +395,6 @@ namespace ToxicOmega_Tools.Patches
                                 if (obj != null && obj.objectCode == command[1])
                                     obj.CallFunctionFromTerminal();
                             }
-
                             Plugin.LogMessage($"Attempted to toggle all TerminalAccessibleObject of code {command[1]}.");
                         }
                     }
@@ -650,6 +611,7 @@ namespace ToxicOmega_Tools.Patches
             List<PlayerControllerB> activePlayersList = StartOfRound.Instance.allPlayerScripts.ToList();
             List<GrabbableObject> activeItems = UnityEngine.Object.FindObjectsOfType<GrabbableObject>().ToList();
             List<EnemyAI> activeEnemies = UnityEngine.Object.FindObjectsOfType<EnemyAI>().ToList();
+            List<TerminalAccessibleObject> terminalObjects = UnityEngine.Object.FindObjectsOfType<TerminalAccessibleObject>().ToList();
             bool appendList = true;
             int totalItems = list.Count;
             int maxPages = (int)Math.Ceiling((double)totalItems / itemsPerPage);
@@ -692,20 +654,65 @@ namespace ToxicOmega_Tools.Patches
                     {
                         pageText += $"{(activePlayersList[i].isPlayerDead ? "Dead: " : "")}{activePlayersList[i].playerUsername} (#{activePlayersList[i].playerClientId}{(Plugin.CheckPlayerIsHost(activePlayersList[i]) ? " - HOST" : "")})\n";
                     }
-                    else if (listName == "Active Item")
+                    else if (listName == "Active Items")
                     {
                         pageText += $"{activeItems[i].itemProperties.itemName} ({activeItems[i].NetworkObjectId}), ";
                         appendList = false;
                     }
-                    else if (listName == "Active Enemy")
+                    else if (listName == "Active Enemies")
                     {
                         pageText += $"{activeEnemies[i].enemyType.enemyName} ({activeEnemies[i].NetworkObjectId}), ";
                         appendList = false;
                     }
+                    else if (listName == "Terminal Codes")
+                    {
+                        if (terminalObjects[i].objectCode != null)
+                        {
+                            if (terminalObjects[i].isBigDoor)
+                            {
+                                pageText += $"{terminalObjects[i].objectCode}(Door), ";
+                            }
+                            else if (terminalObjects[i].GetComponentInChildren<Landmine>())
+                            {
+                                if (terminalObjects[i].GetComponentInChildren<Landmine>().hasExploded)
+                                    continue;
+
+                                pageText += $"{terminalObjects[i].objectCode}(Mine), ";
+                            }
+                            else if (terminalObjects[i].GetComponentInChildren<Turret>())
+                            {
+                                pageText += $"{terminalObjects[i].objectCode}(Turret), ";
+                            }
+                            else if (terminalObjects[i].transform.parent.gameObject.GetComponentInChildren<SpikeRoofTrap>())
+                            {
+                                pageText += $"{terminalObjects[i].objectCode}(Spikes), ";
+                            }
+                            else
+                            {
+                                pageText += $"{terminalObjects[i].objectCode}(Unknown), ";
+                            }
+                        }
+                        appendList = false;
+                    }
+                    else if (listName == "Waypoint")
+                    {
+                        if (Plugin.waypoints[i].Position == RoundManager.FindMainEntrancePosition(true, true))
+                        {
+                            pageText += $"@{i}(Door), ";
+                        }
+                        else if (Plugin.waypoints[i].Position == RoundManager.FindMainEntrancePosition(true))
+                        {
+                            pageText += $"@{i}(Entrance), ";
+                        }
+                        else
+                        {
+                            pageText += $"@{i}({Math.Floor(Plugin.waypoints[i].Position.x)}, {Math.Floor(Plugin.waypoints[i].Position.z)}), ";
+                        }
+                    }
                 }
 
                 pageText = pageText.TrimEnd(',', ' ', '\n') + (listName == "Player" ? "" : ".");
-                string pageHeader = $"{listName}{(appendList ? " List" : "")} (Page {page} of {maxPages})";
+                string pageHeader = $"{listName}{(appendList ? " List" : "")} ({page} of {maxPages})";
                 HUDManager.Instance.DisplayTip(pageHeader, pageText);
             }
         }
