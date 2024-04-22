@@ -191,6 +191,12 @@ namespace ToxicOmega_Tools.Patches
 
                     spawnedItem.GetComponent<GrabbableObject>().fallTime = 0f;
                     spawnedItem.GetComponent<NetworkObject>().Spawn();
+
+                    if (itemType.itemName == "Shotgun")
+                    {
+                        Networking.SyncAmmoClientRpc(spawnedItem.GetComponent<GrabbableObject>().NetworkObjectId);
+                    }
+
                     Networking.SyncScrapValueClientRpc(spawnedItem.GetComponent<GrabbableObject>().NetworkObjectId, (int)(double)(UnityEngine.Random.Range(itemType.minValue, itemType.maxValue) * RoundManager.Instance.scrapValueMultiplier));
                     Networking.GiveItemClientRpc(playerTarget.playerClientId, spawnedItem.GetComponent<GrabbableObject>().NetworkObjectId);
                     break;

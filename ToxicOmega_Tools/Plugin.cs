@@ -619,11 +619,10 @@ namespace ToxicOmega_Tools
                     myItem.GetComponent<GrabbableObject>().transform.rotation = Quaternion.Euler(myItem.GetComponent<GrabbableObject>().itemProperties.restingRotation);
                     myItem.GetComponent<GrabbableObject>().fallTime = 0f;
                     myItem.GetComponent<NetworkObject>().Spawn();
-
                     Networking.SyncScrapValueClientRpc(myItem.GetComponent<GrabbableObject>().NetworkObjectId, setValue);
 
                     // RPC to set Shotgun shells loaded to be two for all players
-                    if (item.Id == 59)
+                    if (allItemsList[item.Id].itemName == "Shotgun")
                     {
                         Networking.SyncAmmoClientRpc(myItem.GetComponent<GrabbableObject>().NetworkObjectId);
                     }
