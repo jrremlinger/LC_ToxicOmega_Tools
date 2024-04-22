@@ -18,7 +18,7 @@ namespace ToxicOmega_Tools
     {
         private const string modGUID = "com.toxicomega.toxicomega_tools";
         private const string modName = "ToxicOmega Tools";
-        private const string modVersion = "1.1.7";
+        private const string modVersion = "1.2.0";
 
         private readonly Harmony harmony = new Harmony(modGUID);
 
