@@ -3,6 +3,7 @@ using HarmonyLib;
 using System;
 using System.Collections;
 using UnityEngine;
+using static UnityEngine.EventSystems.EventTrigger;
 
 namespace ToxicOmega_Tools.Patches
 {
@@ -110,8 +111,8 @@ namespace ToxicOmega_Tools.Patches
 
                 foreach (PlayerControllerB player in StartOfRound.Instance.allPlayerScripts)
                 {
-                    if ((Vector3.Distance(player.transform.position, position) < 25.0f || GUI.isFullList) && player.isPlayerControlled && !player.isPlayerDead)
-                        GUI.enemyListText += $"{player.playerUsername} (#{player.playerClientId}{(Plugin.CheckPlayerIsHost(player) ? " - HOST" : "")})\n";
+                    if ((Vector3.Distance(player.isPlayerDead ? player.deadBody.transform.position : player.transform.position, position) < 25.0f || GUI.isFullList) && (player.isPlayerControlled || player.isPlayerDead))
+                        GUI.enemyListText += $"{(player.isPlayerDead ? "<color=red>" : "")}{player.playerUsername}{(player.isPlayerDead ? "</color>" : "")} (#{player.playerClientId}{(Plugin.CheckPlayerIsHost(player) ? " - HOST" : "")})\n";
                 }
 
                 foreach (EnemyAI enemy in FindObjectsOfType<EnemyAI>())

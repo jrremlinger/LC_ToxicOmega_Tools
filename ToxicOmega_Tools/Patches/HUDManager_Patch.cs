@@ -683,7 +683,7 @@ namespace ToxicOmega_Tools.Patches
                     {
                         pageText += $"{list[i]}\n";
                     }
-                    else if (listName == "Player" && activePlayersList[i].isPlayerControlled)
+                    else if (listName == "Player" && (activePlayersList[i].isPlayerControlled || activePlayersList[i].isPlayerDead))
                     {
                         pageText += $"{(activePlayersList[i].isPlayerDead ? "Dead: " : "")}{activePlayersList[i].playerUsername} (#{activePlayersList[i].playerClientId}{(Plugin.CheckPlayerIsHost(activePlayersList[i]) ? " - HOST" : "")})\n";
                     }
