@@ -47,7 +47,10 @@ namespace ToxicOmega_Tools.Patches
                 return;
 
             Vector3 localPosition = (__instance.isPlayerDead && __instance.spectatedPlayerScript != null) ? __instance.spectatedPlayerScript.transform.position : __instance.transform.position;
-            GUI.posLabelText = $"GodMode: {(Plugin.enableGod ? "Enabled" : "Disabled")}\nX: {Math.Round(localPosition.x, 1)}\nY: {Math.Round(localPosition.y, 1)}\nZ: {Math.Round(localPosition.z, 1)}\n";
+
+            GUI.posLabelText = $"Time: {(RoundManager.Instance.timeScript.hour + 6 > 12 ? RoundManager.Instance.timeScript.hour - 6 : RoundManager.Instance.timeScript.hour + 6)}{(RoundManager.Instance.timeScript.hour + 6 < 12 ? "am" : "pm")}\n";
+            GUI.posLabelText += $"GodMode: {(Plugin.enableGod ? "Enabled" : "Disabled")}\n";
+            GUI.posLabelText += $"X: {Math.Round(localPosition.x, 1)}\nY: {Math.Round(localPosition.y, 1)}\nZ: {Math.Round(localPosition.z, 1)}";
         }
 
         static IEnumerator UpdateGUI(PlayerControllerB localPlayer)
