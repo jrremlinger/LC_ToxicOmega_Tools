@@ -479,6 +479,8 @@ namespace ToxicOmega_Tools.Patches
                     break;
                 case string s when "kill".StartsWith(s):
                     bool forceDestroy = false;
+                    int endIndex;
+                    int counter = 0;
 
                     if (command.Length < 2)
                     {
@@ -486,41 +488,66 @@ namespace ToxicOmega_Tools.Patches
                         break;
                     }
 
-                    if (command[1][command[1].Length - 1] == '*')
+                    string tempString = string.Join("", command.Skip(1));
+
+                    if (tempString[tempString.Length - 1] == '*')
                     {
                         forceDestroy = true;
-                        command[1] = command[1].Remove(command[1].Length - 1, 1);
+                        tempString = tempString.Remove(tempString.Length - 1, 1);
                     }
 
-                    foundId = ulong.TryParse(command[1], out networkId);
+                    string[] processedStrings = tempString.Split(new char[1] { '-' }, StringSplitOptions.RemoveEmptyEntries); 
 
-                    if (foundId && Plugin.GetEnemyAI(networkId) != null)
+                    foundId = ulong.TryParse(processedStrings[0], out networkId);
+
+                    if (foundId)
                     {
-                        enemyTarget = Plugin.GetEnemyAI(networkId);
-                        enemyTarget.HitEnemy(999999);
+                        if (processedStrings.Length < 2 || !int.TryParse(processedStrings[1], out endIndex))
+                            endIndex = (int)networkId;
 
-                        // Force destroy invincible enemies
-                        if (enemyTarget.GetComponentInChildren<BlobAI>() != null ||
-                            enemyTarget.GetComponentInChildren<ButlerBeesEnemyAI>() != null ||
-                            enemyTarget.GetComponentInChildren<DressGirlAI>() != null ||
-                            enemyTarget.GetComponentInChildren<JesterAI>() != null ||
-                            enemyTarget.GetComponentInChildren<LassoManAI>() != null ||
-                            enemyTarget.GetComponentInChildren<SpringManAI>() != null ||
-                            enemyTarget.GetComponentInChildren<DocileLocustBeesAI>() != null ||
-                            enemyTarget.GetComponentInChildren<RadMechAI>() != null ||
-                            enemyTarget.GetComponentInChildren<RedLocustBees>() != null ||
-                            enemyTarget.GetComponentInChildren<SandWormAI>() != null ||
-                            forceDestroy || (command.Length > 2 && command[2] == "*"))
+                        endIndex = Math.Max((int)networkId, endIndex);
+
+                        for (int i = (int)networkId; i <= endIndex; i++)
                         {
-                            UnityEngine.Object.Destroy(enemyTarget.gameObject);
+                            if (Plugin.GetEnemyAI((ulong)i) != null)
+                            {
+                                counter++;
+                                enemyTarget = Plugin.GetEnemyAI((ulong)i);
+                                enemyTarget.HitEnemy(999999);
+
+                                // Force destroy invincible enemies
+                                if (enemyTarget.GetComponentInChildren<BlobAI>() != null ||
+                                    enemyTarget.GetComponentInChildren<ButlerBeesEnemyAI>() != null ||
+                                    enemyTarget.GetComponentInChildren<DressGirlAI>() != null ||
+                                    enemyTarget.GetComponentInChildren<JesterAI>() != null ||
+                                    enemyTarget.GetComponentInChildren<LassoManAI>() != null ||
+                                    enemyTarget.GetComponentInChildren<SpringManAI>() != null ||
+                                    enemyTarget.GetComponentInChildren<DocileLocustBeesAI>() != null ||
+                                    enemyTarget.GetComponentInChildren<RadMechAI>() != null ||
+                                    enemyTarget.GetComponentInChildren<RedLocustBees>() != null ||
+                                    enemyTarget.GetComponentInChildren<SandWormAI>() != null ||
+                                    forceDestroy)
+                                {
+                                    UnityEngine.Object.Destroy(enemyTarget.gameObject);
+                                }
+
+                                if ((int)networkId == endIndex)
+                                    Plugin.LogMessage($"Killed {enemyTarget.enemyType.enemyName} ({enemyTarget.NetworkObjectId})!");
+                            }
+                            else if (Plugin.GetGrabbableObject((ulong)i) != null)
+                            {
+                                counter++;
+                                itemTarget = Plugin.GetGrabbableObject((ulong)i);
+                                UnityEngine.Object.Destroy(itemTarget.gameObject);
+
+                                if ((int)networkId == endIndex)
+                                    Plugin.LogMessage($"Killed {itemTarget.itemProperties.itemName} ({itemTarget.NetworkObjectId})!");
+                            }
                         }
-                        Plugin.LogMessage($"Killing {enemyTarget.enemyType.enemyName} ({enemyTarget.NetworkObjectId})!");
-                    }
-                    else if (foundId && Plugin.GetGrabbableObject(networkId) != null)
-                    {
-                        itemTarget = Plugin.GetGrabbableObject(networkId);
-                        UnityEngine.Object.Destroy(itemTarget.gameObject);
-                        Plugin.LogMessage($"Killing {itemTarget.itemProperties.itemName} ({itemTarget.NetworkObjectId})!");
+
+                        if ((int)networkId != endIndex)
+                            Plugin.LogMessage($"Killed {counter} GameObjects!");
+
                     }
                     else
                     {
