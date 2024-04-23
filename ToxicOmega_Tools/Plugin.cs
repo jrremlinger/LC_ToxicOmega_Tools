@@ -550,7 +550,7 @@ namespace ToxicOmega_Tools
             {
                 logLocation = "Terminal";
             }
-            else if (targetString.StartsWith("@"))
+            else if (targetString.StartsWith("@") && targetString.Length > 1)
             {
                 logLocation = $"WP @{targetString.Substring(1)}";
             }
