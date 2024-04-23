@@ -370,16 +370,20 @@ namespace ToxicOmega_Tools
         public static void RevivePlayer(ulong playerClientId)
         {
             PlayerControllerB localPlayerController = StartOfRound.Instance.localPlayerController;
-            PlayerControllerB playerController = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(playerClientId));
+            PlayerControllerB playerController = GetPlayerController(playerClientId);
             StartOfRound round = StartOfRound.Instance;
-            Terminal terminal = FindObjectOfType<Terminal>();
 
             Debug.Log("Reviving players A");
             playerController.ResetPlayerBloodObjects(playerController.isPlayerDead);
             if (playerController.isPlayerDead || playerController.isPlayerControlled)
             {
+                if (playerController.deadBody.gameObject != null)
+                    Destroy(playerController.deadBody.gameObject);
+                if (playerController.deadBody != null) 
+                    Destroy(playerController.deadBody);
                 playerController.isClimbingLadder = false;
                 playerController.ResetZAndXRotation();
+                playerController.thisController.enabled = true;
                 playerController.health = 100;
                 playerController.disableLookInput = false;
                 Debug.Log("Reviving players B");
@@ -393,20 +397,21 @@ namespace ToxicOmega_Tools
                     playerController.wasInElevatorLastFrame = false;
                     round.SetPlayerObjectExtrapolate(false);
                     playerController.TeleportPlayer(round.GetPlayerSpawnPosition((int)playerClientId));
-                    playerController.TeleportPlayer(terminal.transform.position);
                     playerController.setPositionOfDeadPlayer = false;
                     playerController.DisablePlayerModel(round.allPlayerObjects[playerClientId], true, true);
                     playerController.helmetLight.enabled = false;
                     Debug.Log("Reviving players C");
                     playerController.Crouch(false);
                     playerController.criticallyInjured = false;
-                    playerController.playerBodyAnimator?.SetBool("Limp", false);
+                    if (playerController.playerBodyAnimator != null)
+                        playerController.playerBodyAnimator.SetBool("Limp", false);
                     playerController.bleedingHeavily = false;
                     playerController.activatingItem = false;
                     playerController.twoHanded = false;
                     playerController.inSpecialInteractAnimation = false;
+                    playerController.freeRotationInInteractAnimation = false;
                     playerController.disableSyncInAnimation = false;
-                    playerController.inAnimationWithEnemy = null;
+                    playerController.inAnimationWithEnemy = (EnemyAI)null;
                     playerController.holdingWalkieTalkie = false;
                     playerController.speakingToWalkieTalkie = false;
                     Debug.Log("Reviving players D");
@@ -418,6 +423,7 @@ namespace ToxicOmega_Tools
                     playerController.health = 100;
                     Debug.Log("Reviving players E");
                     playerController.mapRadarDotAnimator.SetBool("dead", false);
+                    playerController.externalForceAutoFade = Vector3.zero;
                     if (playerController.IsOwner)
                     {
                         HUDManager.Instance.gasHelmetAnimator.SetBool("gasEmitting", false);
@@ -436,18 +442,14 @@ namespace ToxicOmega_Tools
                 playerController.voiceMuffledByEnemy = false;
                 SoundManager.Instance.playerVoicePitchTargets[playerClientId] = 1f;
                 SoundManager.Instance.SetPlayerPitch(1f, (int)playerClientId);
-
                 if (playerController.currentVoiceChatIngameSettings == null)
                     round.RefreshPlayerVoicePlaybackObjects();
-
                 if (playerController.currentVoiceChatIngameSettings != null)
                 {
                     if (playerController.currentVoiceChatIngameSettings.voiceAudio == null)
                         playerController.currentVoiceChatIngameSettings.InitializeComponents();
-
                     if (playerController.currentVoiceChatIngameSettings.voiceAudio == null)
                         return;
-
                     playerController.currentVoiceChatIngameSettings.voiceAudio.GetComponent<OccludeAudio>().overridingLowPass = false;
                 }
                 Debug.Log("Reviving players G");
@@ -460,8 +462,26 @@ namespace ToxicOmega_Tools
             HUDManager.Instance.UpdateHealthUI(100, false);
             playerController.spectatedPlayerScript = null;
             HUDManager.Instance.audioListenerLowPass.enabled = false;
-            Debug.Log("Reviving players H");
+            Debug.Log( "Reviving players H");
             round.SetSpectateCameraToGameOverMode(false, playerController);
+            //RagdollGrabbableObject[] objectsOfType = FindObjectsOfType<RagdollGrabbableObject>();
+            //for (int index = 0; index<objectsOfType.Length; ++index)
+            //{
+            //  if (!objectsOfType[index].isHeld)
+            //  {
+            //    if (round.IsServer)
+            //    {
+            //        if (objectsOfType[index].NetworkObject.IsSpawned)
+            //            objectsOfType[index].NetworkObject.Despawn();
+            //        else
+            //            Destroy(objectsOfType[index].gameObject);
+            //    }
+            //    }
+            //  else if (objectsOfType[index].isHeld &&  objectsOfType[index].playerHeldBy !=  null)
+            //    objectsOfType[index].playerHeldBy.DropAllHeldItems();
+            //}
+            //foreach (Component component in FindObjectsOfType<DeadBodyInfo>())
+            //  Destroy( component.gameObject);
             round.livingPlayers += 1;
             round.allPlayersDead = false;
             round.UpdatePlayerVoiceEffects();
