@@ -338,7 +338,7 @@ namespace ToxicOmega_Tools.Patches
 
                         if (doorPosition != Vector3.zero)
                         {
-                            Plugin.waypoints.Add(new Waypoint { IsInside = true, Position = doorPosition });
+                            Plugin.waypoints.Add(new Waypoint { IsInside = false, Position = doorPosition });
                             Plugin.LogMessage($"Waypoint @{Plugin.waypoints.Count - 1} created at Front Door.");
                         }
                         else
