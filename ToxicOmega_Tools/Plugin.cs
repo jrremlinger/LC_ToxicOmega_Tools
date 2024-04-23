@@ -259,6 +259,40 @@ namespace ToxicOmega_Tools
                     return Vector3.zero;
                 }
             }
+            else if (input.StartsWith("+") || (input.StartsWith("-") && input.Length > 1))
+            {
+                PlayerControllerB playerOrigin = (localPlayerController.isPlayerDead && localPlayerController.spectatedPlayerScript != null) ? localPlayerController.spectatedPlayerScript : localPlayerController;
+
+                if (playerOrigin != null && playerOrigin.isPlayerControlled)
+                {
+                    if (input.Length > 1 && int.TryParse(input.Substring(1), out int distance))
+                    {
+                        position = playerOrigin.transform.position + (playerOrigin.playerGlobalHead.forward * (distance * (input.StartsWith("-") ? -1 : 1)));
+                    }
+                    else
+                    {
+                        Physics.Raycast(playerOrigin.playerGlobalHead.transform.position + (playerOrigin.playerGlobalHead.forward * 1), playerOrigin.playerGlobalHead.forward, out RaycastHit hit);
+
+                        if (hit.point != null)
+                        {
+                            position = hit.point;
+                        }
+                        else
+                        {
+                            LogMessage("Raycast failed!", true);
+                            return Vector3.zero;
+                        }
+                    }
+
+                    if (positionType == 3)
+                        LogMessage($"Teleported {targetName} {(input.StartsWith("-") ? "behind" : "in front of")} {playerOrigin.playerUsername}.");
+                }
+                else
+                {
+                    LogMessage("Unable to get player origin position!", true);
+                    return Vector3.zero;
+                }
+            }
             else
             {
                 bool foundId = ulong.TryParse(input, out ulong networkId);
@@ -553,6 +587,20 @@ namespace ToxicOmega_Tools
             else if (targetString.StartsWith("@") && targetString.Length > 1)
             {
                 logLocation = $"WP @{targetString.Substring(1)}";
+            }
+            else if (targetString.StartsWith("+") || (targetString.StartsWith("-") && targetString.Length > 1))
+            {
+                PlayerControllerB localPlayerController = StartOfRound.Instance.localPlayerController;
+                PlayerControllerB playerOrigin = (localPlayerController.isPlayerDead && localPlayerController.spectatedPlayerScript != null) ? localPlayerController.spectatedPlayerScript : localPlayerController;
+
+                if (playerOrigin != null && playerOrigin.isPlayerControlled)
+                {
+                    logLocation = $"{(targetString.StartsWith("-") ? "Behind" : "In front of")} {playerOrigin.playerUsername}";
+                }
+                else
+                {
+                    return;
+                }
             }
             else
             {
