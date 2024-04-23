@@ -24,7 +24,7 @@ namespace ToxicOmega_Tools
 
         internal static Plugin Instance;
         internal static ManualLogSource mls;
-        internal static GUI menu;
+        internal static CustomGUI menu;
         internal static List<SpawnableEnemyWithRarity> customInsideList;
         internal static List<SpawnableEnemyWithRarity> customOutsideList;
         internal static List<SpawnableEnemyWithRarity> allEnemiesList;
@@ -46,8 +46,8 @@ namespace ToxicOmega_Tools
             var gameObject = new GameObject("GUI");
             DontDestroyOnLoad(gameObject);
             gameObject.hideFlags = HideFlags.HideAndDontSave;
-            gameObject.AddComponent<GUI>();
-            menu = (GUI)gameObject.GetComponent("GUI");
+            gameObject.AddComponent<CustomGUI>();
+            menu = (CustomGUI)gameObject.GetComponent("GUI");
         }
 
         public static bool CheckPlayerIsHost(PlayerControllerB player)
