@@ -242,6 +242,9 @@ namespace ToxicOmega_Tools
                 if (terminal != null)
                 {
                     position = terminal.transform.position;
+
+                    if (positionType == 3)
+                        LogMessage($"Teleported {targetName} to Terminal.");
                 }
                 else
                 {
@@ -304,7 +307,7 @@ namespace ToxicOmega_Tools
 
                 if (playerTarget.isPlayerDead)
                 {
-                    if (localPlayerController.playerClientId == playerTarget.playerClientId && playerTarget.spectatedPlayerScript != null)
+                    if (localPlayerController.playerClientId == playerTarget.playerClientId && playerTarget.spectatedPlayerScript != null && input == "")
                     {
                         position = playerTarget.spectatedPlayerScript.transform.position;
                     }
