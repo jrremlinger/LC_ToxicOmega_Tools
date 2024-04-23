@@ -1,11 +1,12 @@
 ﻿using HarmonyLib;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace ToxicOmega_Tools.Patches
 {
     [HarmonyPatch(typeof(Terminal))]
-    internal class Terminal_Patch
+    internal class Terminal_Patch : MonoBehaviour
     {
         [HarmonyPatch(nameof(Terminal.Start))]
         [HarmonyPostfix]

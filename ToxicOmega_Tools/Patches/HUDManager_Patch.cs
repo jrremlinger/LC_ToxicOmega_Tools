@@ -10,7 +10,7 @@ using UnityEngine.EventSystems;
 namespace ToxicOmega_Tools.Patches
 {
     [HarmonyPatch(typeof(HUDManager))]
-    internal class HUDManager_Patch
+    internal class HUDManager_Patch : MonoBehaviour
     {
         public static bool sendPlayerInside = true;
         private static int itemListPage;
@@ -46,7 +46,7 @@ namespace ToxicOmega_Tools.Patches
         private static bool RegisterChatCommand(HUDManager __instance)
         {
             RoundManager currentRound = RoundManager.Instance;
-            Terminal terminal = UnityEngine.Object.FindObjectOfType<Terminal>();
+            Terminal terminal = FindObjectOfType<Terminal>();
             List<Item> allItemsList = StartOfRound.Instance.allItemsList.itemsList;
             PlayerControllerB localPlayerController = GameNetworkManager.Instance.localPlayerController;
             bool flag = true;   // Chat will not be sent if flag = true; If no command is recognized it will be set to false
@@ -184,7 +184,7 @@ namespace ToxicOmega_Tools.Patches
                     if (playerTarget == null || playerTarget.isPlayerDead)
                         break;
 
-                    GameObject spawnedItem = UnityEngine.Object.Instantiate(itemType.spawnPrefab, playerTarget.transform.position, Quaternion.identity);
+                    GameObject spawnedItem = Instantiate(itemType.spawnPrefab, playerTarget.transform.position, Quaternion.identity);
 
                     if (spawnedItem == null)
                         break;
@@ -225,15 +225,15 @@ namespace ToxicOmega_Tools.Patches
                     }
                     else if ("items".StartsWith(command[1]))
                     {
-                        FindPage(UnityEngine.Object.FindObjectsOfType<GrabbableObject>().ToList(), listPage, 6, "Active Items");
+                        FindPage(FindObjectsOfType<GrabbableObject>().ToList(), listPage, 6, "Active Items");
                     }
                     else if ("enemy".StartsWith(command[1]) || "enemies".StartsWith(command[1]))
                     {
-                        FindPage(UnityEngine.Object.FindObjectsOfType<EnemyAI>().ToList(), listPage, 6, "Active Enemies");
+                        FindPage(FindObjectsOfType<EnemyAI>().ToList(), listPage, 6, "Active Enemies");
                     }
                     else if ("codes".StartsWith(command[1]))
                     {
-                        FindPage(UnityEngine.Object.FindObjectsOfType<TerminalAccessibleObject>().ToList(), listPage, 10, "Terminal Codes");
+                        FindPage(FindObjectsOfType<TerminalAccessibleObject>().ToList(), listPage, 10, "Terminal Codes");
                     }
                     else if ("waypoints".StartsWith(command[1]))
                     {
@@ -391,7 +391,7 @@ namespace ToxicOmega_Tools.Patches
                     Plugin.LogMessage($"GodMode toggled {(Plugin.enableGod ? "on!" : "off.")}");
                     break;
                 case string s when "codes".StartsWith(s):
-                    List<TerminalAccessibleObject> terminalObjects = UnityEngine.Object.FindObjectsOfType<TerminalAccessibleObject>().ToList();
+                    List<TerminalAccessibleObject> terminalObjects = FindObjectsOfType<TerminalAccessibleObject>().ToList();
 
                     if (terminalObjects.Count > 0)
                     {
@@ -415,7 +415,7 @@ namespace ToxicOmega_Tools.Patches
                     }
                     break;
                 case string s when "breaker".StartsWith(s):
-                    BreakerBox breaker = UnityEngine.Object.FindObjectOfType<BreakerBox>();
+                    BreakerBox breaker = FindObjectOfType<BreakerBox>();
 
                     if (breaker != null)
                     {
@@ -535,7 +535,7 @@ namespace ToxicOmega_Tools.Patches
                                     enemyTarget.GetComponentInChildren<SandWormAI>() != null ||
                                     forceDestroy)
                                 {
-                                    UnityEngine.Object.Destroy(enemyTarget.gameObject);
+                                    Destroy(enemyTarget.gameObject);
                                 }
 
                                 if ((int)networkId == endIndex)
@@ -544,8 +544,7 @@ namespace ToxicOmega_Tools.Patches
                             else if (itemTarget != null)
                             {
                                 counter++;
-                                itemTarget = Plugin.GetGrabbableObject((ulong)i);
-                                UnityEngine.Object.Destroy(itemTarget.gameObject);
+                                Destroy(itemTarget.gameObject);
 
                                 if ((int)networkId == endIndex)
                                     Plugin.LogMessage($"Killed {itemTarget.itemProperties.itemName} ({itemTarget.NetworkObjectId})!");
@@ -649,9 +648,9 @@ namespace ToxicOmega_Tools.Patches
         {
             List<Item> allItemsList = StartOfRound.Instance.allItemsList.itemsList;
             List<PlayerControllerB> activePlayersList = StartOfRound.Instance.allPlayerScripts.ToList();
-            List<GrabbableObject> activeItems = UnityEngine.Object.FindObjectsOfType<GrabbableObject>().ToList();
-            List<EnemyAI> activeEnemies = UnityEngine.Object.FindObjectsOfType<EnemyAI>().ToList();
-            List<TerminalAccessibleObject> terminalObjects = UnityEngine.Object.FindObjectsOfType<TerminalAccessibleObject>().ToList();
+            List<GrabbableObject> activeItems = FindObjectsOfType<GrabbableObject>().ToList();
+            List<EnemyAI> activeEnemies = FindObjectsOfType<EnemyAI>().ToList();
+            List<TerminalAccessibleObject> terminalObjects = FindObjectsOfType<TerminalAccessibleObject>().ToList();
             bool appendList = true;
             int totalItems = list.Count;
             int maxPages = (int)Math.Ceiling((double)totalItems / itemsPerPage);

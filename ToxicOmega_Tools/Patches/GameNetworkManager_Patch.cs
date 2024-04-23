@@ -1,9 +1,10 @@
 ﻿using HarmonyLib;
+using UnityEngine;
 
 namespace ToxicOmega_Tools.Patches
 {
     [HarmonyPatch(typeof(GameNetworkManager))]
-    internal class GameNetworkManager_Patch
+    internal class GameNetworkManager_Patch : MonoBehaviour
     {
         [HarmonyPatch(nameof(GameNetworkManager.Disconnect))]
         [HarmonyPostfix]

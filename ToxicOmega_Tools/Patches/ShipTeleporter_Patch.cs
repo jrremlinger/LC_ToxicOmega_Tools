@@ -1,14 +1,14 @@
 ﻿using HarmonyLib;
-using System;
+using UnityEngine;
 
 namespace ToxicOmega_Tools.Patches
 {
     [HarmonyPatch(typeof(ShipTeleporter))]
-    internal class ShipTeleporter_Patch
+    internal class ShipTeleporter_Patch : MonoBehaviour
     {
         [HarmonyPatch(nameof(ShipTeleporter.SetRandomSeed))]
         [HarmonyPostfix]
-        private static void GrabTeleporterSeed(ref Random ___shipTeleporterSeed)
+        private static void GrabTeleporterSeed(ref System.Random ___shipTeleporterSeed)
         {
             Plugin.shipTeleporterSeed = ___shipTeleporterSeed;
         }
