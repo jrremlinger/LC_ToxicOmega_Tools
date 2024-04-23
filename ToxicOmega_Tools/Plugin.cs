@@ -55,21 +55,6 @@ namespace ToxicOmega_Tools
             return player.gameObject == player.playersManager.allPlayerObjects[0];
         }
 
-        public static EnemyAI GetEnemyAI(ulong networkObjectId)
-        {
-            return FindObjectsOfType<EnemyAI>().FirstOrDefault(enemy => enemy.NetworkObjectId.Equals(networkObjectId));
-        }
-
-        public static GrabbableObject GetGrabbableObject(ulong networkObjectId)
-        {
-            return FindObjectsOfType<GrabbableObject>().FirstOrDefault(item => item.NetworkObjectId.Equals(networkObjectId));
-        }
-
-        public static TerminalAccessibleObject GetTerminalAccessibleObject(ulong networkObjectId)
-        {
-            return FindObjectsOfType<TerminalAccessibleObject>().FirstOrDefault(item => item.NetworkObjectId.Equals(networkObjectId));
-        }
-
         public static PlayerControllerB GetPlayerController(ulong clientId)
         {
             StartOfRound round = StartOfRound.Instance;
@@ -277,18 +262,18 @@ namespace ToxicOmega_Tools
             else
             {
                 bool foundId = ulong.TryParse(input, out ulong networkId);
+                EnemyAI enemy = Networking.GetEnemyByNetId(networkId);
+                GrabbableObject item = Networking.GetItemByNetId(networkId);
 
-                if (foundId && GetEnemyAI(networkId) != null)
+                if (foundId && enemy != null)
                 {
-                    EnemyAI enemy = GetEnemyAI(networkId);
                     HUDManager_Patch.sendPlayerInside = !enemy.isOutside;
                     position = enemy.transform.position;
                 }
-                else if (foundId && GetGrabbableObject(networkId) != null)
+                else if (foundId && item != null)
                 {
-                    GrabbableObject grabbableObject = GetGrabbableObject(networkId);
-                    HUDManager_Patch.sendPlayerInside = grabbableObject.isInFactory && !grabbableObject.isInShipRoom;
-                    position = grabbableObject.transform.position;
+                    HUDManager_Patch.sendPlayerInside = item.isInFactory && !item.isInShipRoom;
+                    position = item.transform.position;
                 }
                 else
                 {
@@ -403,8 +388,7 @@ namespace ToxicOmega_Tools
                     Debug.Log("Reviving players C");
                     playerController.Crouch(false);
                     playerController.criticallyInjured = false;
-                    if (playerController.playerBodyAnimator != null)
-                        playerController.playerBodyAnimator.SetBool("Limp", false);
+                    playerController.playerBodyAnimator?.SetBool("Limp", false);
                     playerController.bleedingHeavily = false;
                     playerController.activatingItem = false;
                     playerController.twoHanded = false;
@@ -573,14 +557,16 @@ namespace ToxicOmega_Tools
             else
             {
                 bool foundId = ulong.TryParse(targetString, out ulong networkId);
+                EnemyAI enemy = Networking.GetEnemyByNetId(networkId);
+                GrabbableObject item = Networking.GetItemByNetId(networkId);
 
-                if (foundId && GetGrabbableObject(networkId) != null)
+                if (foundId && enemy != null)
                 {
-                    logLocation = GetGrabbableObject(networkId).itemProperties.itemName;
+                    logLocation = enemy.enemyType.enemyName;
                 }
-                else if (foundId && GetEnemyAI(networkId) != null)
+                else if (foundId && item != null)
                 {
-                    logLocation = GetEnemyAI(networkId).enemyType.enemyName;
+                    logLocation = item.itemProperties.itemName;
                 }
                 else if (GetPlayerFromString(targetString) != null)
                 {
@@ -642,12 +628,12 @@ namespace ToxicOmega_Tools
                     myItem.GetComponent<GrabbableObject>().transform.rotation = Quaternion.Euler(myItem.GetComponent<GrabbableObject>().itemProperties.restingRotation);
                     myItem.GetComponent<GrabbableObject>().fallTime = 0f;
                     myItem.GetComponent<NetworkObject>().Spawn();
-                    Networking.SyncScrapValueClientRpc(myItem.GetComponent<GrabbableObject>().NetworkObjectId, setValue);
+                    Networking.SyncScrapValueClientRpc(myItem.GetComponent<GrabbableObject>().NetworkObject, setValue);
 
                     // RPC to set Shotgun shells loaded to be two for all players
                     if (allItemsList[item.Id].itemName == "Shotgun")
                     {
-                        Networking.SyncAmmoClientRpc(myItem.GetComponent<GrabbableObject>().NetworkObjectId);
+                        Networking.SyncAmmoClientRpc(myItem.GetComponent<GrabbableObject>().NetworkObject);
                     }
                 }
                 catch (Exception ex)
@@ -683,7 +669,7 @@ namespace ToxicOmega_Tools
                                     mine.GetComponent<NetworkObject>().Spawn(true);
 
                                     int randomCode = UnityEngine.Random.Range(0, RoundManager.Instance.possibleCodesForBigDoors.Length - 1);
-                                    Networking.TerminalCodeClientRpc(mine.GetComponentInChildren<TerminalAccessibleObject>().NetworkObjectId, randomCode);
+                                    Networking.TerminalCodeClientRpc(mine.GetComponentInChildren<TerminalAccessibleObject>().NetworkObject, randomCode);
                                 }
                                 break;  // Break after finding first matching prefab
                             }
@@ -710,7 +696,7 @@ namespace ToxicOmega_Tools
                                     turret.GetComponent<NetworkObject>().Spawn(true);
 
                                     int randomCode = UnityEngine.Random.Range(0, RoundManager.Instance.possibleCodesForBigDoors.Length - 1);
-                                    Networking.TerminalCodeClientRpc(turret.GetComponentInChildren<TerminalAccessibleObject>().NetworkObjectId, randomCode);
+                                    Networking.TerminalCodeClientRpc(turret.GetComponentInChildren<TerminalAccessibleObject>().NetworkObject, randomCode);
                                 }
                                 break;  // Break after finding first matching prefab
                             }
@@ -750,7 +736,7 @@ namespace ToxicOmega_Tools
                                     spikes.GetComponent<NetworkObject>().Spawn(true);
 
                                     int randomCode = UnityEngine.Random.Range(0, RoundManager.Instance.possibleCodesForBigDoors.Length - 1);
-                                    Networking.TerminalCodeClientRpc(spikes.GetComponentInChildren<TerminalAccessibleObject>().NetworkObjectId, randomCode);
+                                    Networking.TerminalCodeClientRpc(spikes.GetComponentInChildren<TerminalAccessibleObject>().NetworkObject, randomCode);
                                 }
                                 break;  // Break after finding first matching prefab
                             }

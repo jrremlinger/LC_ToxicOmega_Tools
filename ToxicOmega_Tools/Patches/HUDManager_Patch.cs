@@ -194,11 +194,11 @@ namespace ToxicOmega_Tools.Patches
 
                     if (itemType.itemName == "Shotgun")
                     {
-                        Networking.SyncAmmoClientRpc(spawnedItem.GetComponent<GrabbableObject>().NetworkObjectId);
+                        Networking.SyncAmmoClientRpc(spawnedItem.GetComponent<GrabbableObject>().NetworkObject);
                     }
 
-                    Networking.SyncScrapValueClientRpc(spawnedItem.GetComponent<GrabbableObject>().NetworkObjectId, (int)(double)(UnityEngine.Random.Range(itemType.minValue, itemType.maxValue) * RoundManager.Instance.scrapValueMultiplier));
-                    Networking.GiveItemClientRpc(playerTarget.playerClientId, spawnedItem.GetComponent<GrabbableObject>().NetworkObjectId);
+                    Networking.SyncScrapValueClientRpc(spawnedItem.GetComponent<GrabbableObject>().NetworkObject, (int)(double)(UnityEngine.Random.Range(itemType.minValue, itemType.maxValue) * RoundManager.Instance.scrapValueMultiplier));
+                    Networking.GiveItemClientRpc(playerTarget.playerClientId, spawnedItem.GetComponent<GrabbableObject>().NetworkObject);
                     break;
                 case string s when "trap".StartsWith(s):
                     HUDManager.Instance.DisplayTip("Trap List", "Mine, Turret, Spikes");
@@ -269,20 +269,25 @@ namespace ToxicOmega_Tools.Patches
                             // Look for item/enemy by ID and break the switch function if one is found
                             if (command.Length > 2)
                             {
+                                NetworkObjectReference networkObjectRef = new NetworkObjectReference();
                                 foundId = ulong.TryParse(command[1], out networkId);
+                                enemyTarget = Networking.GetEnemyByNetId(networkId);
+                                itemTarget = Networking.GetItemByNetId(networkId);
 
-                                if (foundId && Plugin.GetEnemyAI(networkId) != null)
+                                if (foundId && enemyTarget != null)
                                 {
-                                    tpTargetString = Plugin.GetEnemyAI(networkId).enemyType.enemyName;
+                                    networkObjectRef = enemyTarget.NetworkObject;
+                                    tpTargetString = enemyTarget.enemyType.enemyName;
                                 }
-                                else if (foundId && Plugin.GetGrabbableObject(networkId) != null)
+                                else if (foundId && itemTarget != null)
                                 {
-                                    tpTargetString = Plugin.GetGrabbableObject(networkId).itemProperties.itemName;
+                                    networkObjectRef = itemTarget.NetworkObject;
+                                    tpTargetString = itemTarget.itemProperties.itemName;
                                 }
 
                                 if (foundId && tpTargetString != null)
                                 {
-                                    Networking.TPGameObjectClientRpc(networkId, Plugin.GetPositionFromCommand(command[2], 3, tpTargetString));
+                                        Networking.TPGameObjectClientRpc(networkObjectRef, Plugin.GetPositionFromCommand(command[2], 3, tpTargetString));
                                     break;
                                 }
                             }
@@ -509,10 +514,12 @@ namespace ToxicOmega_Tools.Patches
 
                         for (int i = (int)networkId; i <= endIndex; i++)
                         {
-                            if (Plugin.GetEnemyAI((ulong)i) != null)
+                            enemyTarget = Networking.GetEnemyByNetId((ulong)i);
+                            itemTarget = Networking.GetItemByNetId((ulong)i);
+
+                            if (enemyTarget != null)
                             {
                                 counter++;
-                                enemyTarget = Plugin.GetEnemyAI((ulong)i);
                                 enemyTarget.HitEnemy(999999);
 
                                 // Force destroy invincible enemies
@@ -534,7 +541,7 @@ namespace ToxicOmega_Tools.Patches
                                 if ((int)networkId == endIndex)
                                     Plugin.LogMessage($"Killed {enemyTarget.enemyType.enemyName} ({enemyTarget.NetworkObjectId})!");
                             }
-                            else if (Plugin.GetGrabbableObject((ulong)i) != null)
+                            else if (itemTarget != null)
                             {
                                 counter++;
                                 itemTarget = Plugin.GetGrabbableObject((ulong)i);

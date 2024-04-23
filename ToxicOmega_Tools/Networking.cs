@@ -1,12 +1,14 @@
-﻿using GameNetcodeStuff;
+﻿using BepInEx;
+using GameNetcodeStuff;
 using StaticNetcodeLib;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 
 namespace ToxicOmega_Tools.Patches
 {
     [StaticNetcode]
-    internal class Networking
+    internal class Networking : MonoBehaviour
     {
         [ClientRpc]
         public static void ChargePlayerClientRpc(ulong playerId)
@@ -27,11 +29,11 @@ namespace ToxicOmega_Tools.Patches
         }
 
         [ClientRpc]
-        public static void GiveItemClientRpc(ulong playerId, ulong itemId)
+        public static void GiveItemClientRpc(ulong playerId, NetworkObjectReference itemRef)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"GiveItemClientRpc\".");
             PlayerControllerB player = Plugin.GetPlayerController(playerId);
-            GrabbableObject item = Plugin.GetGrabbableObject(itemId);
+            GrabbableObject item = GetItemByNetRef(itemRef);
 
             player.currentlyGrabbingObject = item;
             if (!GameNetworkManager.Instance.gameHasStarted && !item.itemProperties.canBeGrabbedBeforeGameStart && StartOfRound.Instance.testRoom == null)
@@ -88,21 +90,21 @@ namespace ToxicOmega_Tools.Patches
         public static void HurtPlayerClientRpc(ulong playerId, int damage)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"HurtPlayerClientRpc\".");
-            Plugin.GetPlayerController(playerId).DamagePlayer(damage);
+            Plugin.GetPlayerController(playerId).DamagePlayer(damage, causeOfDeath: CauseOfDeath.Mauling, fallDamage: true, force: new Vector3 { y = 5 });
         }
 
         [ClientRpc]
-        public static void SyncAmmoClientRpc(ulong itemId)
+        public static void SyncAmmoClientRpc(NetworkObjectReference itemRef)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"SyncAmmoClientRpc\".");
-            Plugin.GetGrabbableObject(itemId).GetComponentInChildren<ShotgunItem>().shellsLoaded = 2;
+            GetItemByNetRef(itemRef).GetComponentInChildren<ShotgunItem>().shellsLoaded = 2;
         }
 
         [ClientRpc]
-        public static void SyncScrapValueClientRpc(ulong itemId, int scrapValue)
+        public static void SyncScrapValueClientRpc(NetworkObjectReference itemRef, int scrapValue)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"SyncScrapValueClientRpc\".");
-            Plugin.GetGrabbableObject(itemId).SetScrapValue(scrapValue);
+            GetItemByNetRef(itemRef).SetScrapValue(scrapValue);
         }
 
         [ClientRpc]
@@ -113,10 +115,10 @@ namespace ToxicOmega_Tools.Patches
         }
 
         [ClientRpc]
-        public static void TerminalCodeClientRpc(ulong networkId, int code)
+        public static void TerminalCodeClientRpc(NetworkObjectReference networkRef, int code)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"TerminalCodeClientRpc\".");
-            Plugin.GetTerminalAccessibleObject(networkId).SetCodeTo(code);
+            GetTerminalObjectByNetRef(networkRef).SetCodeTo(code);
         }
 
         [ClientRpc]
@@ -130,21 +132,22 @@ namespace ToxicOmega_Tools.Patches
         }
 
         [ClientRpc]
-        public static void TPGameObjectClientRpc(ulong networkId, Vector3 position)
+        public static void TPGameObjectClientRpc(NetworkObjectReference networkRef, Vector3 position)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"TPGameObjectClientRpc\".");
-            if (Plugin.GetEnemyAI(networkId) != null)
+            EnemyAI foundEnemy = GetEnemyByNetRef(networkRef);
+            GrabbableObject foundItem = GetItemByNetRef(networkRef);
+
+            if (foundEnemy != null)
             {
-                EnemyAI enemy = Plugin.GetEnemyAI(networkId);
-                enemy.agent.enabled = false;
-                enemy.transform.position = position;
-                enemy.agent.enabled = true;
-                enemy.serverPosition = position;
-                enemy.SetEnemyOutside(position.y > -50);
+                foundEnemy.agent.enabled = false;
+                foundEnemy.transform.position = position;
+                foundEnemy.agent.enabled = true;
+                foundEnemy.serverPosition = position;
+                foundEnemy.SetEnemyOutside(position.y > -50);
             }
-            else if (Plugin.GetGrabbableObject(networkId) != null)
+            else if (foundItem != null)
             {
-                GrabbableObject foundItem = Plugin.GetGrabbableObject(networkId);
                 foundItem.transform.position = position;
                 foundItem.startFallingPosition = position;
 
@@ -193,6 +196,52 @@ namespace ToxicOmega_Tools.Patches
             }
 
             Plugin.PlayerTeleportEffects(playerId, isInside);
+        }
+
+        public static EnemyAI GetEnemyByNetId(ulong enemyNetId)
+        {
+            return FindObjectsOfType<EnemyAI>().FirstOrDefault(enemy => enemy.NetworkObjectId.Equals(enemyNetId));
+        }
+
+        public static EnemyAI GetEnemyByNetRef(NetworkObjectReference enemyNetRef)
+        {
+            if (enemyNetRef.TryGet(out NetworkObject netObj))
+            {
+                return netObj.GetComponent<EnemyAI>();
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public static GrabbableObject GetItemByNetId(ulong itemNetId)
+        {
+            return FindObjectsOfType<GrabbableObject>().FirstOrDefault(item => item.NetworkObjectId.Equals(itemNetId));
+        }
+
+        public static GrabbableObject GetItemByNetRef(NetworkObjectReference itemNetRef)
+        {
+            if (itemNetRef.TryGet(out NetworkObject netObj))
+            {
+                return netObj.GetComponent<GrabbableObject>();
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public static TerminalAccessibleObject GetTerminalObjectByNetRef(NetworkObjectReference terminalObjectNetRef)
+        {
+            if (terminalObjectNetRef.TryGet(out NetworkObject netObj))
+            {
+                return netObj.GetComponent<TerminalAccessibleObject>();
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }
