@@ -87,7 +87,7 @@
   <ItemGroup>
     <Compile Include="Patches\GameNetworkManager_Patch.cs" />
     <Compile Include="Patches\Terminal_Patch.cs" />
-    <Compile Include="GUI.cs" />
+    <Compile Include="CustomGUI.cs" />
     <Compile Include="Patches\HUDManager_Patch.cs" />
     <Compile Include="Patches\PlayerControllerB_Patch.cs" />
     <Compile Include="Patches\ShipTeleporter_Patch.cs" />
