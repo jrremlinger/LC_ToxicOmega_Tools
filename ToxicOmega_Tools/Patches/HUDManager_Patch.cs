@@ -287,7 +287,7 @@ namespace ToxicOmega_Tools.Patches
 
                                 if (foundId && tpTargetString != null)
                                 {
-                                        Networking.TPGameObjectClientRpc(networkObjectRef, Plugin.GetPositionFromCommand(command[2], 3, tpTargetString));
+                                    Networking.TPGameObjectClientRpc(networkObjectRef, Plugin.GetPositionFromCommand(command[2], 3, tpTargetString));
                                     break;
                                 }
                             }
@@ -501,7 +501,7 @@ namespace ToxicOmega_Tools.Patches
                         tempString = tempString.Remove(tempString.Length - 1, 1);
                     }
 
-                    string[] processedStrings = tempString.Split(new char[1] { '-' }, StringSplitOptions.RemoveEmptyEntries); 
+                    string[] processedStrings = tempString.Split(new char[1] { '-' }, StringSplitOptions.RemoveEmptyEntries);
 
                     foundId = ulong.TryParse(processedStrings[0], out networkId);
 

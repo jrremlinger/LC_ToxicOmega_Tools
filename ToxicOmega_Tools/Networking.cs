@@ -1,5 +1,4 @@
-﻿using BepInEx;
-using GameNetcodeStuff;
+﻿using GameNetcodeStuff;
 using StaticNetcodeLib;
 using System.Linq;
 using Unity.Netcode;

@@ -364,7 +364,7 @@ namespace ToxicOmega_Tools
             {
                 if (playerController.deadBody.gameObject != null)
                     Destroy(playerController.deadBody.gameObject);
-                if (playerController.deadBody != null) 
+                if (playerController.deadBody != null)
                     Destroy(playerController.deadBody);
                 playerController.isClimbingLadder = false;
                 playerController.ResetZAndXRotation();
@@ -446,7 +446,7 @@ namespace ToxicOmega_Tools
             HUDManager.Instance.UpdateHealthUI(100, false);
             playerController.spectatedPlayerScript = null;
             HUDManager.Instance.audioListenerLowPass.enabled = false;
-            Debug.Log( "Reviving players H");
+            Debug.Log("Reviving players H");
             round.SetSpectateCameraToGameOverMode(false, playerController);
             //RagdollGrabbableObject[] objectsOfType = FindObjectsOfType<RagdollGrabbableObject>();
             //for (int index = 0; index<objectsOfType.Length; ++index)

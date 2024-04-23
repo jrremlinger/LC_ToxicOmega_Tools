@@ -55,7 +55,7 @@ namespace ToxicOmega_Tools.Patches
 
         static IEnumerator UpdateGUI(PlayerControllerB localPlayer)
         {
-            for (;;)
+            for (; ; )
             {
                 if (!CustomGUI.visible && !CustomGUI.isFullList)
                     yield return null;
