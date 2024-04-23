@@ -3,7 +3,6 @@ using HarmonyLib;
 using System;
 using System.Collections;
 using UnityEngine;
-using static UnityEngine.EventSystems.EventTrigger;
 
 namespace ToxicOmega_Tools.Patches
 {
@@ -44,39 +43,39 @@ namespace ToxicOmega_Tools.Patches
         [HarmonyPostfix]
         static void Update(PlayerControllerB __instance)
         {
-            if (!GUI.visible && !GUI.isFullList)
+            if (!CustomGUI.visible && !CustomGUI.isFullList)
                 return;
 
             Vector3 localPosition = (__instance.isPlayerDead && __instance.spectatedPlayerScript != null) ? __instance.spectatedPlayerScript.transform.position : __instance.transform.position;
 
-            GUI.posLabelText = $"Time: {(RoundManager.Instance.timeScript.hour + 6 > 12 ? RoundManager.Instance.timeScript.hour - 6 : RoundManager.Instance.timeScript.hour + 6)}{(RoundManager.Instance.timeScript.hour + 6 < 12 ? "am" : "pm")}\n";
-            GUI.posLabelText += $"GodMode: {(Plugin.enableGod ? "Enabled" : "Disabled")}\n";
-            GUI.posLabelText += $"X: {Math.Round(localPosition.x, 1)}\nY: {Math.Round(localPosition.y, 1)}\nZ: {Math.Round(localPosition.z, 1)}";
+            CustomGUI.posLabelText = $"Time: {(RoundManager.Instance.timeScript.hour + 6 > 12 ? RoundManager.Instance.timeScript.hour - 6 : RoundManager.Instance.timeScript.hour + 6)}{(RoundManager.Instance.timeScript.hour + 6 < 12 ? "am" : "pm")}\n";
+            CustomGUI.posLabelText += $"GodMode: {(Plugin.enableGod ? "Enabled" : "Disabled")}\n";
+            CustomGUI.posLabelText += $"X: {Math.Round(localPosition.x, 1)}\nY: {Math.Round(localPosition.y, 1)}\nZ: {Math.Round(localPosition.z, 1)}";
         }
 
         static IEnumerator UpdateGUI(PlayerControllerB localPlayer)
         {
             for (;;)
             {
-                if (!GUI.visible && !GUI.isFullList)
+                if (!CustomGUI.visible && !CustomGUI.isFullList)
                     yield return null;
 
-                GUI.itemListText = "";
-                GUI.terminalObjListText = "";
-                GUI.enemyListText = "";
+                CustomGUI.itemListText = "";
+                CustomGUI.terminalObjListText = "";
+                CustomGUI.enemyListText = "";
                 Vector3 position = (localPlayer.isPlayerDead && localPlayer.spectatedPlayerScript != null) ? localPlayer.spectatedPlayerScript.transform.position : localPlayer.transform.position;
 
                 foreach (GrabbableObject obj in FindObjectsOfType<GrabbableObject>())
                 {
-                    if (Vector3.Distance(obj.transform.position, position) < 25.0f || GUI.isFullList)
-                        GUI.itemListText += $"{obj.itemProperties.itemName} ({obj.NetworkObjectId}){(obj.scrapValue > 0 ? $" - ${obj.scrapValue}" : "")}\n";
+                    if (Vector3.Distance(obj.transform.position, position) < 25.0f || CustomGUI.isFullList)
+                        CustomGUI.itemListText += $"{obj.itemProperties.itemName} ({obj.NetworkObjectId}){(obj.scrapValue > 0 ? $" - ${obj.scrapValue}" : "")}\n";
                 }
 
                 foreach (TerminalAccessibleObject terminalObj in FindObjectsOfType<TerminalAccessibleObject>())
                 {
                     string objType = "";
                     bool isActive = true;
-                    if (Vector3.Distance(terminalObj.transform.position, position) < 10.0f || GUI.isFullList)
+                    if (Vector3.Distance(terminalObj.transform.position, position) < 10.0f || CustomGUI.isFullList)
                     {
                         if (terminalObj.isBigDoor)
                         {
@@ -105,20 +104,20 @@ namespace ToxicOmega_Tools.Patches
                             objType += "Unknown";
                         }
 
-                        GUI.terminalObjListText += $"{(!isActive || (terminalObj.isBigDoor && terminalObj.isDoorOpen) ? $"<color={(terminalObj.isBigDoor && terminalObj.isDoorOpen ? "lime" : "red")}>" : "")}{terminalObj.objectCode.ToUpper()}{(!isActive || (terminalObj.isBigDoor && terminalObj.isDoorOpen) ? "</color>" : "")} - {objType}\n";
+                        CustomGUI.terminalObjListText += $"{(!isActive || (terminalObj.isBigDoor && terminalObj.isDoorOpen) ? $"<color={(terminalObj.isBigDoor && terminalObj.isDoorOpen ? "lime" : "red")}>" : "")}{terminalObj.objectCode.ToUpper()}{(!isActive || (terminalObj.isBigDoor && terminalObj.isDoorOpen) ? "</color>" : "")} - {objType}\n";
                     }
                 }
 
                 foreach (PlayerControllerB player in StartOfRound.Instance.allPlayerScripts)
                 {
-                    if ((Vector3.Distance(player.isPlayerDead ? player.deadBody.transform.position : player.transform.position, position) < 25.0f || GUI.isFullList) && (player.isPlayerControlled || player.isPlayerDead))
-                        GUI.enemyListText += $"{(player.isPlayerDead ? "<color=red>" : "")}{player.playerUsername}{(player.isPlayerDead ? "</color>" : "")} (#{player.playerClientId}{(Plugin.CheckPlayerIsHost(player) ? " - HOST" : "")})\n";
+                    if ((Vector3.Distance(player.isPlayerDead ? player.deadBody.transform.position : player.transform.position, position) < 25.0f || CustomGUI.isFullList) && (player.isPlayerControlled || player.isPlayerDead))
+                        CustomGUI.enemyListText += $"{(player.isPlayerDead ? "<color=red>" : "")}{player.playerUsername}{(player.isPlayerDead ? "</color>" : "")} (#{player.playerClientId}{(Plugin.CheckPlayerIsHost(player) ? " - HOST" : "")})\n";
                 }
 
                 foreach (EnemyAI enemy in FindObjectsOfType<EnemyAI>())
                 {
-                    if (Vector3.Distance(enemy.transform.position, position) < 25.0f || GUI.isFullList)
-                        GUI.enemyListText += $"{(enemy.isEnemyDead ? "<color=red>" : "")}{enemy.enemyType.enemyName}{(enemy.isEnemyDead ? "</color>" : "")} ({enemy.NetworkObjectId})\n";
+                    if (Vector3.Distance(enemy.transform.position, position) < 25.0f || CustomGUI.isFullList)
+                        CustomGUI.enemyListText += $"{(enemy.isEnemyDead ? "<color=red>" : "")}{enemy.enemyType.enemyName}{(enemy.isEnemyDead ? "</color>" : "")} ({enemy.NetworkObjectId})\n";
                 }
 
                 yield return new WaitForSeconds(0.1f);

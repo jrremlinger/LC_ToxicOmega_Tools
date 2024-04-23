@@ -208,9 +208,9 @@ namespace ToxicOmega_Tools.Patches
 
                     if (command.Length < 2)
                     {
-                        GUI.isFullList = !GUI.isFullList;
-                        GUI.visible = false;
-                        Plugin.LogMessage($"{(GUI.isFullList ? "Enabling" : "Disabling")} full list GUI.");
+                        CustomGUI.isFullList = !CustomGUI.isFullList;
+                        CustomGUI.visible = false;
+                        Plugin.LogMessage($"{(CustomGUI.isFullList ? "Enabling" : "Disabling")} full list GUI.");
                         break;
                     }
 
@@ -565,9 +565,9 @@ namespace ToxicOmega_Tools.Patches
                     }
                     break;
                 case string s when "gui".StartsWith(s) || "hud".StartsWith(s):
-                    GUI.visible = !GUI.visible;
-                    GUI.isFullList = false;
-                    Plugin.LogMessage($"{(GUI.visible ? "Enabling" : "Disabling")} GUI.");
+                    CustomGUI.visible = !CustomGUI.visible;
+                    CustomGUI.isFullList = false;
+                    Plugin.LogMessage($"{(CustomGUI.visible ? "Enabling" : "Disabling")} GUI.");
                     break;
                 case string s when "suit".StartsWith(s):
                     List<UnlockableItem> allSuits = StartOfRound.Instance.unlockablesList.unlockables;
