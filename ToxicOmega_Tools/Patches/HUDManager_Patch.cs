@@ -199,6 +199,7 @@ namespace ToxicOmega_Tools.Patches
 
                     Networking.SyncScrapValueClientRpc(spawnedItem.GetComponent<GrabbableObject>().NetworkObject, (int)(double)(UnityEngine.Random.Range(itemType.minValue, itemType.maxValue) * RoundManager.Instance.scrapValueMultiplier));
                     Networking.GiveItemClientRpc(playerTarget.playerClientId, spawnedItem.GetComponent<GrabbableObject>().NetworkObject);
+                    Plugin.LogMessage($"Giving {itemType.itemName} to {playerTarget.playerUsername}.");
                     break;
                 case string s when "trap".StartsWith(s):
                     HUDManager.Instance.DisplayTip("Trap List", "Mine, Turret, Spikes");
