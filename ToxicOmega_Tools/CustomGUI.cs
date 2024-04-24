@@ -4,8 +4,8 @@ namespace ToxicOmega_Tools
 {
     internal class CustomGUI : MonoBehaviour
     {
-        internal static bool visible = false;
-        internal static bool isFullList = false;
+        internal static bool nearbyVisible = false;
+        internal static bool fullListVisible = false;
         internal static string posLabelText;
         internal static string itemListText;
         internal static string terminalObjListText;
@@ -13,7 +13,7 @@ namespace ToxicOmega_Tools
 
         void OnGUI()
         {
-            if (!visible && !isFullList)
+            if (!nearbyVisible && !fullListVisible)
                 return;
 
             GUI.Label(new Rect(Screen.width / 4, Screen.height / 8, Screen.width / 2, Screen.height * 0.75f), itemListText);

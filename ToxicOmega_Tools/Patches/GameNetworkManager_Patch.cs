@@ -12,8 +12,8 @@ namespace ToxicOmega_Tools.Patches
         {
             Plugin.enableGod = false;
             Plugin.waypoints.Clear();
-            CustomGUI.visible = false;
-            CustomGUI.isFullList = false;
+            CustomGUI.nearbyVisible = false;
+            CustomGUI.fullListVisible = false;
         }
     }
 }

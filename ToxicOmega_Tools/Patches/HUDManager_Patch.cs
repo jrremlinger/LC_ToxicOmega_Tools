@@ -208,9 +208,19 @@ namespace ToxicOmega_Tools.Patches
 
                     if (command.Length < 2)
                     {
-                        CustomGUI.isFullList = !CustomGUI.isFullList;
-                        CustomGUI.visible = false;
-                        Plugin.LogMessage($"{(CustomGUI.isFullList ? "Enabling" : "Disabling")} full list GUI.");
+                        CustomGUI.fullListVisible = !CustomGUI.fullListVisible;
+                        CustomGUI.nearbyVisible = false;
+
+                        if (CustomGUI.fullListVisible)
+                        {
+                            localPlayerController.StartCoroutine(PlayerControllerB_Patch.UpdateGUI());
+                        }
+                        else
+                        {
+                            localPlayerController.StopCoroutine(PlayerControllerB_Patch.UpdateGUI());
+                        }
+
+                        Plugin.LogMessage($"{(CustomGUI.fullListVisible ? "Enabling" : "Disabling")} full list GUI.");
                         break;
                     }
 
@@ -571,9 +581,19 @@ namespace ToxicOmega_Tools.Patches
                     }
                     break;
                 case string s when "gui".StartsWith(s) || "hud".StartsWith(s):
-                    CustomGUI.visible = !CustomGUI.visible;
-                    CustomGUI.isFullList = false;
-                    Plugin.LogMessage($"{(CustomGUI.visible ? "Enabling" : "Disabling")} GUI.");
+                    CustomGUI.nearbyVisible = !CustomGUI.nearbyVisible;
+                    CustomGUI.fullListVisible = false;
+
+                    if (CustomGUI.nearbyVisible)
+                    {
+                        localPlayerController.StartCoroutine(PlayerControllerB_Patch.UpdateGUI());
+                    }
+                    else
+                    {
+                        localPlayerController.StopCoroutine(PlayerControllerB_Patch.UpdateGUI());
+                    }
+
+                    Plugin.LogMessage($"{(CustomGUI.nearbyVisible ? "Enabling" : "Disabling")} GUI.");
                     break;
                 case string s when "suit".StartsWith(s):
                     List<UnlockableItem> allSuits = StartOfRound.Instance.unlockablesList.unlockables;

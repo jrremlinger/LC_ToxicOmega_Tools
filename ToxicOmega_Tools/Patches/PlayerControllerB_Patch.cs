@@ -9,14 +9,6 @@ namespace ToxicOmega_Tools.Patches
     [HarmonyPatch(typeof(PlayerControllerB))]
     internal class PlayerControllerB_Patch : MonoBehaviour
     {
-        [HarmonyPatch(nameof(PlayerControllerB.ConnectClientToPlayerObject))]
-        [HarmonyPostfix]
-        static void StartGUICoroutine(PlayerControllerB __instance)
-        {
-            if (__instance == StartOfRound.Instance.localPlayerController)
-                __instance.StartCoroutine(UpdateGUI(__instance));
-        }
-
         [HarmonyPatch(nameof(PlayerControllerB.KillPlayer))]
         [HarmonyPostfix]
         static void DeadPlayerEnableHUD(PlayerControllerB __instance)
@@ -43,7 +35,7 @@ namespace ToxicOmega_Tools.Patches
         [HarmonyPostfix]
         static void Update(PlayerControllerB __instance)
         {
-            if (!CustomGUI.visible && !CustomGUI.isFullList)
+            if (!CustomGUI.nearbyVisible && !CustomGUI.fullListVisible)
                 return;
 
             Vector3 localPosition = (__instance.isPlayerDead && __instance.spectatedPlayerScript != null) ? __instance.spectatedPlayerScript.transform.position : __instance.transform.position;
@@ -53,11 +45,12 @@ namespace ToxicOmega_Tools.Patches
             CustomGUI.posLabelText += $"X: {Math.Round(localPosition.x, 1)}\nY: {Math.Round(localPosition.y, 1)}\nZ: {Math.Round(localPosition.z, 1)}";
         }
 
-        static IEnumerator UpdateGUI(PlayerControllerB localPlayer)
+        public static IEnumerator UpdateGUI()
         {
+            PlayerControllerB localPlayer = StartOfRound.Instance.localPlayerController;
             for (; ; )
             {
-                if (!CustomGUI.visible && !CustomGUI.isFullList)
+                if (!CustomGUI.nearbyVisible && !CustomGUI.fullListVisible)
                     yield return null;
 
                 CustomGUI.itemListText = "";
@@ -67,7 +60,7 @@ namespace ToxicOmega_Tools.Patches
 
                 foreach (GrabbableObject obj in FindObjectsOfType<GrabbableObject>())
                 {
-                    if (Vector3.Distance(obj.transform.position, position) < 25.0f || CustomGUI.isFullList)
+                    if (Vector3.Distance(obj.transform.position, position) < 25.0f || CustomGUI.fullListVisible)
                         CustomGUI.itemListText += $"{obj.itemProperties.itemName} ({obj.NetworkObjectId}){(obj.scrapValue > 0 ? $" - ${obj.scrapValue}" : "")}\n";
                 }
 
@@ -75,7 +68,7 @@ namespace ToxicOmega_Tools.Patches
                 {
                     string objType = "";
                     bool isActive = true;
-                    if (Vector3.Distance(terminalObj.transform.position, position) < 10.0f || CustomGUI.isFullList)
+                    if (Vector3.Distance(terminalObj.transform.position, position) < 10.0f || CustomGUI.fullListVisible)
                     {
                         if (terminalObj.isBigDoor)
                         {
@@ -110,13 +103,13 @@ namespace ToxicOmega_Tools.Patches
 
                 foreach (PlayerControllerB player in StartOfRound.Instance.allPlayerScripts)
                 {
-                    if ((Vector3.Distance(player.isPlayerDead ? player.deadBody.transform.position : player.transform.position, position) < 25.0f || CustomGUI.isFullList) && (player.isPlayerControlled || player.isPlayerDead))
+                    if ((Vector3.Distance(player.isPlayerDead ? player.deadBody.transform.position : player.transform.position, position) < 25.0f || CustomGUI.fullListVisible) && (player.isPlayerControlled || player.isPlayerDead))
                         CustomGUI.enemyListText += $"{(player.isPlayerDead ? "<color=red>" : "")}{player.playerUsername}{(player.isPlayerDead ? "</color>" : "")} (#{player.playerClientId}{(Plugin.CheckPlayerIsHost(player) ? " - HOST" : "")})\n";
                 }
 
                 foreach (EnemyAI enemy in FindObjectsOfType<EnemyAI>())
                 {
-                    if (Vector3.Distance(enemy.transform.position, position) < 25.0f || CustomGUI.isFullList)
+                    if (Vector3.Distance(enemy.transform.position, position) < 25.0f || CustomGUI.fullListVisible)
                         CustomGUI.enemyListText += $"{(enemy.isEnemyDead ? "<color=red>" : "")}{enemy.enemyType.enemyName}{(enemy.isEnemyDead ? "</color>" : "")} ({enemy.NetworkObjectId})\n";
                 }
 
