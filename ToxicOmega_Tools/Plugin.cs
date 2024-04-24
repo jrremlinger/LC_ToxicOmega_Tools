@@ -271,9 +271,9 @@ namespace ToxicOmega_Tools
                     }
                     else
                     {
-                        Physics.Raycast(playerOrigin.playerGlobalHead.transform.position + (playerOrigin.playerGlobalHead.forward * 1), playerOrigin.playerGlobalHead.forward, out RaycastHit hit);
+                        Physics.Raycast(playerOrigin.playerGlobalHead.transform.position + (playerOrigin.playerGlobalHead.forward * 2), playerOrigin.playerGlobalHead.forward, out RaycastHit hit);
 
-                        if (hit.point != null)
+                        if (hit.collider != null)
                         {
                             position = hit.point;
                         }
