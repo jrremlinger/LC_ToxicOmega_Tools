@@ -70,9 +70,9 @@ namespace ToxicOmega_Tools.Patches
                 case "help":
                     List<string> commandList = new List<string>
                     {
-                        "Item: Lists spawnable items",
-                        "Enemy: Lists spawnable enemies",
-                        "Trap: Lists spawnable traps",
+                        "Items: Lists spawnable items",
+                        "Enemies: Lists spawnable enemies",
+                        "Traps: Lists spawnable traps",
                         "Spawn: Spawns items/enemies/traps",
                         "Give: Adds an item to a players inventory",
                         "List: Lists existing players/items/enemies",
@@ -181,7 +181,7 @@ namespace ToxicOmega_Tools.Patches
                         }
                     }
                     break;
-                case string s when "trap".StartsWith(s):
+                case string s when "traps".StartsWith(s):
                     HUDManager.Instance.DisplayTip("Trap List", "Mine, Turret, Spikes");
                     break;
                 case string s when "list".StartsWith(s):
@@ -223,7 +223,7 @@ namespace ToxicOmega_Tools.Patches
                         {
                             FindPage(FindObjectsOfType<TerminalAccessibleObject>().ToList(), listPage, 10, "Terminal Codes");
                         }
-                        else if ("waypoints".StartsWith(command[1]))
+                        else if ("wp".StartsWith(command[1]) || "waypoints".StartsWith(command[1]))
                         {
                             FindPage(Plugin.waypoints, listPage, 8, "Waypoint");
                         }
