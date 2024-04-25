@@ -13,7 +13,7 @@ namespace ToxicOmega_Tools.Patches
         {
             Plugin.waypoints.Clear();
 
-            // Manually destroy instantiated traps as they persist between moons
+            // Manually destroy instantiated traps because otherwise they will persist between moons
             foreach (GameObject obj in FindObjectsOfType<GameObject>().Where(obj => obj.name == "Landmine(Clone)" || obj.name == "TurretContainer(Clone)" || obj.name == "SpikeRoofTrapHazard(Clone)"))
             {
                 Destroy(obj);

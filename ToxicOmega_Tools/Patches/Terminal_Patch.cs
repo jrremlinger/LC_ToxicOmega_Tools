@@ -23,13 +23,11 @@ namespace ToxicOmega_Tools.Patches
                     if (!ListHasEnemy(Plugin.customOutsideList, daytimeEnemy.enemyType.enemyName))
                         Plugin.customOutsideList.Add(daytimeEnemy);
                 }
-
                 foreach (SpawnableEnemyWithRarity outsideEnemy in moon.OutsideEnemies)
                 {
                     if (!ListHasEnemy(Plugin.customOutsideList, outsideEnemy.enemyType.enemyName))
                         Plugin.customOutsideList.Add(outsideEnemy);
                 }
-
                 foreach (SpawnableEnemyWithRarity insideEnemy in moon.Enemies)
                 {
                     if (!ListHasEnemy(Plugin.customInsideList, insideEnemy.enemyType.enemyName))
@@ -56,12 +54,10 @@ namespace ToxicOmega_Tools.Patches
             {
                 Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = obj.itemName, Id = itemList.IndexOf(obj), IsItem = true });
             }
-
             foreach (SpawnableEnemyWithRarity obj in Plugin.customInsideList)
             {
                 Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = obj.enemyType.enemyName, Id = Plugin.customInsideList.IndexOf(obj), IsEnemy = true });
             }
-
             foreach (SpawnableEnemyWithRarity obj in Plugin.customOutsideList)
             {
                 Plugin.allSpawnablesList.Add(new SearchableGameObject { Name = obj.enemyType.enemyName, Id = Plugin.customOutsideList.IndexOf(obj), IsEnemy = true, IsOutsideEnemy = true });

@@ -19,9 +19,7 @@ namespace ToxicOmega_Tools
         private const string modGUID = "com.toxicomega.toxicomega_tools";
         private const string modName = "ToxicOmega Tools";
         private const string modVersion = "1.2.0";
-
         private readonly Harmony harmony = new Harmony(modGUID);
-
         internal static Plugin Instance;
         internal static ManualLogSource mls;
         internal static CustomGUI menu;
@@ -41,13 +39,7 @@ namespace ToxicOmega_Tools
             mls = BepInEx.Logging.Logger.CreateLogSource(modGUID);
             mls.LogInfo("ToxicOmega Tools mod has awoken.");
             harmony.PatchAll();
-
-            // Patch the GUI
-            var gameObject = new GameObject("GUI");
-            DontDestroyOnLoad(gameObject);
-            gameObject.hideFlags = HideFlags.HideAndDontSave;
-            gameObject.AddComponent<CustomGUI>();
-            menu = (CustomGUI)gameObject.GetComponent("GUI");
+            GUIPatch();
         }
 
         public static bool CheckPlayerIsHost(PlayerControllerB player)
@@ -55,7 +47,7 @@ namespace ToxicOmega_Tools
             return player.gameObject == player.playersManager.allPlayerObjects[0];
         }
 
-        public static PlayerControllerB GetPlayerController(ulong clientId)
+        public static PlayerControllerB GetPlayerFromClientId(ulong clientId)
         {
             StartOfRound round = StartOfRound.Instance;
             if (clientId >= (ulong)round.allPlayerScripts.Length)
@@ -65,17 +57,12 @@ namespace ToxicOmega_Tools
 
         public static PlayerControllerB GetPlayerFromString(string searchString)
         {
-            PlayerControllerB[] allPlayerScripts = StartOfRound.Instance.allPlayerScripts;
-
-            // Search player by ID# if string starts with "#"
             if (searchString.StartsWith("#") && searchString.Length > 1)
             {
                 string clientIdString = searchString.Substring(1);
-
                 if (ulong.TryParse(clientIdString, out ulong clientId))
                 {
-                    PlayerControllerB foundPlayer = GetPlayerController(clientId);
-
+                    PlayerControllerB foundPlayer = GetPlayerFromClientId(clientId);
                     if (foundPlayer != null && (foundPlayer.isPlayerControlled || foundPlayer.isPlayerDead))
                     {
                         return foundPlayer;
@@ -94,8 +81,7 @@ namespace ToxicOmega_Tools
             }
             else
             {
-                PlayerControllerB foundPlayer = allPlayerScripts.FirstOrDefault(player => player.playerUsername.ToLower().StartsWith(searchString.ToLower()));
-
+                PlayerControllerB foundPlayer = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerUsername.ToLower().StartsWith(searchString.ToLower()));
                 if (foundPlayer != null)
                 {
                     return foundPlayer;
@@ -186,7 +172,6 @@ namespace ToxicOmega_Tools
                         if (currentRound.insideAINodes.Length > 0 && currentRound.insideAINodes[0] != null)
                         {
                             HUDManager_Patch.sendPlayerInside = true;
-
                             if (shipTeleporterSeed == null)
                             {
                                 mls.LogInfo("Teleport Seed: Random");
@@ -199,7 +184,6 @@ namespace ToxicOmega_Tools
                                 Vector3 position2 = currentRound.insideAINodes[shipTeleporterSeed.Next(0, currentRound.insideAINodes.Length)].transform.position;
                                 position = currentRound.GetRandomNavMeshPositionInBoxPredictable(position2, randomSeed: shipTeleporterSeed);
                             }
-
                             LogMessage($"Teleported {targetName} to random location within factory.");
                         }
                         else
@@ -227,7 +211,6 @@ namespace ToxicOmega_Tools
                 if (terminal != null)
                 {
                     position = terminal.transform.position;
-
                     if (positionType == 3)
                         LogMessage($"Teleported {targetName} to Terminal.");
                 }
@@ -262,7 +245,6 @@ namespace ToxicOmega_Tools
             else if (input.StartsWith("+") || (input.StartsWith("-") && input.Length > 1))
             {
                 PlayerControllerB playerOrigin = (localPlayerController.isPlayerDead && localPlayerController.spectatedPlayerScript != null) ? localPlayerController.spectatedPlayerScript : localPlayerController;
-
                 if (playerOrigin != null && playerOrigin.isPlayerControlled)
                 {
                     if (input.Length > 1 && int.TryParse(input.Substring(1), out int distance))
@@ -271,8 +253,7 @@ namespace ToxicOmega_Tools
                     }
                     else
                     {
-                        Physics.Raycast(playerOrigin.playerGlobalHead.transform.position + (playerOrigin.playerGlobalHead.forward * 2), playerOrigin.playerGlobalHead.forward, out RaycastHit hit);
-
+                        Physics.Raycast(playerOrigin.playerGlobalHead.transform.position + (playerOrigin.playerGlobalHead.forward * 2), playerOrigin.playerGlobalHead.forward, out RaycastHit hit, StartOfRound.Instance.collidersAndRoomMaskAndDefault);
                         if (hit.collider != null)
                         {
                             position = hit.point;
@@ -318,12 +299,8 @@ namespace ToxicOmega_Tools
             if (isPlayerTarget)
             {
                 PlayerControllerB playerTarget = GetPlayerFromString(input);
-
                 if (playerTarget == null)
                     return Vector3.zero;
-
-                position = playerTarget.transform.position;
-
                 if (playerTarget.isPlayerDead)
                 {
                     if (localPlayerController.playerClientId == playerTarget.playerClientId && playerTarget.spectatedPlayerScript != null && input == "")
@@ -334,6 +311,10 @@ namespace ToxicOmega_Tools
                     {
                         position = StartOfRound.Instance.allPlayerScripts[playerTarget.playerClientId].deadBody.transform.position;
                     }
+                }
+                else
+                {
+                    position = playerTarget.transform.position;
                 }
 
                 if (positionType == 3)
@@ -346,37 +327,35 @@ namespace ToxicOmega_Tools
             return position;
         }
 
+        private static void GUIPatch()
+        {
+            var gameObject = new GameObject("CustomGUI");
+            DontDestroyOnLoad(gameObject);
+            gameObject.hideFlags = HideFlags.HideAndDontSave;
+            gameObject.AddComponent<CustomGUI>();
+            menu = (CustomGUI)gameObject.GetComponent("CustomGUI");
+        }
+
         public static void LogMessage(string message, bool isError = false)
         {
-            string headerText;
-
             if (isError)
             {
-                headerText = "Error!";
+                HUDManager.Instance.DisplayTip("Error!", message, isError);
                 mls.LogError(message);
             }
             else
             {
-                headerText = "Success!";
+                HUDManager.Instance.DisplayTip("Success!", message, isError);
                 mls.LogInfo(message);
             }
-
-            HUDManager.Instance.DisplayTip(headerText, message, isError);
         }
 
         public static void PlayerTeleportEffects(ulong playerClientId, bool isInside)
         {
             PlayerControllerB playerController = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(playerClientId));
-
-            // Redirects enemies in animation with player, unsure if actually working
-            playerController.redirectToEnemy?.ShipTeleportEnemy();
-
             SavePlayer(playerController);
-
-            // Update reverb to inside or outside
             if ((bool)FindObjectOfType<AudioReverbPresets>())
                 FindObjectOfType<AudioReverbPresets>().audioPresets[isInside ? 2 : 3].ChangeAudioReverbForPlayer(playerController);
-
             playerController.isInElevator = !isInside;
             playerController.isInHangarShipRoom = !isInside;
             playerController.isInsideFactory = isInside;
@@ -384,12 +363,13 @@ namespace ToxicOmega_Tools
             playerController.velocityLastFrame = Vector3.zero;
             playerController.beamUpParticle.Play();
             playerController.beamOutBuildupParticle.Play();
+            //playerController.redirectToEnemy?.ShipTeleportEnemy();    // Empty method
         }
 
         public static void RevivePlayer(ulong playerClientId)
         {
             PlayerControllerB localPlayerController = StartOfRound.Instance.localPlayerController;
-            PlayerControllerB playerController = GetPlayerController(playerClientId);
+            PlayerControllerB playerController = GetPlayerFromClientId(playerClientId);
             StartOfRound round = StartOfRound.Instance;
 
             Debug.Log("Reviving players A");
@@ -472,7 +452,6 @@ namespace ToxicOmega_Tools
                 }
                 Debug.Log("Reviving players G");
             }
-
             playerController.bleedingHeavily = false;
             playerController.criticallyInjured = false;
             playerController.playerBodyAnimator.SetBool("Limp", false);
@@ -504,7 +483,7 @@ namespace ToxicOmega_Tools
             round.allPlayersDead = false;
             round.UpdatePlayerVoiceEffects();
             round.ResetMiscValues();
-
+            // Make HUD visible again as dying hides it
             if (localPlayerController.playerClientId == playerController.playerClientId)
                 HUDManager.Instance.HideHUD(false);
         }
@@ -562,6 +541,7 @@ namespace ToxicOmega_Tools
             string type = "Unknown";
             string logValue = "";
 
+            // Get the type
             if (obj.IsItem)
             {
                 type = "Item";
@@ -576,6 +556,7 @@ namespace ToxicOmega_Tools
                 type = "Trap";
             }
 
+            // Get the location
             if (targetString == "$" || (targetString == "" && !obj.IsItem))
             {
                 logLocation = "Random";
@@ -633,7 +614,6 @@ namespace ToxicOmega_Tools
         {
             if (GetPositionFromCommand(targetString, enemy.IsOutsideEnemy ? 1 : 2) == Vector3.zero)
                 return;
-
             SpawningMessage(enemy, targetString, amount);
 
             for (int i = 0; i < amount; i++)
@@ -655,10 +635,8 @@ namespace ToxicOmega_Tools
         public static void SpawnItem(SearchableGameObject item, int amount, int value, string targetString)
         {
             List<Item> allItemsList = StartOfRound.Instance.allItemsList.itemsList;
-
             if (GetPositionFromCommand(targetString, 0) == Vector3.zero)
                 return;
-
             SpawningMessage(item, targetString, amount, value);
 
             for (int i = 0; i < amount; i++)
@@ -668,21 +646,15 @@ namespace ToxicOmega_Tools
                     // The Shotgun (and maybe other items I haven't noticed) have their max and min values backwards causing an index error without this
                     if (allItemsList[item.Id].minValue > allItemsList[item.Id].maxValue)
                         (allItemsList[item.Id].maxValue, allItemsList[item.Id].minValue) = (allItemsList[item.Id].minValue, allItemsList[item.Id].maxValue);
-
                     int setValue = (int)(double)(value == -1 ? UnityEngine.Random.Range(allItemsList[item.Id].minValue, allItemsList[item.Id].maxValue) * RoundManager.Instance.scrapValueMultiplier : value);
-
                     Vector3 position = GetPositionFromCommand(targetString, 0);
                     GameObject myItem = Instantiate(allItemsList[item.Id].spawnPrefab, position, Quaternion.identity);
                     myItem.GetComponent<GrabbableObject>().transform.rotation = Quaternion.Euler(myItem.GetComponent<GrabbableObject>().itemProperties.restingRotation);
                     myItem.GetComponent<GrabbableObject>().fallTime = 0f;
                     myItem.GetComponent<NetworkObject>().Spawn();
                     Networking.SyncScrapValueClientRpc(myItem.GetComponent<GrabbableObject>().NetworkObject, setValue);
-
-                    // RPC to set Shotgun shells loaded to be two for all players
                     if (allItemsList[item.Id].itemName == "Shotgun")
-                    {
                         Networking.SyncAmmoClientRpc(myItem.GetComponent<GrabbableObject>().NetworkObject);
-                    }
                 }
                 catch (Exception ex)
                 {
@@ -695,31 +667,28 @@ namespace ToxicOmega_Tools
         public static void SpawnTrap(SearchableGameObject trap, int amount, string targetString)
         {
             RoundManager currentRound = RoundManager.Instance;
-
             if (GetPositionFromCommand(targetString, 4) == Vector3.zero)
                 return;
-
             SpawningMessage(trap, targetString, amount);
 
             switch (trap.Id)
             {
                 case 0:
-                    foreach (SpawnableMapObject obj in currentRound.currentLevel.spawnableMapObjects)
+                    foreach (SpawnableMapObject obj in currentRound.currentLevel.spawnableMapObjects)   // Find prefab to instantiate from, break after first match
                     {
                         try
                         {
-                            if (obj.prefabToSpawn.GetComponentInChildren<Landmine>() != null)   // Find prefab to copy
+                            if (obj.prefabToSpawn.GetComponentInChildren<Landmine>() != null)
                             {
                                 for (int i = 0; i < amount; i++)
                                 {
                                     Vector3 inBoxPredictable = currentRound.GetRandomNavMeshPositionInRadius(obj.prefabToSpawn.transform.position);
                                     GameObject mine = Instantiate(obj.prefabToSpawn, GetPositionFromCommand(targetString, 4), Quaternion.identity);
                                     mine.GetComponent<NetworkObject>().Spawn(true);
-
                                     int randomCode = UnityEngine.Random.Range(0, RoundManager.Instance.possibleCodesForBigDoors.Length - 1);
                                     Networking.TerminalCodeClientRpc(mine.GetComponentInChildren<TerminalAccessibleObject>().NetworkObject, randomCode);
                                 }
-                                break;  // Break after finding first matching prefab
+                                break;
                             }
                         }
                         catch (Exception ex)
@@ -734,7 +703,7 @@ namespace ToxicOmega_Tools
                     {
                         try
                         {
-                            if (obj.prefabToSpawn.GetComponentInChildren<Turret>() != null) // Find prefab to copy
+                            if (obj.prefabToSpawn.GetComponentInChildren<Turret>() != null) // Find prefab to instantiate from, break after first match
                             {
                                 for (int i = 0; i < amount; i++)
                                 {
@@ -742,11 +711,10 @@ namespace ToxicOmega_Tools
                                     GameObject turret = Instantiate(obj.prefabToSpawn, pos, Quaternion.identity);
                                     turret.transform.eulerAngles = new Vector3(0.0f, currentRound.YRotationThatFacesTheFarthestFromPosition(pos + (Vector3.up * 0.2f)), 0.0f);
                                     turret.GetComponent<NetworkObject>().Spawn(true);
-
                                     int randomCode = UnityEngine.Random.Range(0, RoundManager.Instance.possibleCodesForBigDoors.Length - 1);
                                     Networking.TerminalCodeClientRpc(turret.GetComponentInChildren<TerminalAccessibleObject>().NetworkObject, randomCode);
                                 }
-                                break;  // Break after finding first matching prefab
+                                break;
                             }
                         }
                         catch (Exception ex)
@@ -757,7 +725,7 @@ namespace ToxicOmega_Tools
                     }
                     break;
                 case 2:
-                    foreach (SpawnableMapObject obj in currentRound.currentLevel.spawnableMapObjects)   // Find prefab to copy
+                    foreach (SpawnableMapObject obj in currentRound.currentLevel.spawnableMapObjects)   // Find prefab to instantiate from, break after first match
                     {
                         try
                         {
@@ -767,7 +735,6 @@ namespace ToxicOmega_Tools
                                 {
                                     Vector3 pos = GetPositionFromCommand(targetString, 4);
                                     GameObject spikes = Instantiate(obj.prefabToSpawn, pos, Quaternion.identity);
-
                                     if (targetString == "" || targetString == "$")
                                     {
                                         if (Physics.Raycast(spikes.transform.position, -spikes.transform.forward, out RaycastHit hitInfo, 100f, StartOfRound.Instance.collidersAndRoomMaskAndDefault, QueryTriggerInteraction.Ignore))
@@ -779,14 +746,12 @@ namespace ToxicOmega_Tools
                                             }
                                         }
                                     }
-
                                     spikes.GetComponentInChildren<SpikeRoofTrap>().Start();
                                     spikes.GetComponent<NetworkObject>().Spawn(true);
-
                                     int randomCode = UnityEngine.Random.Range(0, RoundManager.Instance.possibleCodesForBigDoors.Length - 1);
                                     Networking.TerminalCodeClientRpc(spikes.GetComponentInChildren<TerminalAccessibleObject>().NetworkObject, randomCode);
                                 }
-                                break;  // Break after finding first matching prefab
+                                break;
                             }
                         }
                         catch (Exception ex)

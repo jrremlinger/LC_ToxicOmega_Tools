@@ -37,8 +37,10 @@ namespace ToxicOmega_Tools.Patches
                 __instance.typingIndicator.enabled = true;
                 return false;
             }
-
-            return true;
+            else
+            {
+                return true;
+            }
         }
 
         [HarmonyPatch(nameof(HUDManager.SubmitChat_performed))]
@@ -51,11 +53,10 @@ namespace ToxicOmega_Tools.Patches
             PlayerControllerB localPlayerController = GameNetworkManager.Instance.localPlayerController;
             bool flag = true;   // Chat will not be sent if flag = true; If no command is recognized it will be set to false
             string chatMessage = __instance.chatTextField.text;
-
             __instance.tipsPanelCoroutine = null;   // Clears vanilla tip coroutine to prevent Plugin.LogMessage() from being blocked
-
-            // Return if SubmitChat_performed() runs when user is not actually sending a chat
             if (chatMessage == null || chatMessage == "")
+                return true;
+            if (!Plugin.CheckPlayerIsHost(localPlayerController) && !(NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer))
                 return true;
 
             // Split chat message up by spaces, trim trailing spaces, convert to lowercase
@@ -63,9 +64,6 @@ namespace ToxicOmega_Tools.Patches
                 .Split(new char[1] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
                 .Select(s => s.TrimEnd().ToLowerInvariant())
                 .ToArray();
-
-            if (!Plugin.CheckPlayerIsHost(localPlayerController) && !(NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer))
-                return true;
 
             switch (command[0].Replace("/", "").ToLower())
             {
@@ -92,24 +90,20 @@ namespace ToxicOmega_Tools.Patches
                     };
 
                     int helpPage = 1;
-
                     if (command.Length > 1)
-                        int.TryParse(command[1], out helpPage);
-
+                        _ = int.TryParse(command[1], out helpPage);
                     helpPage = Math.Max(helpPage, 1);
                     FindPage(commandList, helpPage, 4, "Command");
                     break;
                 case string s when "items".StartsWith(s):
                     if (command.Length > 1)
-                        int.TryParse(command[1], out itemListPage);
-
+                        _ = int.TryParse(command[1], out itemListPage);
                     itemListPage = Math.Max(itemListPage, 1);
                     FindPage(allItemsList, itemListPage, 10, "Item");
                     break;
                 case string s when "enemies".StartsWith(s):
                     if (command.Length > 1)
-                        int.TryParse(command[1], out enemyListPage);
-
+                        _ = int.TryParse(command[1], out enemyListPage);
                     enemyListPage = Math.Max(enemyListPage, 1);
                     FindPage(Plugin.allEnemiesList, enemyListPage, 10, "Enemy");
                     break;
@@ -120,16 +114,10 @@ namespace ToxicOmega_Tools.Patches
 
                     if (command.Length < 2)
                         break;
-
                     if (command.Length > 2)
                         targetString = command[2];
-
                     if (command.Length > 3)
-                    {
-                        int.TryParse(command[3], out amount);
-                        amount = Math.Max(amount, 1);
-                    }
-
+                        _ = int.TryParse(command[3], out amount);
                     if (command.Length > 4)
                     {
                         if (command[4] == "$")
@@ -138,75 +126,65 @@ namespace ToxicOmega_Tools.Patches
                         }
                         else
                         {
-                            int.TryParse(command[4], out itemValue);
-                            itemValue = Math.Max(itemValue, 0);
+                            _ = int.TryParse(command[4], out itemValue);
                         }
                     }
 
                     SearchableGameObject prefabFromString = Plugin.allSpawnablesList.FirstOrDefault(obj => obj.Name.ToLower().StartsWith(command[1].Replace("_", " ")));
-
-                    if (prefabFromString.Name == null)
+                    if (prefabFromString.Name != null)
+                    {
+                        if (prefabFromString.IsItem)  // Spawn item
+                        {
+                            Plugin.SpawnItem(prefabFromString, Math.Max(amount, 1), Math.Max(itemValue, 0), targetString);
+                        }
+                        else if (prefabFromString.IsEnemy)   // Spawn enemy
+                        {
+                            Plugin.SpawnEnemy(prefabFromString, Math.Max(amount, 1), targetString);
+                        }
+                        else if (prefabFromString.IsTrap)   // Spawn trap
+                        {
+                            Plugin.SpawnTrap(prefabFromString, Math.Max(amount, 1), targetString);
+                        }
+                    }
+                    else
                     {
                         Plugin.LogMessage($"Unable to find GameObject with name \"{command[1]}\"", true);
-                        break;
-                    }
-
-                    if (prefabFromString.IsItem)  // Spawn item
-                    {
-                        Plugin.SpawnItem(prefabFromString, amount, itemValue, targetString);
-                    }
-                    else if (prefabFromString.IsEnemy)   // Spawn enemy
-                    {
-                        Plugin.SpawnEnemy(prefabFromString, amount, targetString);
-                    }
-                    else if (prefabFromString.IsTrap)   // Spawn trap
-                    {
-                        Plugin.SpawnTrap(prefabFromString, amount, targetString);
                     }
                     break;
                 case string s when "give".StartsWith(s):
-                    if (command.Length < 2)
-                        break;
-
-                    Item itemType = StartOfRound.Instance.allItemsList.itemsList.FirstOrDefault(x => x.itemName.ToLower().StartsWith(command[1].Replace("_", " ")));
-
-                    if (itemType == null)
+                    if (command.Length > 1)
                     {
-                        Plugin.LogMessage($"Unable to find GameObject with name \"{command[1]}\"", true);
-                        break;
+                        Item itemType = StartOfRound.Instance.allItemsList.itemsList.FirstOrDefault(x => x.itemName.ToLower().StartsWith(command[1].Replace("_", " ")));
+                        if (itemType != null)
+                        {
+                            playerTarget = command.Length > 2 ? Plugin.GetPlayerFromString(string.Join(" ", command.Skip(2))) : localPlayerController;
+                            if (playerTarget == null || playerTarget.isPlayerDead)
+                                break;
+                            GameObject spawnedItem = Instantiate(itemType.spawnPrefab, playerTarget.transform.position, Quaternion.identity);
+                            if (spawnedItem == null)
+                                break;
+                            spawnedItem.GetComponent<GrabbableObject>().fallTime = 0f;
+                            spawnedItem.GetComponent<NetworkObject>().Spawn();
+                            if (itemType.minValue > itemType.maxValue)
+                                (itemType.maxValue, itemType.minValue) = (itemType.minValue, itemType.maxValue);
+                            if (itemType.itemName == "Shotgun")
+                            {
+                                Networking.SyncAmmoClientRpc(spawnedItem.GetComponent<GrabbableObject>().NetworkObject);
+                            }
+                            Networking.SyncScrapValueClientRpc(spawnedItem.GetComponent<GrabbableObject>().NetworkObject, (int)(double)(UnityEngine.Random.Range(itemType.minValue, itemType.maxValue) * RoundManager.Instance.scrapValueMultiplier));
+                            Networking.GiveItemClientRpc(playerTarget.playerClientId, spawnedItem.GetComponent<GrabbableObject>().NetworkObject);
+                            Plugin.LogMessage($"Giving {itemType.itemName} to {playerTarget.playerUsername}.");
+                        }
+                        else
+                        {
+                            Plugin.LogMessage($"Unable to find GameObject with name \"{command[1]}\"", true);
+                        }
                     }
-
-                    if (itemType.minValue > itemType.maxValue)
-                        (itemType.maxValue, itemType.minValue) = (itemType.minValue, itemType.maxValue);
-
-                    playerTarget = command.Length > 2 ? Plugin.GetPlayerFromString(string.Join(" ", command.Skip(2))) : localPlayerController;
-
-                    if (playerTarget == null || playerTarget.isPlayerDead)
-                        break;
-
-                    GameObject spawnedItem = Instantiate(itemType.spawnPrefab, playerTarget.transform.position, Quaternion.identity);
-
-                    if (spawnedItem == null)
-                        break;
-
-                    spawnedItem.GetComponent<GrabbableObject>().fallTime = 0f;
-                    spawnedItem.GetComponent<NetworkObject>().Spawn();
-
-                    if (itemType.itemName == "Shotgun")
-                    {
-                        Networking.SyncAmmoClientRpc(spawnedItem.GetComponent<GrabbableObject>().NetworkObject);
-                    }
-
-                    Networking.SyncScrapValueClientRpc(spawnedItem.GetComponent<GrabbableObject>().NetworkObject, (int)(double)(UnityEngine.Random.Range(itemType.minValue, itemType.maxValue) * RoundManager.Instance.scrapValueMultiplier));
-                    Networking.GiveItemClientRpc(playerTarget.playerClientId, spawnedItem.GetComponent<GrabbableObject>().NetworkObject);
-                    Plugin.LogMessage($"Giving {itemType.itemName} to {playerTarget.playerUsername}.");
                     break;
                 case string s when "trap".StartsWith(s):
                     HUDManager.Instance.DisplayTip("Trap List", "Mine, Turret, Spikes");
                     break;
                 case string s when "list".StartsWith(s):
-                    int listPage = 1;
-
                     if (command.Length < 2)
                     {
                         CustomGUI.fullListVisible = !CustomGUI.fullListVisible;
@@ -220,40 +198,39 @@ namespace ToxicOmega_Tools.Patches
                         {
                             localPlayerController.StopCoroutine(PlayerControllerB_Patch.UpdateGUI());
                         }
-
                         Plugin.LogMessage($"{(CustomGUI.fullListVisible ? "Enabling" : "Disabling")} full list GUI.");
-                        break;
-                    }
-
-                    if (command.Length > 2)
-                        int.TryParse(command[2], out listPage);
-
-                    listPage = Math.Max(listPage, 1);
-
-                    if ("players".StartsWith(command[1]))
-                    {
-                        FindPage(StartOfRound.Instance.allPlayerScripts.ToList(), listPage, 4, "Player");
-                    }
-                    else if ("items".StartsWith(command[1]))
-                    {
-                        FindPage(FindObjectsOfType<GrabbableObject>().ToList(), listPage, 6, "Active Items");
-                    }
-                    else if ("enemy".StartsWith(command[1]) || "enemies".StartsWith(command[1]))
-                    {
-                        FindPage(FindObjectsOfType<EnemyAI>().ToList(), listPage, 6, "Active Enemies");
-                    }
-                    else if ("codes".StartsWith(command[1]))
-                    {
-                        FindPage(FindObjectsOfType<TerminalAccessibleObject>().ToList(), listPage, 10, "Terminal Codes");
-                    }
-                    else if ("waypoints".StartsWith(command[1]))
-                    {
-                        FindPage(Plugin.waypoints, listPage, 8, "Waypoint");
                     }
                     else
                     {
-                        Plugin.LogMessage($"Unable to find list by name {command[1]}!", true);
-                        break;
+                        int listPage = 1;
+                        if (command.Length > 2)
+                            _ = int.TryParse(command[2], out listPage);
+                        listPage = Math.Max(listPage, 1);
+
+                        if ("players".StartsWith(command[1]))
+                        {
+                            FindPage(StartOfRound.Instance.allPlayerScripts.ToList(), listPage, 4, "Player");
+                        }
+                        else if ("items".StartsWith(command[1]))
+                        {
+                            FindPage(FindObjectsOfType<GrabbableObject>().ToList(), listPage, 6, "Active Items");
+                        }
+                        else if ("enemy".StartsWith(command[1]) || "enemies".StartsWith(command[1]))
+                        {
+                            FindPage(FindObjectsOfType<EnemyAI>().ToList(), listPage, 6, "Active Enemies");
+                        }
+                        else if ("codes".StartsWith(command[1]))
+                        {
+                            FindPage(FindObjectsOfType<TerminalAccessibleObject>().ToList(), listPage, 10, "Terminal Codes");
+                        }
+                        else if ("waypoints".StartsWith(command[1]))
+                        {
+                            FindPage(Plugin.waypoints, listPage, 8, "Waypoint");
+                        }
+                        else
+                        {
+                            Plugin.LogMessage($"Unable to find list by name {command[1]}!", true);
+                        }
                     }
                     break;
                 case string s when "tp".StartsWith(s) || "teleport".StartsWith(s):
@@ -275,11 +252,10 @@ namespace ToxicOmega_Tools.Patches
                             break;
                         case 2:
                         case 3:
-                            string tpTargetString = null;
-
                             // Look for item/enemy by ID and break the switch function if one is found
                             if (command.Length > 2)
                             {
+                                string tpTargetString = null;
                                 NetworkObjectReference networkObjectRef = new NetworkObjectReference();
                                 foundId = ulong.TryParse(command[1], out networkId);
                                 enemyTarget = Networking.GetEnemyByNetId(networkId);
@@ -305,11 +281,9 @@ namespace ToxicOmega_Tools.Patches
 
                             // Player teleport handler
                             playerTarget = command.Length > 2 ? Plugin.GetPlayerFromString(command[1]) : localPlayerController;
-
                             if (playerTarget != null)
                             {
                                 Vector3 position = Plugin.GetPositionFromCommand(command.Length > 2 ? command[2] : command[1], 3, playerTarget.playerUsername);
-
                                 if (position != Vector3.zero)
                                     Networking.TPPlayerClientRpc(playerTarget.playerClientId, position, sendPlayerInside);
                             }
@@ -346,7 +320,6 @@ namespace ToxicOmega_Tools.Patches
                     else if ("door".StartsWith(command[1]))
                     {
                         Vector3 doorPosition = RoundManager.FindMainEntrancePosition(true, true);
-
                         if (doorPosition != Vector3.zero)
                         {
                             Plugin.waypoints.Add(new Waypoint { IsInside = false, Position = doorPosition });
@@ -360,7 +333,6 @@ namespace ToxicOmega_Tools.Patches
                     else if ("entrance".StartsWith(command[1]))
                     {
                         Vector3 entrancePosition = RoundManager.FindMainEntrancePosition(true);
-
                         if (entrancePosition != Vector3.zero)
                         {
                             Plugin.waypoints.Add(new Waypoint { IsInside = true, Position = entrancePosition });
@@ -379,8 +351,7 @@ namespace ToxicOmega_Tools.Patches
                     }
                     else
                     {
-                        string targetUsername = string.Join(" ", command.Skip(1));
-                        playerTarget = Plugin.GetPlayerFromString(targetUsername);
+                        playerTarget = Plugin.GetPlayerFromString(string.Join(" ", command.Skip(1)));
                     }
 
                     if (playerTarget != null)
@@ -393,7 +364,6 @@ namespace ToxicOmega_Tools.Patches
                         {
                             Plugin.LogMessage($"Healing {playerTarget.playerUsername}.");
                         }
-
                         Networking.HealPlayerClientRpc(playerTarget.playerClientId);
                     }
                     break;
@@ -403,7 +373,6 @@ namespace ToxicOmega_Tools.Patches
                     break;
                 case string s when "codes".StartsWith(s):
                     List<TerminalAccessibleObject> terminalObjects = FindObjectsOfType<TerminalAccessibleObject>().ToList();
-
                     if (terminalObjects.Count > 0)
                     {
                         if (command.Length < 2)
@@ -427,7 +396,6 @@ namespace ToxicOmega_Tools.Patches
                     break;
                 case string s when "breaker".StartsWith(s):
                     BreakerBox breaker = FindObjectOfType<BreakerBox>();
-
                     if (breaker != null)
                     {
                         breaker.SwitchBreaker(!breaker.isPowerOn);
@@ -470,7 +438,6 @@ namespace ToxicOmega_Tools.Patches
                     if (playerTarget != null && !playerTarget.isPlayerDead)
                     {
                         itemTarget = playerTarget.ItemSlots[playerTarget.currentItemSlot];
-
                         if (itemTarget != null)
                         {
                             if (itemTarget.itemProperties.requiresBattery)
@@ -505,22 +472,18 @@ namespace ToxicOmega_Tools.Patches
                     }
 
                     string tempString = string.Join("", command.Skip(1));
-
                     if (tempString[tempString.Length - 1] == '*')
                     {
                         forceDestroy = true;
                         tempString = tempString.Remove(tempString.Length - 1, 1);
                     }
-
                     string[] processedStrings = tempString.Split(new char[1] { '-' }, StringSplitOptions.RemoveEmptyEntries);
 
                     foundId = ulong.TryParse(processedStrings[0], out networkId);
-
                     if (foundId)
                     {
                         if (processedStrings.Length < 2 || !int.TryParse(processedStrings[1], out endIndex))
                             endIndex = (int)networkId;
-
                         endIndex = Math.Max((int)networkId, endIndex);
 
                         for (int i = (int)networkId; i <= endIndex; i++)
@@ -532,7 +495,6 @@ namespace ToxicOmega_Tools.Patches
                             {
                                 counter++;
                                 enemyTarget.HitEnemy(999999);
-
                                 // Force destroy invincible enemies
                                 if (enemyTarget.GetComponentInChildren<BlobAI>() != null ||
                                     enemyTarget.GetComponentInChildren<ButlerBeesEnemyAI>() != null ||
@@ -548,7 +510,6 @@ namespace ToxicOmega_Tools.Patches
                                 {
                                     Destroy(enemyTarget.gameObject);
                                 }
-
                                 if ((int)networkId == endIndex)
                                     Plugin.LogMessage($"Killed {enemyTarget.enemyType.enemyName} ({enemyTarget.NetworkObjectId})!");
                             }
@@ -556,20 +517,16 @@ namespace ToxicOmega_Tools.Patches
                             {
                                 counter++;
                                 Destroy(itemTarget.gameObject);
-
                                 if ((int)networkId == endIndex)
                                     Plugin.LogMessage($"Killed {itemTarget.itemProperties.itemName} ({itemTarget.NetworkObjectId})!");
                             }
                         }
-
                         if ((int)networkId != endIndex)
                             Plugin.LogMessage($"Killed {counter} GameObjects!");
-
                     }
                     else
                     {
                         playerTarget = Plugin.GetPlayerFromString(string.Join(" ", command.Skip(1)));
-
                         if (playerTarget != null && !playerTarget.isPlayerDead && playerTarget.isPlayerControlled)
                         {
                             Networking.HurtPlayerClientRpc(playerTarget.playerClientId, 999999);
@@ -593,7 +550,6 @@ namespace ToxicOmega_Tools.Patches
                     {
                         localPlayerController.StopCoroutine(PlayerControllerB_Patch.UpdateGUI());
                     }
-
                     Plugin.LogMessage($"{(CustomGUI.nearbyVisible ? "Enabling" : "Disabling")} GUI.");
                     break;
                 case string s when "suit".StartsWith(s):
@@ -603,33 +559,29 @@ namespace ToxicOmega_Tools.Patches
                     if (command.Length < 2)
                     {
                         string suitList = "";
-
                         foreach (UnlockableItem suit in allSuits)
                         {
                             if (suit.unlockableType == 0)
                                 suitList += $"{suit.unlockableName}, ";
                         }
-
                         suitList = suitList.TrimEnd(',', ' ') + ".";
                         HUDManager.Instance.DisplayTip("Suit List", suitList);
                     }
                     else
                     {
                         int selectedSuit = allSuits.IndexOf(allSuits.FirstOrDefault(suit => suit.unlockableType == 0 && suit.unlockableName.ToLower().StartsWith(command[1])));
-
-                        if (selectedSuit == -1 || allSuits[selectedSuit].unlockableType != 0)
+                        if (selectedSuit != -1 && allSuits[selectedSuit].unlockableType == 0)
+                        {
+                            playerTarget = command.Length > 2 ? Plugin.GetPlayerFromString(string.Join(" ", command.Skip(2))) : localPlayerController;
+                            if (playerTarget == null)
+                                break;
+                            Networking.SyncSuitClientRpc(playerTarget.playerClientId, selectedSuit);
+                            Plugin.LogMessage($"Setting {playerTarget.playerUsername} to {allSuits[selectedSuit].unlockableName}.");
+                        }
+                        else
                         {
                             Plugin.LogMessage($"Unable to find suit \"{command[1]}\"!", true);
-                            break;
                         }
-
-                        playerTarget = command.Length > 2 ? Plugin.GetPlayerFromString(string.Join(" ", command.Skip(2))) : localPlayerController;
-
-                        if (playerTarget == null)
-                            break;
-
-                        Networking.SyncSuitClientRpc(playerTarget.playerClientId, selectedSuit);
-                        Plugin.LogMessage($"Setting {playerTarget.playerUsername} to {allSuits[selectedSuit].unlockableName}.");
                     }
                     break;
                 default:
@@ -640,8 +592,8 @@ namespace ToxicOmega_Tools.Patches
             if (flag)   // Empty chatTextField, this prevents anything from being sent to the in-game chat
                 __instance.chatTextField.text = string.Empty;
 
-            // Perform regular chat if player is the host and dead, this overrides the way the game blocks dead players from chatting.
-            if (localPlayerController.isPlayerDead && Plugin.CheckPlayerIsHost(localPlayerController))
+            // Perform chat even if player is dead, this overrides the way the game blocks dead players from chatting.
+            if (localPlayerController.isPlayerDead)
             {
                 if (!string.IsNullOrEmpty(__instance.chatTextField.text) && __instance.chatTextField.text.Length < 50)
                     __instance.AddTextToChatOnServer(__instance.chatTextField.text, (int)__instance.localPlayer.playerClientId);
@@ -654,6 +606,7 @@ namespace ToxicOmega_Tools.Patches
                         break;
                     }
                 }
+
                 localPlayerController.isTypingChat = false;
                 __instance.chatTextField.text = "";
                 EventSystem.current.SetSelectedGameObject(null);
@@ -661,8 +614,10 @@ namespace ToxicOmega_Tools.Patches
                 __instance.typingIndicator.enabled = false;
                 return false;
             }
-
-            return true;
+            else
+            {
+                return true;
+            }
         }
 
         private static void FindPage<T>(List<T> list, int page, int itemsPerPage, string listName)
@@ -675,12 +630,9 @@ namespace ToxicOmega_Tools.Patches
             bool appendList = true;
             int totalItems = list.Count;
             int maxPages = (int)Math.Ceiling((double)totalItems / itemsPerPage);
-
             page = Math.Min(page, maxPages);
-
             int startIndex = (page - 1) * itemsPerPage;
             int endIndex = startIndex + itemsPerPage - 1;
-
             endIndex = Math.Min(endIndex, totalItems - 1);
 
             if (startIndex < 0 || startIndex >= totalItems || startIndex > endIndex)

@@ -27,7 +27,6 @@ namespace ToxicOmega_Tools.Patches
         {
             if (!Plugin.CheckPlayerIsHost(__instance))
                 return true;
-
             return !Plugin.enableGod;
         }
 
@@ -37,9 +36,7 @@ namespace ToxicOmega_Tools.Patches
         {
             if (!CustomGUI.nearbyVisible && !CustomGUI.fullListVisible)
                 return;
-
             Vector3 localPosition = (__instance.isPlayerDead && __instance.spectatedPlayerScript != null) ? __instance.spectatedPlayerScript.transform.position : __instance.transform.position;
-
             CustomGUI.posLabelText = $"Time: {(RoundManager.Instance.timeScript.hour + 6 > 12 ? RoundManager.Instance.timeScript.hour - 6 : RoundManager.Instance.timeScript.hour + 6)}{(RoundManager.Instance.timeScript.hour + 6 < 12 ? "am" : "pm")}\n";
             CustomGUI.posLabelText += $"GodMode: {(Plugin.enableGod ? "Enabled" : "Disabled")}\n";
             CustomGUI.posLabelText += $"X: {Math.Round(localPosition.x, 1)}\nY: {Math.Round(localPosition.y, 1)}\nZ: {Math.Round(localPosition.z, 1)}";
@@ -52,18 +49,15 @@ namespace ToxicOmega_Tools.Patches
             {
                 if (!CustomGUI.nearbyVisible && !CustomGUI.fullListVisible)
                     yield return null;
-
                 CustomGUI.itemListText = "";
                 CustomGUI.terminalObjListText = "";
                 CustomGUI.enemyListText = "";
                 Vector3 position = (localPlayer.isPlayerDead && localPlayer.spectatedPlayerScript != null) ? localPlayer.spectatedPlayerScript.transform.position : localPlayer.transform.position;
-
                 foreach (GrabbableObject obj in FindObjectsOfType<GrabbableObject>())
                 {
                     if (Vector3.Distance(obj.transform.position, position) < 25.0f || CustomGUI.fullListVisible)
                         CustomGUI.itemListText += $"{obj.itemProperties.itemName} ({obj.NetworkObjectId}){(obj.scrapValue > 0 ? $" - ${obj.scrapValue}" : "")}\n";
                 }
-
                 foreach (TerminalAccessibleObject terminalObj in FindObjectsOfType<TerminalAccessibleObject>())
                 {
                     string objType = "";
@@ -100,19 +94,16 @@ namespace ToxicOmega_Tools.Patches
                         CustomGUI.terminalObjListText += $"{(!isActive || (terminalObj.isBigDoor && terminalObj.isDoorOpen) ? $"<color={(terminalObj.isBigDoor && terminalObj.isDoorOpen ? "lime" : "red")}>" : "")}{terminalObj.objectCode.ToUpper()}{(!isActive || (terminalObj.isBigDoor && terminalObj.isDoorOpen) ? "</color>" : "")} - {objType}\n";
                     }
                 }
-
                 foreach (PlayerControllerB player in StartOfRound.Instance.allPlayerScripts)
                 {
                     if ((Vector3.Distance(player.isPlayerDead ? player.deadBody.transform.position : player.transform.position, position) < 25.0f || CustomGUI.fullListVisible) && (player.isPlayerControlled || player.isPlayerDead))
                         CustomGUI.enemyListText += $"{(player.isPlayerDead ? "<color=red>" : "")}{player.playerUsername}{(player.isPlayerDead ? "</color>" : "")} (#{player.playerClientId}{(Plugin.CheckPlayerIsHost(player) ? " - HOST" : "")})\n";
                 }
-
                 foreach (EnemyAI enemy in FindObjectsOfType<EnemyAI>())
                 {
                     if (Vector3.Distance(enemy.transform.position, position) < 25.0f || CustomGUI.fullListVisible)
                         CustomGUI.enemyListText += $"{(enemy.isEnemyDead ? "<color=red>" : "")}{enemy.enemyType.enemyName}{(enemy.isEnemyDead ? "</color>" : "")} ({enemy.NetworkObjectId})\n";
                 }
-
                 yield return new WaitForSeconds(0.1f);
             }
         }
