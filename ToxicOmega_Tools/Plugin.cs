@@ -29,7 +29,10 @@ namespace ToxicOmega_Tools
         internal static List<SearchableGameObject> allSpawnablesList;
         internal static List<Waypoint> waypoints = new List<Waypoint>();
         internal static System.Random shipTeleporterSeed;
-        internal static bool enableGod = false;
+        internal static bool defog;
+        internal static bool godmode;
+        internal static bool nightVision;
+        internal static bool noclip;
 
         void Awake()
         {
@@ -350,9 +353,9 @@ namespace ToxicOmega_Tools
             }
         }
 
-        public static void PlayerTeleportEffects(ulong playerClientId, bool isInside)
+        public static void PlayerTeleportEffects(ulong playerClientId, bool isInside, bool showParticles = true)
         {
-            PlayerControllerB playerController = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(player => player.playerClientId.Equals(playerClientId));
+            PlayerControllerB playerController = GetPlayerFromClientId(playerClientId);
             SavePlayer(playerController);
             if ((bool)FindObjectOfType<AudioReverbPresets>())
                 FindObjectOfType<AudioReverbPresets>().audioPresets[isInside ? 2 : 3].ChangeAudioReverbForPlayer(playerController);
@@ -361,8 +364,11 @@ namespace ToxicOmega_Tools
             playerController.isInsideFactory = isInside;
             playerController.averageVelocity = 0.0f;
             playerController.velocityLastFrame = Vector3.zero;
-            playerController.beamUpParticle.Play();
-            playerController.beamOutBuildupParticle.Play();
+            if (showParticles)
+            {
+                playerController.beamUpParticle.Play();
+                playerController.beamOutBuildupParticle.Play();
+            }
             //playerController.redirectToEnemy?.ShipTeleportEnemy();    // Empty method
         }
 

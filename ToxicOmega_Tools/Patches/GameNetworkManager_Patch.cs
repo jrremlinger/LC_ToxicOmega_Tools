@@ -10,7 +10,10 @@ namespace ToxicOmega_Tools.Patches
         [HarmonyPostfix]
         private static void Disconnect()    // Clear game-specific variables when disconnecting
         {
-            Plugin.enableGod = false;
+            Plugin.defog = false;
+            Plugin.godmode = false;
+            Plugin.nightVision = false;
+            Plugin.noclip = false;
             Plugin.waypoints.Clear();
             CustomGUI.nearbyVisible = false;
             CustomGUI.fullListVisible = false;

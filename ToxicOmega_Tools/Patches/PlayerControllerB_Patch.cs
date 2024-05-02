@@ -1,8 +1,10 @@
-﻿using GameNetcodeStuff;
+﻿using BepInEx;
+using GameNetcodeStuff;
 using HarmonyLib;
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace ToxicOmega_Tools.Patches
 {
@@ -27,85 +29,91 @@ namespace ToxicOmega_Tools.Patches
         {
             if (!Plugin.CheckPlayerIsHost(__instance))
                 return true;
-            return !Plugin.enableGod;
+            return !Plugin.godmode;
         }
 
         [HarmonyPatch(nameof(PlayerControllerB.Update))]
         [HarmonyPostfix]
         static void Update(PlayerControllerB __instance)
         {
-            if (!CustomGUI.nearbyVisible && !CustomGUI.fullListVisible)
-                return;
-            Vector3 localPosition = (__instance.isPlayerDead && __instance.spectatedPlayerScript != null) ? __instance.spectatedPlayerScript.transform.position : __instance.transform.position;
-            CustomGUI.posLabelText = $"Time: {(RoundManager.Instance.timeScript.hour + 6 > 12 ? RoundManager.Instance.timeScript.hour - 6 : RoundManager.Instance.timeScript.hour + 6)}{(RoundManager.Instance.timeScript.hour + 6 < 12 ? "am" : "pm")}\n";
-            CustomGUI.posLabelText += $"GodMode: {(Plugin.enableGod ? "Enabled" : "Disabled")}\n";
-            CustomGUI.posLabelText += $"X: {Math.Round(localPosition.x, 1)}\nY: {Math.Round(localPosition.y, 1)}\nZ: {Math.Round(localPosition.z, 1)}";
+            if (CustomGUI.nearbyVisible || CustomGUI.fullListVisible)
+            {
+                Vector3 localPosition = (__instance.isPlayerDead && __instance.spectatedPlayerScript != null) ? __instance.spectatedPlayerScript.transform.position : __instance.transform.position;
+                CustomGUI.posLabelText = $"Time: {(RoundManager.Instance.timeScript.hour + 6 > 12 ? RoundManager.Instance.timeScript.hour - 6 : RoundManager.Instance.timeScript.hour + 6)}{(RoundManager.Instance.timeScript.hour + 6 < 12 ? "am" : "pm")}\n";
+                CustomGUI.posLabelText += $"GodMode: {(Plugin.godmode ? "Enabled" : "Disabled")}\n";
+                CustomGUI.posLabelText += $"X: {Math.Round(localPosition.x, 1)}\nY: {Math.Round(localPosition.y, 1)}\nZ: {Math.Round(localPosition.z, 1)}";
+            }
+
+            NoClipHandler();
+            DefogHandler();
         }
 
-        public static IEnumerator UpdateGUI()
+        private static void NoClipHandler()
         {
-            PlayerControllerB localPlayer = StartOfRound.Instance.localPlayerController;
-            for (; ; )
+            if (SceneManager.GetActiveScene().name != "SampleSceneRelay")
+                return;
+            var player = GameNetworkManager.Instance.localPlayerController;
+            if (player == null)
+                return;
+            var camera = player.gameplayCamera.transform;
+            if (camera == null)
+                return;
+            var collider = player.GetComponent<CharacterController>() as Collider;
+            if (collider == null)
+                return;
+
+            if (Plugin.noclip)
             {
-                if (!CustomGUI.nearbyVisible && !CustomGUI.fullListVisible)
-                    yield return null;
-                CustomGUI.itemListText = "";
-                CustomGUI.terminalObjListText = "";
-                CustomGUI.enemyListText = "";
-                Vector3 position = (localPlayer.isPlayerDead && localPlayer.spectatedPlayerScript != null) ? localPlayer.spectatedPlayerScript.transform.position : localPlayer.transform.position;
-                foreach (GrabbableObject obj in FindObjectsOfType<GrabbableObject>())
+                collider.enabled = false;
+                var dir = new Vector3();
+
+                // Horizontal
+                if (UnityInput.Current.GetKey(KeyCode.W))
+                    dir += camera.forward;
+                if (UnityInput.Current.GetKey(KeyCode.S))
+                    dir += camera.forward * -1;
+                if (UnityInput.Current.GetKey(KeyCode.D))
+                    dir += camera.right;
+                if (UnityInput.Current.GetKey(KeyCode.A))
+                    dir += camera.right * -1;
+
+                // Vertical
+                if (UnityInput.Current.GetKey(KeyCode.Space))
+                    dir.y += camera.up.y;
+                if (UnityInput.Current.GetKey(KeyCode.C))
+                    dir.y += camera.up.y * -1;
+
+                var prevPos = player.transform.localPosition;
+                if (prevPos.Equals(Vector3.zero))
+                    return;
+                if (!player.isTypingChat)
                 {
-                    if (Vector3.Distance(obj.transform.position, position) < 25.0f || CustomGUI.fullListVisible)
-                        CustomGUI.itemListText += $"{obj.itemProperties.itemName} ({obj.NetworkObjectId}){(obj.scrapValue > 0 ? $" - ${obj.scrapValue}" : "")}\n";
-                }
-                foreach (TerminalAccessibleObject terminalObj in FindObjectsOfType<TerminalAccessibleObject>())
-                {
-                    string objType = "";
-                    bool isActive = true;
-                    if (Vector3.Distance(terminalObj.transform.position, position) < 10.0f || CustomGUI.fullListVisible)
+                    var newPos = prevPos + dir * ((UnityInput.Current.GetKey(KeyCode.LeftShift) ? 15f : 5f) * Time.deltaTime);
+                    if (newPos.y < -100f && !player.isInsideFactory)
                     {
-                        if (terminalObj.isBigDoor)
-                        {
-                            objType = "Door";
-                        }
-                        else if (terminalObj.GetComponentInChildren<Landmine>())
-                        {
-                            if (terminalObj.GetComponentInChildren<Landmine>().hasExploded)
-                                continue;
-
-                            objType = $"Landmine";
-                            isActive = terminalObj.GetComponent<Landmine>().mineActivated;
-                        }
-                        else if (terminalObj.GetComponentInChildren<Turret>())
-                        {
-                            objType = $"Turret";
-                            isActive = terminalObj.GetComponent<Turret>().turretActive;
-                        }
-                        else if (terminalObj.transform.parent.gameObject.GetComponentInChildren<SpikeRoofTrap>())
-                        {
-                            objType = $"Spikes";
-                            isActive = terminalObj.transform.parent.gameObject.GetComponentInChildren<SpikeRoofTrap>().trapActive;
-                        }
-                        else
-                        {
-                            objType += "Unknown";
-                        }
-
-                        CustomGUI.terminalObjListText += $"{(!isActive || (terminalObj.isBigDoor && terminalObj.isDoorOpen) ? $"<color={(terminalObj.isBigDoor && terminalObj.isDoorOpen ? "lime" : "red")}>" : "")}{terminalObj.objectCode.ToUpper()}{(!isActive || (terminalObj.isBigDoor && terminalObj.isDoorOpen) ? "</color>" : "")} - {objType}\n";
+                        Plugin.PlayerTeleportEffects(player.playerClientId, true, false);
                     }
+                    else if (newPos.y >= -100f && player.isInsideFactory)
+                    {
+                        Plugin.PlayerTeleportEffects(player.playerClientId, false, false);
+                    }
+                    player.transform.localPosition = newPos;
                 }
-                foreach (PlayerControllerB player in StartOfRound.Instance.allPlayerScripts)
-                {
-                    if ((Vector3.Distance(player.isPlayerDead ? player.deadBody.transform.position : player.transform.position, position) < 25.0f || CustomGUI.fullListVisible) && (player.isPlayerControlled || player.isPlayerDead))
-                        CustomGUI.enemyListText += $"{(player.isPlayerDead ? "<color=red>" : "")}{player.playerUsername}{(player.isPlayerDead ? "</color>" : "")} (#{player.playerClientId}{(Plugin.CheckPlayerIsHost(player) ? " - HOST" : "")})\n";
-                }
-                foreach (EnemyAI enemy in FindObjectsOfType<EnemyAI>())
-                {
-                    if (Vector3.Distance(enemy.transform.position, position) < 25.0f || CustomGUI.fullListVisible)
-                        CustomGUI.enemyListText += $"{(enemy.isEnemyDead ? "<color=red>" : "")}{enemy.enemyType.enemyName}{(enemy.isEnemyDead ? "</color>" : "")} ({enemy.NetworkObjectId})\n";
-                }
-                yield return new WaitForSeconds(0.1f);
             }
+            else
+            {
+                collider.enabled = true;
+            }
+        }
+
+        private static void DefogHandler()
+        {
+            GameObject.Find("Systems")?.transform.Find("Rendering")?.Find("VolumeMain")?.gameObject.SetActive(!Plugin.defog);
+            GameObject.Find("Environment")?.transform.Find("Lighting")?.Find("GroundFog")?.gameObject.SetActive(!Plugin.defog);
+            GameObject.Find("Environment")?.transform.Find("Lighting")?.Find("BrightDay")?.Find("Sun")?.Find("SunAnimContainer")?.Find("StormVolume")?.gameObject.SetActive(!Plugin.defog);
+            //GameObject.Find("Environment")?.transform.Find("Lighting")?.Find("BrightDay")?.Find("Local Volumetric Fog")?.gameObject.SetActive(!Plugin.defog);
+            //GameObject.Find("Environment")?.transform.Find("Lighting")?.Find("BrightDay")?.Find("Sun")?.Find("BlizzardSunAnimContainer")?.Find("Sky and Fog Global Volume")?.gameObject.SetActive(!Plugin.defog);
+            //RenderSettings.fog = !Plugin.defog;
         }
     }
 }

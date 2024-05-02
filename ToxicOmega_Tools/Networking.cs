@@ -26,16 +26,33 @@ namespace ToxicOmega_Tools.Patches
         }
 
         [ClientRpc]
+        public static void DoorLockClientRpc(NetworkObjectReference door, bool isUnlock = false)
+        {
+            Plugin.mls.LogInfo("RPC RECEIVED: \"DoorLockClientRpc\".");
+            DoorLock foundDoor = GetDoorByNetRef(door);
+            if (isUnlock)
+            {
+                foundDoor?.UnlockDoor();
+            }
+            else
+            {
+                foundDoor?.LockDoor();
+            }
+        }
+
+        [ClientRpc]
         public static void GiveItemClientRpc(ulong playerId, NetworkObjectReference itemRef)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"GiveItemClientRpc\".");
             PlayerControllerB player = Plugin.GetPlayerFromClientId(playerId);
             GrabbableObject item = GetItemByNetRef(itemRef);
+            if (item == null)
+                return;
             player.currentlyGrabbingObject = item;
             if (!GameNetworkManager.Instance.gameHasStarted && !item.itemProperties.canBeGrabbedBeforeGameStart && StartOfRound.Instance.testRoom == null)
                 return;
             player.grabInvalidated = false;
-            if (item == null || player.inSpecialInteractAnimation || item.isHeld || item.isPocketed)
+            if (player.inSpecialInteractAnimation || item.isHeld || item.isPocketed)
                 return;
             NetworkObject networkObject = item.NetworkObject;
             if (networkObject == null || !networkObject.IsSpawned)
@@ -82,21 +99,23 @@ namespace ToxicOmega_Tools.Patches
         public static void HurtPlayerClientRpc(ulong playerId, int damage)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"HurtPlayerClientRpc\".");
-            Plugin.GetPlayerFromClientId(playerId).DamagePlayer(damage, causeOfDeath: CauseOfDeath.Mauling, fallDamage: true, force: new Vector3 { y = 5 });
+            Plugin.GetPlayerFromClientId(playerId)?.DamagePlayer(damage, causeOfDeath: CauseOfDeath.Mauling, fallDamage: true, force: new Vector3 { y = 5 });
         }
 
         [ClientRpc]
         public static void SyncAmmoClientRpc(NetworkObjectReference itemRef)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"SyncAmmoClientRpc\".");
-            GetItemByNetRef(itemRef).GetComponentInChildren<ShotgunItem>().shellsLoaded = 2;
+            ShotgunItem shotgun = GetItemByNetRef(itemRef).GetComponentInChildren<ShotgunItem>();
+            if (shotgun != null)
+                shotgun.shellsLoaded = 2;
         }
 
         [ClientRpc]
         public static void SyncScrapValueClientRpc(NetworkObjectReference itemRef, int scrapValue)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"SyncScrapValueClientRpc\".");
-            GetItemByNetRef(itemRef).SetScrapValue(scrapValue);
+            GetItemByNetRef(itemRef)?.SetScrapValue(scrapValue);
         }
 
         [ClientRpc]
@@ -110,7 +129,7 @@ namespace ToxicOmega_Tools.Patches
         public static void TerminalCodeClientRpc(NetworkObjectReference networkRef, int code)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"TerminalCodeClientRpc\".");
-            GetTerminalObjectByNetRef(networkRef).SetCodeTo(code);
+            GetTerminalObjectByNetRef(networkRef)?.SetCodeTo(code);
         }
 
         [ClientRpc]
@@ -135,7 +154,7 @@ namespace ToxicOmega_Tools.Patches
                 foundEnemy.transform.position = position;
                 foundEnemy.agent.enabled = true;
                 foundEnemy.serverPosition = position;
-                foundEnemy.SetEnemyOutside(position.y > -50);
+                foundEnemy.SetEnemyOutside(position.y > -100);
             }
             else if (foundItem != null)
             {
@@ -172,15 +191,20 @@ namespace ToxicOmega_Tools.Patches
             else
             {
                 player.transform.position = position;
-                if (position.y >= -50)
-                {
-                    isInside = false;
-                }
-                else if (position.y <= -100)
-                {
-                    isInside = true;
-                }
+                isInside = position.y < -100f;  // Determine inside/outside based on position.y
                 Plugin.PlayerTeleportEffects(playerId, isInside);
+            }
+        }
+
+        public static DoorLock GetDoorByNetRef(NetworkObjectReference doorRef)
+        {
+            if (doorRef.TryGet(out NetworkObject netObj))
+            {
+                return netObj.GetComponentInChildren<DoorLock>();
+            }
+            else
+            {
+                return null;
             }
         }
 

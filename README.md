@@ -109,6 +109,7 @@ Toggles a GUI showing all currently existing players, items, enemies, and termin
 
 Arguments:
 * List Name: Which list to view. Supports "players", "items", "enemy/enemies", "codes", and "wp/waypoints".
+* Page Number: What page of the given list should be displayed.
 
 Example: "li e" will list page one every enemy that is currently spawned and active in the scene. In most situations simply using "list" on its own to show the full GUI is more useful.
 </details>
@@ -118,9 +119,9 @@ Example: "li e" will list page one every enemy that is currently spawned and act
 <details>
   <summary><h3>GUI/HUD</h3></summary>
 
-Toggles a HUD that displays useful information. Current coordinates, time of day, and godmode status will be displayed at the bottom. Listed along the top will be nearby items, enemies, traps, blast doors, and players. Using the "List" command with zero arguments after will enable the GUI but show items/enemies/etc from ANY distance instead nearby. Network ID is listed next to items and enemies. Terminal Code is listed next to traps and blast doors.
+Toggles a GUI that displays useful information. Current coordinates, time of day, and godmode status will be displayed at the bottom. Listed along the top will be nearby items, enemies, traps, blast doors, and players. Using the "List" command with zero arguments after will enable the GUI but show items/enemies/etc from ANY distance instead nearby. Network ID is listed next to items and enemies. Terminal Code is listed next to traps and blast doors.
 
-Example: "hud" will enable the hud if it is currently hidden.
+Example: "GUI" will toggle the GUI.
 </details>
 
 ---
@@ -184,9 +185,39 @@ Example: "kill 14-82*" will force delete all items/enemies with network IDs rang
 <details>
   <summary><h3>GM/GodMode</h3></summary>
 
-Toggle whether or not you take damage.
+Toggle whether or not you can take damage and die.
 
-Example: "gm" while godmode is off will toggle it on.
+Example: "gm" will toggle godmode.
+</details>
+
+---
+
+<details>
+  <summary><h3>Defog</h3></summary>
+
+Toggles on/off fog which includes most outdoor fog as well as the steam inside the factory.
+
+Example: "de" will toggle the defog effect.
+</details>
+
+---
+
+<details>
+  <summary><h3>NightVision</h3></summary>
+
+Toggles a night vision effect. This will only be active when inside the factory/mansion.
+
+Example: "night" will toggle the night vision effect.
+</details>
+
+---
+
+<details>
+  <summary><h3>NoClip</h3></summary>
+
+Toggles the noclip effect which will allow you to fly and phase through walls.
+
+Example: "noclip" will toggle the noclip effect.
 </details>
 
 ---
@@ -209,8 +240,18 @@ Example: "code d2" will toggle all terminal objects on the map with code d2.
 
 Toggles the breaker box's state.
 
-Example: "br" while the breaker is on will toggle it to be off.
+Example: "br" will toggle the current state of the breaker.
 
+</details>
+
+---
+
+<details>
+  <summary><h3>Lock/Unlock</h3></summary>
+
+Using the Lock or Unlock commands will Lock or Unlock a door if you are looking at one.
+
+Example: "unlock" while looking at a locked door will unlock it.
 </details>
 
 ---

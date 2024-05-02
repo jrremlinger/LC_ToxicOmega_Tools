@@ -82,8 +82,13 @@ namespace ToxicOmega_Tools.Patches
                         "Heal: Heals/revives a player",
                         "Kill: Kills a player/item/enemy",
                         "GodMode: Toggles invincibility",
+                        "Defog: Toggles fog removal",
+                        "NightVision: Toggles Night Vision",
+                        "NoClip: Toggles NoClip",
                         "Code: Toggles blast doors and traps",
                         "Breaker: Toggles breaker box",
+                        "Lock: Locks the door in front of you",
+                        "Unlock: Unlocks the door in front of you",
                         "Credit: Adjusts spendable credits",
                         "Suit: Changes the suit of a player",
                         "Charge: Charges a player's held item",
@@ -192,11 +197,11 @@ namespace ToxicOmega_Tools.Patches
 
                         if (CustomGUI.fullListVisible)
                         {
-                            localPlayerController.StartCoroutine(PlayerControllerB_Patch.UpdateGUI());
+                            localPlayerController.StartCoroutine(CustomGUI.UpdateGUI());
                         }
                         else
                         {
-                            localPlayerController.StopCoroutine(PlayerControllerB_Patch.UpdateGUI());
+                            localPlayerController.StopCoroutine(CustomGUI.UpdateGUI());
                         }
                         Plugin.LogMessage($"{(CustomGUI.fullListVisible ? "Enabling" : "Disabling")} full list GUI.");
                     }
@@ -368,8 +373,8 @@ namespace ToxicOmega_Tools.Patches
                     }
                     break;
                 case string s when "gm".StartsWith(s) || "godmode".StartsWith(s):
-                    Plugin.enableGod = !Plugin.enableGod;
-                    Plugin.LogMessage($"GodMode toggled {(Plugin.enableGod ? "on!" : "off.")}");
+                    Plugin.godmode = !Plugin.godmode;
+                    Plugin.LogMessage($"GodMode toggled {(Plugin.godmode ? "on!" : "off.")}");
                     break;
                 case string s when "codes".StartsWith(s):
                     List<TerminalAccessibleObject> terminalObjects = FindObjectsOfType<TerminalAccessibleObject>().ToList();
@@ -544,11 +549,11 @@ namespace ToxicOmega_Tools.Patches
 
                     if (CustomGUI.nearbyVisible)
                     {
-                        localPlayerController.StartCoroutine(PlayerControllerB_Patch.UpdateGUI());
+                        localPlayerController.StartCoroutine(CustomGUI.UpdateGUI());
                     }
                     else
                     {
-                        localPlayerController.StopCoroutine(PlayerControllerB_Patch.UpdateGUI());
+                        localPlayerController.StopCoroutine(CustomGUI.UpdateGUI());
                     }
                     Plugin.LogMessage($"{(CustomGUI.nearbyVisible ? "Enabling" : "Disabling")} GUI.");
                     break;
@@ -581,6 +586,39 @@ namespace ToxicOmega_Tools.Patches
                         else
                         {
                             Plugin.LogMessage($"Unable to find suit \"{command[1]}\"!", true);
+                        }
+                    }
+                    break;
+                case string s when "noclip".StartsWith(s):
+                    Plugin.noclip = !Plugin.noclip;
+                    Plugin.LogMessage($"NoClip toggled {(Plugin.noclip ? "on!" : "off.")}");
+                    break;
+                case string s when "nightvision".StartsWith(s):
+                    Plugin.nightVision = !Plugin.nightVision;
+                    localPlayerController.nightVision.enabled = Plugin.nightVision;
+                    localPlayerController.nightVision.color = Plugin.nightVision ? Color.white : new Color(0.396f, 0.415f, 0.394f, 1f);
+                    localPlayerController.nightVision.intensity = Plugin.nightVision ? 1500f : 366.9317f;
+                    localPlayerController.nightVision.range = Plugin.nightVision ? 20000f : 12f;
+                    Plugin.LogMessage($"Night Vision toggled {(Plugin.nightVision ? "on!" : "off.")}");
+                    break;
+                case string s when "defog".StartsWith(s):
+                    Plugin.defog = !Plugin.defog;
+                    Plugin.LogMessage($"Defog toggled {(Plugin.defog ? "on!" : "off.")}");
+                    break;
+                case string s when "lock".StartsWith(s) || "unlock".StartsWith(s):
+                    PlayerControllerB playerOrigin = (localPlayerController.isPlayerDead && localPlayerController.spectatedPlayerScript != null) ? localPlayerController.spectatedPlayerScript : localPlayerController;
+                    if (playerOrigin != null && playerOrigin.isPlayerControlled)
+                    {
+                        Physics.Raycast(playerOrigin.playerGlobalHead.transform.position + (playerOrigin.playerGlobalHead.forward * 1), playerOrigin.playerGlobalHead.forward, out RaycastHit hit, StartOfRound.Instance.collidersAndRoomMaskAndDefault);
+                        DoorLock doorLock = hit.collider.gameObject.GetComponent<DoorLock>();
+                        if (doorLock != null)
+                        {
+                            Networking.DoorLockClientRpc(doorLock.NetworkObject, "unlock".StartsWith(s) ? true : false);
+                            Plugin.LogMessage($"{("unlock".StartsWith(s) ? "Unlocking" : "Locking")} door in front of {playerOrigin.playerUsername}.");
+                        }
+                        else
+                        {
+                            Plugin.LogMessage($"Unable to find a door in front of {playerOrigin.playerUsername}!", true);
                         }
                     }
                     break;
