@@ -12,7 +12,6 @@ namespace ToxicOmega_Tools.Patches
     [HarmonyPatch(typeof(HUDManager))]
     internal class HUDManager_Patch : MonoBehaviour
     {
-        public static bool sendPlayerInside = true;
         private static int itemListPage;
         private static int enemyListPage;
         private static bool foundId;
@@ -247,7 +246,7 @@ namespace ToxicOmega_Tools.Patches
                                 if (!localPlayerController.isPlayerDead)
                                 {
                                     Vector3 destination = Plugin.GetPositionFromCommand("!", 3, localPlayerController.playerUsername);
-                                    Networking.TPPlayerClientRpc(localPlayerController.playerClientId, destination, false);
+                                    Networking.TPPlayerClientRpc(localPlayerController.playerClientId, destination);
                                 }
                                 else
                                 {
@@ -290,7 +289,7 @@ namespace ToxicOmega_Tools.Patches
                             {
                                 Vector3 position = Plugin.GetPositionFromCommand(command.Length > 2 ? command[2] : command[1], 3, playerTarget.playerUsername);
                                 if (position != Vector3.zero)
-                                    Networking.TPPlayerClientRpc(playerTarget.playerClientId, position, sendPlayerInside);
+                                    Networking.TPPlayerClientRpc(playerTarget.playerClientId, position);
                             }
                             break;
                     }
@@ -313,7 +312,7 @@ namespace ToxicOmega_Tools.Patches
                         {
                             bool wpInside = localPlayerController.isInsideFactory;
                             Vector3 wpPosition = localPlayerController.transform.position;
-                            Plugin.waypoints.Add(new Waypoint { IsInside = wpInside, Position = wpPosition });
+                            Plugin.waypoints.Add(wpPosition);
                             Plugin.LogMessage($"Waypoint @{Plugin.waypoints.Count - 1} created at {wpPosition}.");
                         }
                     }
@@ -327,7 +326,7 @@ namespace ToxicOmega_Tools.Patches
                         Vector3 doorPosition = RoundManager.FindMainEntrancePosition(true, true);
                         if (doorPosition != Vector3.zero)
                         {
-                            Plugin.waypoints.Add(new Waypoint { IsInside = false, Position = doorPosition });
+                            Plugin.waypoints.Add(doorPosition);
                             Plugin.LogMessage($"Waypoint @{Plugin.waypoints.Count - 1} created at Front Door.");
                         }
                         else
@@ -340,7 +339,7 @@ namespace ToxicOmega_Tools.Patches
                         Vector3 entrancePosition = RoundManager.FindMainEntrancePosition(true);
                         if (entrancePosition != Vector3.zero)
                         {
-                            Plugin.waypoints.Add(new Waypoint { IsInside = true, Position = entrancePosition });
+                            Plugin.waypoints.Add(entrancePosition);
                             Plugin.LogMessage($"Waypoint @{Plugin.waypoints.Count - 1} created inside Main Entrance.");
                         }
                         else
@@ -613,7 +612,7 @@ namespace ToxicOmega_Tools.Patches
                         DoorLock doorLock = hit.collider.gameObject.GetComponent<DoorLock>();
                         if (doorLock != null)
                         {
-                            Networking.DoorLockClientRpc(doorLock.NetworkObject, "unlock".StartsWith(s) ? true : false);
+                            Networking.DoorLockClientRpc(doorLock.NetworkObject, "unlock".StartsWith(s));
                             Plugin.LogMessage($"{("unlock".StartsWith(s) ? "Unlocking" : "Locking")} door in front of {playerOrigin.playerUsername}.");
                         }
                         else
@@ -746,17 +745,17 @@ namespace ToxicOmega_Tools.Patches
                     }
                     else if (listName == "Waypoint")
                     {
-                        if (Plugin.waypoints[i].Position == RoundManager.FindMainEntrancePosition(true, true))
+                        if (Plugin.waypoints[i] == RoundManager.FindMainEntrancePosition(true, true))
                         {
                             pageText += $"@{i}(Door), ";
                         }
-                        else if (Plugin.waypoints[i].Position == RoundManager.FindMainEntrancePosition(true))
+                        else if (Plugin.waypoints[i] == RoundManager.FindMainEntrancePosition(true))
                         {
                             pageText += $"@{i}(Entrance), ";
                         }
                         else
                         {
-                            pageText += $"@{i}({Math.Floor(Plugin.waypoints[i].Position.x)}, {Math.Floor(Plugin.waypoints[i].Position.z)}), ";
+                            pageText += $"@{i}({Math.Floor(Plugin.waypoints[i].x)}, {Math.Floor(Plugin.waypoints[i].z)}), ";
                         }
                     }
                 }

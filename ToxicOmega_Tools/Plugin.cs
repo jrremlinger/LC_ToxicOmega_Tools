@@ -27,7 +27,7 @@ namespace ToxicOmega_Tools
         internal static List<SpawnableEnemyWithRarity> customOutsideList;
         internal static List<SpawnableEnemyWithRarity> allEnemiesList;
         internal static List<SearchableGameObject> allSpawnablesList;
-        internal static List<Waypoint> waypoints = new List<Waypoint>();
+        internal static List<Vector3> waypoints = new List<Vector3>();
         internal static System.Random shipTeleporterSeed;
         internal static bool defog;
         internal static bool godmode;
@@ -174,7 +174,6 @@ namespace ToxicOmega_Tools
                     case 3:
                         if (currentRound.insideAINodes.Length > 0 && currentRound.insideAINodes[0] != null)
                         {
-                            HUDManager_Patch.sendPlayerInside = true;
                             if (shipTeleporterSeed == null)
                             {
                                 mls.LogInfo("Teleport Seed: Random");
@@ -229,9 +228,7 @@ namespace ToxicOmega_Tools
                 {
                     if (wpIndex < waypoints.Count)
                     {
-                        Waypoint wp = waypoints[wpIndex];
-                        HUDManager_Patch.sendPlayerInside = wp.IsInside;
-                        position = wp.Position;
+                        position = waypoints[wpIndex];
                     }
                     else
                     {
@@ -285,12 +282,10 @@ namespace ToxicOmega_Tools
 
                 if (foundId && enemy != null)
                 {
-                    HUDManager_Patch.sendPlayerInside = !enemy.isOutside;
                     position = enemy.transform.position;
                 }
                 else if (foundId && item != null)
                 {
-                    HUDManager_Patch.sendPlayerInside = item.isInFactory && !item.isInShipRoom;
                     position = item.transform.position;
                 }
                 else
@@ -321,10 +316,7 @@ namespace ToxicOmega_Tools
                 }
 
                 if (positionType == 3)
-                {
-                    HUDManager_Patch.sendPlayerInside = playerTarget.isInsideFactory;
                     LogMessage($"Teleported {targetName} to {playerTarget.playerUsername}.");
-                }
             }
 
             return position;
@@ -779,11 +771,5 @@ namespace ToxicOmega_Tools
         public bool IsEnemy { get; set; }
         public bool IsOutsideEnemy { get; set; }
         public bool IsTrap { get; set; }
-    }
-
-    public struct Waypoint
-    {
-        public bool IsInside { get; set; }
-        public Vector3 Position { get; set; }
     }
 }

@@ -154,7 +154,7 @@ namespace ToxicOmega_Tools.Patches
                 foundEnemy.transform.position = position;
                 foundEnemy.agent.enabled = true;
                 foundEnemy.serverPosition = position;
-                foundEnemy.SetEnemyOutside(position.y > -100);
+                foundEnemy.SetEnemyOutside(position.y > -100);  // Determine inside/outside based on position.y
             }
             else if (foundItem != null)
             {
@@ -167,7 +167,7 @@ namespace ToxicOmega_Tools.Patches
         }
 
         [ClientRpc]
-        public static void TPPlayerClientRpc(ulong playerId, Vector3 position, bool isInside)
+        public static void TPPlayerClientRpc(ulong playerId, Vector3 position)
         {
             Plugin.mls.LogInfo("RPC RECEIVED: \"TPPlayerClientRpc\".");
             PlayerControllerB player = Plugin.GetPlayerFromClientId(playerId);
@@ -191,8 +191,7 @@ namespace ToxicOmega_Tools.Patches
             else
             {
                 player.transform.position = position;
-                isInside = position.y < -100f;  // Determine inside/outside based on position.y
-                Plugin.PlayerTeleportEffects(playerId, isInside);
+                Plugin.PlayerTeleportEffects(playerId, position.y < -100f);   // Determine inside/outside based on position.y
             }
         }
 
