@@ -379,10 +379,14 @@ namespace ToxicOmega_Tools
                 if (playerController.deadBody != null)
                     Destroy(playerController.deadBody);
                 playerController.isClimbingLadder = false;
+                playerController.clampLooking = false;
+                playerController.inVehicleAnimation = false;
+                playerController.disableMoveInput = false;
                 playerController.ResetZAndXRotation();
                 playerController.thisController.enabled = true;
                 playerController.health = 100;
                 playerController.disableLookInput = false;
+                playerController.disableInteract = false;
                 Debug.Log("Reviving players B");
                 if (playerController.isPlayerDead)
                 {
@@ -391,11 +395,12 @@ namespace ToxicOmega_Tools
                     playerController.isInElevator = true;
                     playerController.isInHangarShipRoom = true;
                     playerController.isInsideFactory = false;
-                    playerController.wasInElevatorLastFrame = false;
+                    playerController.parentedToElevatorLastFrame = false;
+                    playerController.overrideGameOverSpectatePivot = null;
                     round.SetPlayerObjectExtrapolate(false);
-                    playerController.TeleportPlayer(round.GetPlayerSpawnPosition((int)playerClientId));
+                    playerController.TeleportPlayer(round.GetPlayerSpawnPosition((int)playerController.playerClientId));
                     playerController.setPositionOfDeadPlayer = false;
-                    playerController.DisablePlayerModel(round.allPlayerObjects[playerClientId], true, true);
+                    playerController.DisablePlayerModel(round.allPlayerObjects[(int)playerController.playerClientId], true, true);
                     playerController.helmetLight.enabled = false;
                     Debug.Log("Reviving players C");
                     playerController.Crouch(false);
@@ -404,10 +409,11 @@ namespace ToxicOmega_Tools
                     playerController.bleedingHeavily = false;
                     playerController.activatingItem = false;
                     playerController.twoHanded = false;
+                    playerController.inShockingMinigame = false;
                     playerController.inSpecialInteractAnimation = false;
                     playerController.freeRotationInInteractAnimation = false;
                     playerController.disableSyncInAnimation = false;
-                    playerController.inAnimationWithEnemy = (EnemyAI)null;
+                    playerController.inAnimationWithEnemy = null;
                     playerController.holdingWalkieTalkie = false;
                     playerController.speakingToWalkieTalkie = false;
                     Debug.Log("Reviving players D");
@@ -436,8 +442,8 @@ namespace ToxicOmega_Tools
                 Debug.Log("Reviving players F");
                 SoundManager.Instance.earsRingingTimer = 0.0f;
                 playerController.voiceMuffledByEnemy = false;
-                SoundManager.Instance.playerVoicePitchTargets[playerClientId] = 1f;
-                SoundManager.Instance.SetPlayerPitch(1f, (int)playerClientId);
+                SoundManager.Instance.playerVoicePitchTargets[(int)playerController.playerClientId] = 1f;
+                SoundManager.Instance.SetPlayerPitch(1f, (int)playerController.playerClientId);
                 if (playerController.currentVoiceChatIngameSettings == null)
                     round.RefreshPlayerVoicePlaybackObjects();
                 if (playerController.currentVoiceChatIngameSettings != null)
@@ -460,23 +466,23 @@ namespace ToxicOmega_Tools
             Debug.Log("Reviving players H");
             round.SetSpectateCameraToGameOverMode(false, playerController);
             //RagdollGrabbableObject[] objectsOfType = FindObjectsOfType<RagdollGrabbableObject>();
-            //for (int index = 0; index<objectsOfType.Length; ++index)
+            //for (int index = 0; index < objectsOfType.Length; ++index)
             //{
-            //  if (!objectsOfType[index].isHeld)
-            //  {
-            //    if (round.IsServer)
+            //    if (!objectsOfType[index].isHeld)
             //    {
-            //        if (objectsOfType[index].NetworkObject.IsSpawned)
-            //            objectsOfType[index].NetworkObject.Despawn();
-            //        else
-            //            Destroy(objectsOfType[index].gameObject);
+            //        if (round.IsServer)
+            //        {
+            //            if (objectsOfType[index].NetworkObject.IsSpawned)
+            //                objectsOfType[index].NetworkObject.Despawn();
+            //            else
+            //                Destroy(objectsOfType[index].gameObject);
+            //        }
             //    }
-            //    }
-            //  else if (objectsOfType[index].isHeld &&  objectsOfType[index].playerHeldBy !=  null)
-            //    objectsOfType[index].playerHeldBy.DropAllHeldItems();
+            //    else if (objectsOfType[index].isHeld && objectsOfType[index].playerHeldBy != null)
+            //        objectsOfType[index].playerHeldBy.DropAllHeldItems();
             //}
             //foreach (Component component in FindObjectsOfType<DeadBodyInfo>())
-            //  Destroy( component.gameObject);
+            //    Destroy(component.gameObject);
             round.livingPlayers += 1;
             round.allPlayersDead = false;
             round.UpdatePlayerVoiceEffects();
