@@ -28,6 +28,11 @@ namespace ToxicOmega_Tools.Patches
                     if (!ListHasEnemy(Plugin.customOutsideList, outsideEnemy.enemyType.enemyName))
                         Plugin.customOutsideList.Add(outsideEnemy);
                 }
+                foreach (SpawnableEnemyWithRarity weedEnemy in RoundManager.Instance.WeedEnemies)
+                {
+                    if (!ListHasEnemy(Plugin.customOutsideList, weedEnemy.enemyType.enemyName))
+                        Plugin.customOutsideList.Add(weedEnemy);
+                }
                 foreach (SpawnableEnemyWithRarity insideEnemy in moon.Enemies)
                 {
                     if (!ListHasEnemy(Plugin.customInsideList, insideEnemy.enemyType.enemyName))
