@@ -18,7 +18,7 @@ namespace ToxicOmega_Tools
     {
         private const string modGUID = "com.toxicomega.toxicomega_tools";
         private const string modName = "ToxicOmega Tools";
-        private const string modVersion = "1.2.2";
+        private const string modVersion = "1.2.3";
         private readonly Harmony harmony = new Harmony(modGUID);
         internal static Plugin Instance;
         internal static ManualLogSource mls;
@@ -133,7 +133,7 @@ namespace ToxicOmega_Tools
                                 else
                                 {
                                     position = Vector3.zero;
-                            }
+                                }
                             }
                             else
                             {
