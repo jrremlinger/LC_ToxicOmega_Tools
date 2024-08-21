@@ -117,11 +117,11 @@ Example: "li e" will list page one every enemy that is currently spawned and act
 ---
 
 <details>
-  <summary><h3>GUI/HUD</h3></summary>
+  <summary><h3>Nearby</h3></summary>
 
-Toggles a GUI that displays useful information. Current coordinates, time of day, and godmode status will be displayed at the bottom. Listed along the top will be nearby items, enemies, traps, blast doors, and players. Using the "List" command with zero arguments after will enable the GUI but show items/enemies/etc from ANY distance instead nearby. Network ID is listed next to items and enemies. Terminal Code is listed next to traps and blast doors.
+Toggles the "List" commands GUI but a version that only shows items, traps, players, and enemies that are near you.
 
-Example: "GUI" will toggle the GUI.
+Example: "near" will toggle the nearby GUI.
 </details>
 
 ---

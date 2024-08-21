@@ -75,7 +75,7 @@ namespace ToxicOmega_Tools.Patches
                         "Spawn: Spawns items/enemies/traps",
                         "Give: Adds an item to a players inventory",
                         "List: Lists existing players/items/enemies",
-                        "GUI: Toggles a GUI displaying nearby items/enemies",
+                        "Nearby: Toggles a GUI displaying nearby items/enemies",
                         "TP: Teleport players or gameobjects",
                         "WP: Creates waypoints",
                         "Heal: Heals/revives a player",
@@ -542,7 +542,7 @@ namespace ToxicOmega_Tools.Patches
                         }
                     }
                     break;
-                case string s when "gui".StartsWith(s) || "hud".StartsWith(s):
+                case string s when "nearby".StartsWith(s):
                     CustomGUI.nearbyVisible = !CustomGUI.nearbyVisible;
                     CustomGUI.fullListVisible = false;
 
@@ -554,7 +554,7 @@ namespace ToxicOmega_Tools.Patches
                     {
                         localPlayerController.StopCoroutine(CustomGUI.UpdateGUI());
                     }
-                    Plugin.LogMessage($"{(CustomGUI.nearbyVisible ? "Enabling" : "Disabling")} GUI.");
+                    Plugin.LogMessage($"{(CustomGUI.nearbyVisible ? "Enabling" : "Disabling")} nearby list.");
                     break;
                 case string s when "suit".StartsWith(s):
                     List<UnlockableItem> allSuits = StartOfRound.Instance.unlockablesList.unlockables;
