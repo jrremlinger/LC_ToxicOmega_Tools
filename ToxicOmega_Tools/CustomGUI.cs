@@ -78,7 +78,7 @@ namespace ToxicOmega_Tools
                 }
                 foreach (PlayerControllerB player in StartOfRound.Instance.allPlayerScripts)
                 {
-                    if ((Vector3.Distance(player.isPlayerDead ? player.deadBody.transform.position : player.transform.position, position) < 25.0f || fullListVisible) && (player.isPlayerControlled || player.isPlayerDead))
+                    if ((Vector3.Distance((player.isPlayerDead && player.deadBody != null) ? player.deadBody.transform.position : player.transform.position, position) < 25.0f || fullListVisible) && (player.isPlayerControlled || player.isPlayerDead))
                         enemyListText += $"{(player.isPlayerDead ? "<color=red>" : "")}{player.playerUsername}{(player.isPlayerDead ? "</color>" : "")} (#{player.playerClientId}{(Plugin.CheckPlayerIsHost(player) ? " - HOST" : "")})\n";
                 }
                 foreach (EnemyAI enemy in FindObjectsOfType<EnemyAI>())

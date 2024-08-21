@@ -126,10 +126,14 @@ namespace ToxicOmega_Tools
                                 {
                                     position = localPlayerController.spectatedPlayerScript.transform.position;
                                 }
-                                else
+                                else if (StartOfRound.Instance.allPlayerScripts[localPlayerController.playerClientId].deadBody != null)
                                 {
                                     position = StartOfRound.Instance.allPlayerScripts[localPlayerController.playerClientId].deadBody.transform.position;
                                 }
+                                else
+                                {
+                                    position = Vector3.zero;
+                            }
                             }
                             else
                             {
@@ -305,9 +309,13 @@ namespace ToxicOmega_Tools
                     {
                         position = playerTarget.spectatedPlayerScript.transform.position;
                     }
-                    else
+                    else if (StartOfRound.Instance.allPlayerScripts[playerTarget.playerClientId].deadBody != null)
                     {
                         position = StartOfRound.Instance.allPlayerScripts[playerTarget.playerClientId].deadBody.transform.position;
+                    }
+                    else
+                    {
+                        position = Vector3.zero;
                     }
                 }
                 else
