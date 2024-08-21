@@ -2,7 +2,6 @@
 using GameNetcodeStuff;
 using HarmonyLib;
 using System;
-using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -92,7 +91,7 @@ namespace ToxicOmega_Tools.Patches
                     return;
                 if (!player.isTypingChat)
                 {
-                    var newPos = prevPos + dir * ((UnityInput.Current.GetKey(KeyCode.LeftShift) ? 15f : 5f) * Time.deltaTime);
+                    var newPos = prevPos + (dir * ((UnityInput.Current.GetKey(KeyCode.LeftShift) ? 15f : 5f) * Time.deltaTime));
                     if (newPos.y < -100f && !player.isInsideFactory)
                     {
                         Plugin.PlayerTeleportEffects(player.playerClientId, true, false);
