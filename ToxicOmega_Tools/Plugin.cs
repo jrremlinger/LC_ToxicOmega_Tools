@@ -233,6 +233,8 @@ namespace ToxicOmega_Tools
                     if (wpIndex < waypoints.Count)
                     {
                         position = waypoints[wpIndex];
+                        if (positionType == 3)
+                            LogMessage($"Teleported {targetName} to Waypoint @{wpIndex}.");
                     }
                     else
                     {
