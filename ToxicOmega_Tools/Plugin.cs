@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using GameNetcodeStuff;
 using HarmonyLib;
@@ -33,15 +34,19 @@ namespace ToxicOmega_Tools
         internal static bool godmode;
         internal static bool nightVision;
         internal static bool noclip;
+        private ConfigEntry<bool> configInvertScroll;
 
         void Awake()
         {
             if (Instance == null)
                 Instance = this;
 
+            configInvertScroll = Config.Bind("Config", "Invert Mouse Scroll", true, "Option to invert the scroll direction of the inventory.");
             mls = BepInEx.Logging.Logger.CreateLogSource(modGUID);
-            mls.LogInfo("ToxicOmega Tools mod has awoken.");
+            mls.LogInfo("ToxicOmega Tools mod has loaded!");
             harmony.PatchAll();
+            if (configInvertScroll.Value)
+                harmony.PatchAll(typeof(InvertHotbar_Patch));
             GUIPatch();
         }
 

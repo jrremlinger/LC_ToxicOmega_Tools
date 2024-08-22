@@ -86,6 +86,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Patches\GameNetworkManager_Patch.cs" />
+    <Compile Include="Patches\InvertHotbar_Patch.cs" />
     <Compile Include="Patches\Terminal_Patch.cs" />
     <Compile Include="CustomGUI.cs" />
     <Compile Include="Patches\HUDManager_Patch.cs" />
