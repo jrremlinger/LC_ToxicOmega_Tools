@@ -38,8 +38,8 @@ namespace ToxicOmega_Tools.Patches
             if (CustomGUI.nearbyVisible || CustomGUI.fullListVisible)
             {
                 Vector3 localPosition = (__instance.isPlayerDead && __instance.spectatedPlayerScript != null) ? __instance.spectatedPlayerScript.transform.position : __instance.transform.position;
-                CustomGUI.posLabelText += $"List Type: {(CustomGUI.fullListVisible ? "Full" : "Nearby")}\n";
-                CustomGUI.posLabelText = $"Time: {(RoundManager.Instance.timeScript.hour + 6 > 12 ? RoundManager.Instance.timeScript.hour - 6 : RoundManager.Instance.timeScript.hour + 6)}{(RoundManager.Instance.timeScript.hour + 6 < 12 ? "am" : "pm")}\n";
+                CustomGUI.posLabelText = $"List Type: {(CustomGUI.fullListVisible ? "Full" : "Nearby")}\n";
+                CustomGUI.posLabelText += $"Time: {(RoundManager.Instance.timeScript.hour + 6 > 12 ? RoundManager.Instance.timeScript.hour - 6 : RoundManager.Instance.timeScript.hour + 6)}{(RoundManager.Instance.timeScript.hour + 6 < 12 ? "am" : "pm")}\n";
                 CustomGUI.posLabelText += $"GodMode: {(Plugin.godmode ? "Enabled" : "Disabled")}\n";
                 CustomGUI.posLabelText += $"NoClip: {(Plugin.noclip ? "Enabled" : "Disabled")}\n";
                 CustomGUI.posLabelText += $"NightVision: {(Plugin.nightVision ? "Enabled" : "Disabled")}\n";
